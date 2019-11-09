@@ -27,7 +27,7 @@
 
 		// Unity5 firefly fix
 #pragma surface surf NormalizedBlinnPhong keepalpha
-#pragma target 3.0
+#pragma target 5.0
 
 		// Unity5 firefly fix
 		// U5 lighting function doesn't normalize properly, so we have to write our own...
