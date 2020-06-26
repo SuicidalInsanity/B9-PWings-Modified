@@ -6,9 +6,6 @@ using UnityEngine;
 
 namespace WingProcedural
 {
-    using KSP.UI.Screens;
-    using System.Linq;
-
     public class WingProcedural : PartModule, IPartCostModifier, IPartSizeModifier, IPartMassModifier
     {
         // Some handy bools
