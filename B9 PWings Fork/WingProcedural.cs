@@ -7,6 +7,7 @@ using UnityEngine;
 namespace WingProcedural
 {
     using KSP.UI.Screens;
+    using System.Linq;
 
     public class WingProcedural : PartModule, IPartCostModifier, IPartSizeModifier, IPartMassModifier
     {
@@ -136,12 +137,12 @@ namespace WingProcedural
             }
 
             return isCtrlSrf ? new Vector2(set.z, set.w) : new Vector2(set.x, set.y);
-		}
+        }
 
-		private float GetIncrementFromType(float incrementWing, float incrementCtrl)
+        private float GetIncrementFromType(float incrementWing, float incrementCtrl)
         {
             return isCtrlSrf ? incrementCtrl : incrementWing;
-		}
+        }
 
         private static Vector4 sharedBaseLengthLimits = new Vector4(0.05f, 40f, 0.05f, 20f);
         private static Vector2 sharedBaseThicknessLimits = new Vector2(0.05f, 4f);
@@ -418,7 +419,7 @@ namespace WingProcedural
         [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Color (B)", guiFormat = "F3")]
         public float sharedColorELBrightness = 0.6f;
 
-		public float sharedColorELBrightnessCached = 0.6f;
+        public float sharedColorELBrightnessCached = 0.6f;
         public static Vector4 sharedColorELBrightnessDefaults = new Vector4(0.6f, 0.6f, 0.6f, 0.6f);
 
         #endregion Shared properties / Surface / leading edge
@@ -472,10 +473,10 @@ namespace WingProcedural
 
         private void ReplaceDefault(ref Vector4 set, float value)
         {
-			set = !isCtrlSrf ? new Vector4(value, set.w, set.z, set.w) : new Vector4(set.z, value, set.z, set.w);
-		}
+            set = !isCtrlSrf ? new Vector4(value, set.w, set.z, set.w) : new Vector4(set.z, value, set.z, set.w);
+        }
 
-		private void RestoreDefaults()
+        private void RestoreDefaults()
         {
             RestoreDefault(ref sharedBaseLengthDefaults);
             RestoreDefault(ref sharedBaseWidthRootDefaults);
@@ -525,15 +526,15 @@ namespace WingProcedural
 
         private float GetDefault(Vector4 set)
         {
-			return isCtrlSrf ? set.y : set.x;
-		}
+            return isCtrlSrf ? set.y : set.x;
+        }
 
-		#endregion Default values
+        #endregion Default values
 
-		#region Fuel configuration switching
+        #region Fuel configuration switching
 
-		// Has to be situated here as this KSPEvent is not correctly added Part.Events otherwise
-		[KSPEvent(guiActive = false, guiActiveEditor = true, guiName = "Next configuration", active = true)]
+        // Has to be situated here as this KSPEvent is not correctly added Part.Events otherwise
+        [KSPEvent(guiActive = false, guiActiveEditor = true, guiName = "Next configuration", active = true)]
         public void NextConfiguration()
         {
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logFuel)
@@ -580,8 +581,8 @@ namespace WingProcedural
                 if (!parentModule.isCtrlSrf)
                 {
                     inheritancePossibleOnMaterials = true;
-					inheritancePossibleOnShape |= !isCtrlSrf;
-				}
+                    inheritancePossibleOnShape |= !isCtrlSrf;
+                }
             }
         }
 
@@ -770,18 +771,18 @@ namespace WingProcedural
                 assembliesChecked = true;
             }
             int mod_conflict = Convert.ToInt32(assemblyMFTUsed) + Convert.ToInt32(assemblyRFUsed) + Convert.ToInt32(moduleCCUsed);
-            
+
             // check for more than one dynamic tank mod in use
             if (isCtrlSrf && isWingAsCtrlSrf && HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
             {
                 DebugLogWithID("CheckAssemblies", "WARNING | PART IS CONFIGURED INCORRECTLY, BOTH BOOL PROPERTIES SHOULD NEVER BE SET TO TRUE");
             }
-            
+
             if (mod_conflict > 1 && HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
             {
                 DebugLogWithID("CheckAssemblies", "WARNING | More than one of RF, MFT and CC mods detected, this should not be the case");
             }
-            
+
             //update part events
             if (Events != null)
             {
@@ -876,7 +877,7 @@ namespace WingProcedural
         public override void OnLoad(ConfigNode node)
         {
             node.TryGetValue("mirrorTexturing", ref isMirrored);
-            
+
             if (HighLogic.LoadedScene != GameScenes.LOADING && HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
             {
                 DebugLogWithID("OnLoad", "Invoked");
@@ -899,7 +900,9 @@ namespace WingProcedural
             UpdateUI();
 
             DeformWing();
-			CheckAllFieldValues(out bool updateGeo, out bool updateAero);
+            CheckAllFieldValues(out bool updateGeo, out bool updateAero);
+
+            UpdateHandleGizmos();
 
             if (updateGeo)
             {
@@ -916,13 +919,13 @@ namespace WingProcedural
                 DebugLogWithID("UpdateOnEditorAttach", "Setup started");
             }
 
-			isMirrored = 
-				( part.symMethod == SymmetryMethod.Mirror )
-				&&
-				Vector3.Dot(EditorLogic.SortedShipList[0].transform.right, part.transform.position - EditorLogic.SortedShipList[0].transform.position) < 0
-			;
+            isMirrored =
+                (part.symMethod == SymmetryMethod.Mirror)
+                &&
+                Vector3.Dot(EditorLogic.SortedShipList[0].transform.right, part.transform.position - EditorLogic.SortedShipList[0].transform.position) < 0
+            ;
 
-			isAttached = true;
+            isAttached = true;
             UpdateGeometry(true);
             SetupMirroredCntrlSrf();
 
@@ -943,7 +946,7 @@ namespace WingProcedural
                     parentModule.CalculateAerodynamicValues();
                 }
             }
-            
+
             isAttached = false;
             uiEditMode = false;
         }
@@ -989,7 +992,7 @@ namespace WingProcedural
             }
 
             float geometricLength = sharedBaseLength / part.rescaleFactor;
-            
+
             if (!isCtrlSrf)
             {
                 float wingThicknessDeviationRoot = (sharedBaseThicknessRoot / 0.24f) / part.rescaleFactor;
@@ -1052,7 +1055,7 @@ namespace WingProcedural
                     meshFilterWingSection.mesh.RecalculateBounds();
 
                     MeshCollider meshCollider = meshFilterWingSection.gameObject.GetComponent<MeshCollider>();
-                    
+
                     if (meshCollider == null)
                     {
                         meshCollider = meshFilterWingSection.gameObject.AddComponent<MeshCollider>();
@@ -1228,13 +1231,13 @@ namespace WingProcedural
                     meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.uv2 = uv2;
                     meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.colors = cl;
                     meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.RecalculateBounds();
-                    
+
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
                     {
                         DebugLogWithID("UpdateGeometry", "Wing edge trailing | Finished");
                     }
                 }
-                
+
                 if (meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt] != null)
                 {
                     MeshReference meshReference = meshReferencesWingEdge[wingEdgeTypeLeadingInt];
@@ -1327,13 +1330,13 @@ namespace WingProcedural
 
                     for (int i = 0; i < vp.Length; ++i)
                     {
-						// Thickness correction (X), edge width correction (Y) and span-based offset (Z)
-						vp[i] = vp[i].z < 0f
-							? new Vector3(vp[i].x * ctrlThicknessDeviationTip, vp[i].y, vp[i].z + 0.5f - geometricLength / 2f)
-							: new Vector3(vp[i].x * ctrlThicknessDeviationRoot, vp[i].y, vp[i].z - 0.5f + geometricLength / 2f);
+                        // Thickness correction (X), edge width correction (Y) and span-based offset (Z)
+                        vp[i] = vp[i].z < 0f
+                            ? new Vector3(vp[i].x * ctrlThicknessDeviationTip, vp[i].y, vp[i].z + 0.5f - geometricLength / 2f)
+                            : new Vector3(vp[i].x * ctrlThicknessDeviationRoot, vp[i].y, vp[i].z - 0.5f + geometricLength / 2f);
 
-						// Left/right sides
-						if (nm[i] == new Vector3(0f, 0f, 1f) || nm[i] == new Vector3(0f, 0f, -1f))
+                        // Left/right sides
+                        if (nm[i] == new Vector3(0f, 0f, 1f) || nm[i] == new Vector3(0f, 0f, -1f))
                         {
                             // Filtering out trailing edge cross sections
                             if (uv[i].y > 0.185f)
@@ -1362,13 +1365,13 @@ namespace WingProcedural
                         // Trailing edge
                         else if (vp[i].y < -0.1f)
                         {
-							vp[i] = vp[i].z < 0f
-								? new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlTipWidth, vp[i].z)
-								: new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlRootWidth, vp[i].z);
-						}
+                            vp[i] = vp[i].z < 0f
+                                ? new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlTipWidth, vp[i].z)
+                                : new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlRootWidth, vp[i].z);
+                        }
 
-						// Offset-based distortion
-						if (vp[i].z < 0f)
+                        // Offset-based distortion
+                        if (vp[i].z < 0f)
                         {
                             vp[i] = new Vector3(vp[i].x, vp[i].y, vp[i].z + vp[i].y * ctrlOffsetTipClamped);
                             if (nm[i] != new Vector3(0f, 0f, 1f) && nm[i] != new Vector3(0f, 0f, -1f))
@@ -1444,30 +1447,30 @@ namespace WingProcedural
 
                     for (int i = 0; i < vp.Length; ++i)
                     {
-						// Thickness correction (X), edge width correction (Y) and span-based offset (Z)
-						vp[i] = vp[i].z < 0f
-							? new Vector3(vp[i].x * ctrlThicknessDeviationTip, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationTip) - 0.5f, vp[i].z + 0.5f - geometricLength / 2f)
-							: new Vector3(vp[i].x * ctrlThicknessDeviationRoot, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationRoot) - 0.5f, vp[i].z - 0.5f + geometricLength / 2f);
+                        // Thickness correction (X), edge width correction (Y) and span-based offset (Z)
+                        vp[i] = vp[i].z < 0f
+                            ? new Vector3(vp[i].x * ctrlThicknessDeviationTip, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationTip) - 0.5f, vp[i].z + 0.5f - geometricLength / 2f)
+                            : new Vector3(vp[i].x * ctrlThicknessDeviationRoot, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationRoot) - 0.5f, vp[i].z - 0.5f + geometricLength / 2f);
 
-						// Left/right sides
-						if (nm[i] == new Vector3(0f, 0f, 1f) || nm[i] == new Vector3(0f, 0f, -1f))
+                        // Left/right sides
+                        if (nm[i] == new Vector3(0f, 0f, 1f) || nm[i] == new Vector3(0f, 0f, -1f))
                         {
-							vp[i] = vp[i].z < 0f
-								? new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlTipWidth, vp[i].z)
-								: new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlRootWidth, vp[i].z);
-						}
+                            vp[i] = vp[i].z < 0f
+                                ? new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlTipWidth, vp[i].z)
+                                : new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlRootWidth, vp[i].z);
+                        }
 
-						// Trailing edge
-						else
+                        // Trailing edge
+                        else
                         {
                             // Filtering out root neighbours
                             if (vp[i].y < -0.1f)
                             {
-								vp[i] = vp[i].z < 0f
-									? new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlTipWidth, vp[i].z)
-									: new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlRootWidth, vp[i].z);
-							}
-						}
+                                vp[i] = vp[i].z < 0f
+                                    ? new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlTipWidth, vp[i].z)
+                                    : new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlRootWidth, vp[i].z);
+                            }
+                        }
 
                         // Offset-based distortion
                         if (vp[i].z < 0f)
@@ -1490,10 +1493,10 @@ namespace WingProcedural
                         // Trailing edge (UV adjustment, has to be the last as it's based on cumulative vertex positions)
                         if (nm[i] != new Vector3(0f, 1f, 0f) && nm[i] != new Vector3(0f, 0f, 1f) && nm[i] != new Vector3(0f, 0f, -1f) && uv[i].y < 0.3f)
                         {
-							uv[i] = vp[i].z < 0f ? new Vector2(vp[i].z, uv[i].y) : new Vector2(vp[i].z, uv[i].y);
+                            uv[i] = vp[i].z < 0f ? new Vector2(vp[i].z, uv[i].y) : new Vector2(vp[i].z, uv[i].y);
 
-							// Color has to be applied there to avoid blanking out cross sections
-							cl[i] = GetVertexColor(2);
+                            // Color has to be applied there to avoid blanking out cross sections
+                            cl[i] = GetVertexColor(2);
                             uv2[i] = GetVertexUV2(sharedMaterialET);
                         }
                     }
@@ -1594,7 +1597,7 @@ namespace WingProcedural
                     }
                 }
             }
-            
+
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
             {
                 DebugLogWithID("UpdateGeometry", "Finished");
@@ -1711,22 +1714,22 @@ namespace WingProcedural
         public void SetupMeshReferences()
         {
             bool required = true;
-            
+
             if (!isCtrlSrf)
             {
                 if (meshReferenceWingSection != null && meshReferenceWingSurface != null && meshReferencesWingEdge[meshTypeCountEdgeWing - 1] != null)
                 {
-					required &= (meshReferenceWingSection.vp.Length <= 0 || meshReferenceWingSurface.vp.Length <= 0 || meshReferencesWingEdge[meshTypeCountEdgeWing - 1].vp.Length <= 0);
-				}
-			}
+                    required &= (meshReferenceWingSection.vp.Length <= 0 || meshReferenceWingSurface.vp.Length <= 0 || meshReferencesWingEdge[meshTypeCountEdgeWing - 1].vp.Length <= 0);
+                }
+            }
             else
             {
                 if (meshReferenceCtrlFrame != null && meshReferenceCtrlSurface != null && meshReferencesCtrlEdge[meshTypeCountEdgeCtrl - 1] != null)
                 {
-					required &= (meshReferenceCtrlFrame.vp.Length <= 0 || meshReferenceCtrlSurface.vp.Length <= 0 || meshReferencesCtrlEdge[meshTypeCountEdgeCtrl - 1].vp.Length <= 0);
-				}
-			}
-            
+                    required &= (meshReferenceCtrlFrame.vp.Length <= 0 || meshReferenceCtrlSurface.vp.Length <= 0 || meshReferencesCtrlEdge[meshTypeCountEdgeCtrl - 1].vp.Length <= 0);
+                }
+            }
+
             if (required)
             {
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logMeshReferences)
@@ -1810,7 +1813,7 @@ namespace WingProcedural
                 }
 
                 Transform parent = part.transform.GetChild(0).GetChild(0).GetChild(0).Find(name);
-                
+
                 if (parent != null)
                 {
                     parent.localPosition = Vector3.zero;
@@ -1841,8 +1844,8 @@ namespace WingProcedural
 
         private MeshReference FillMeshRefererence(MeshFilter source)
         {
-			MeshReference reference = new MeshReference();
-            
+            MeshReference reference = new MeshReference();
+
             if (source != null)
             {
                 int length = source.mesh.vertices.Length;
@@ -1882,7 +1885,7 @@ namespace WingProcedural
             }
         }
 
-		#endregion Mesh Setup and Checking
+        #endregion Mesh Setup and Checking
 
         #region Materials
 
@@ -2004,7 +2007,7 @@ namespace WingProcedural
                     }
                 }
             }
-            
+
             if (sourceEdge != null)
             {
                 Renderer r = sourceEdge.gameObject.GetComponent<Renderer>();
@@ -2049,7 +2052,7 @@ namespace WingProcedural
             int vesselID = vessel.GetInstanceID();
             int vesselStatusIndex = 0;
             int vesselListCount = vesselList.Count;
-            
+
             for (int i = 0; i < vesselListCount; ++i)
             {
                 if (vesselList[i].vessel.GetInstanceID() == vesselID)
@@ -2089,7 +2092,7 @@ namespace WingProcedural
                 }
 
                 vesselList[vesselStatusIndex].isUpdated = true;
-				List<WingProcedural> moduleList = new List<WingProcedural>();
+                List<WingProcedural> moduleList = new List<WingProcedural>();
 
                 // First we get a list of all relevant parts in the vessel
                 // Found modules are added to a list
@@ -2161,7 +2164,7 @@ namespace WingProcedural
 
         [KSPField]
         public float aeroConstControlSurfaceFraction = 1f;
-        
+
         public float aeroUICost;
         public float aeroStatVolume = 3.84f;
         public float aeroUIMass;
@@ -2212,14 +2215,14 @@ namespace WingProcedural
             if (!isCtrlSrf)
             {
                 double offset = 0;
-                
+
                 if (sharedEdgeTypeLeading != 1)
                 {
                     sharedWidthTipSum += sharedEdgeWidthLeadingTip;
                     sharedWidthRootSum += sharedEdgeWidthLeadingRoot;
                     offset += 0.2 * (sharedEdgeWidthLeadingRoot + sharedEdgeWidthLeadingTip);
                 }
-                
+
                 if (sharedEdgeTypeTrailing != 1)
                 {
                     sharedWidthTipSum += sharedEdgeWidthTrailingTip;
@@ -2256,7 +2259,7 @@ namespace WingProcedural
             // x^2 * 2 * (tip - base) + x * 4 * base - tip - base = 0
             float a_tp = 2.0f * (sharedBaseWidthTip - sharedBaseWidthRoot);
             float pseudotaper_ratio = 0.0f;
-            
+
             if (a_tp != 0.0f)
             {
                 float b_tp = 4.0f * sharedBaseWidthRoot;
@@ -2264,9 +2267,9 @@ namespace WingProcedural
                 float D_tp = b_tp * b_tp - 4.0f * a_tp * c_tp;
                 float x1 = (-b_tp + Mathf.Sqrt(D_tp)) / 2.0f / a_tp;
                 float x2 = (-b_tp - Mathf.Sqrt(D_tp)) / 2.0f / a_tp;
-				pseudotaper_ratio = (x1 >= 0.0f) && (x1 <= 1.0f) ? x1 : x2;
-			}
-			else
+                pseudotaper_ratio = (x1 >= 0.0f) && (x1 <= 1.0f) ? x1 : x2;
+            }
+            else
             {
                 pseudotaper_ratio = 0.5f;
             }
@@ -2287,7 +2290,7 @@ namespace WingProcedural
                 aeroStatMeanAerodynamicChord = (double)(sharedWidthTipSum + sharedWidthRootSum) / 2.0;
                 aeroStatMidChordSweep = Math.Atan((double)Mathf.Abs(sharedWidthRootSum - sharedWidthTipSum) / (double)sharedBaseLength) * MathD.Rad2Deg;
             }
-            
+
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
             {
                 DebugLogWithID("CalculateAerodynamicValues", "Passed B2/TR/MAC/MCS");
@@ -2307,7 +2310,7 @@ namespace WingProcedural
             aeroStatCl = aeroConstLiftFudgeNumber * aeroStatSurfaceArea * aeroStatAspectRatioSweepScale;
             GatherChildrenCl();
             aeroStatConnectionForce = Math.Round(MathD.Clamp(Math.Sqrt(aeroStatCl + aeroStatClChildren) * (double)aeroConstConnectionFactor, (double)aeroConstConnectionMinimum, double.MaxValue));
-            
+
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
             {
                 DebugLogWithID("CalculateAerodynamicValues", "Passed SR/AR/ARSS/mass/Cl/Cd/connection");
@@ -2332,7 +2335,7 @@ namespace WingProcedural
 
             part.breakingForce = Mathf.Round((float)aeroStatConnectionForce);
             part.breakingTorque = Mathf.Round((float)aeroStatConnectionForce);
-            
+
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
             {
                 DebugLogWithID("CalculateAerodynamicValues", "Passed cost/force/torque");
@@ -2344,7 +2347,7 @@ namespace WingProcedural
                 float stockLiftCoefficient = (float)aeroStatSurfaceArea / 3.52f;
                 float x_col = pseudotaper_ratio * sharedBaseOffsetTip;
                 float y_col = pseudotaper_ratio * sharedBaseLength;
-                
+
                 if (!isCtrlSrf && !isWingAsCtrlSrf)
                 {
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
@@ -2367,12 +2370,12 @@ namespace WingProcedural
                     mCtrlSrf.deflectionLiftCoeff = (float)Math.Round(stockLiftCoefficient, 2);
                     mCtrlSrf.ctrlSurfaceArea = aeroConstControlSurfaceFraction;
                     aeroUIMass = stockLiftCoefficient * (1 + mCtrlSrf.ctrlSurfaceArea) * 0.1f;
-					part.CoLOffset = isWingAsCtrlSrf
-						? new Vector3(y_col, -x_col, 0.0f)
-						: new Vector3(y_col - 0.5f * sharedBaseLength, -0.25f * (sharedBaseWidthTip + sharedBaseWidthRoot), 0.0f);
-				}
+                    part.CoLOffset = isWingAsCtrlSrf
+                        ? new Vector3(y_col, -x_col, 0.0f)
+                        : new Vector3(y_col - 0.5f * sharedBaseLength, -0.25f * (sharedBaseWidthTip + sharedBaseWidthRoot), 0.0f);
+                }
 
-				if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
+                if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
                 {
                     DebugLogWithID("CalculateAerodynamicValues", "Passed stock drag/deflection/area");
                 }
@@ -2400,7 +2403,7 @@ namespace WingProcedural
                         DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR | Module reference was null, search performed, recheck result was " + (aeroFARModuleReference == null).ToString());
                     }
                 }
-                
+
                 if (aeroFARModuleReference != null)
                 {
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
@@ -2445,7 +2448,7 @@ namespace WingProcedural
                                 aeroFARFieldInfoRootChordOffset = aeroFARModuleType.GetField("rootMidChordOffsetFromOrig");
                             }
                         }
-                        
+
                         if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
                         {
                             DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR | Field checks and fetching passed");
@@ -2459,7 +2462,7 @@ namespace WingProcedural
                                 DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR | Method info was null, search performed, recheck result was " + (aeroFARMethodInfoUsed == null).ToString());
                             }
                         }
-                        
+
                         if (aeroFARMethodInfoUsed != null)
                         {
                             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
@@ -2474,7 +2477,7 @@ namespace WingProcedural
                             //aeroFARFieldInfoSurfaceArea.SetValue (aeroFARModuleReference, aeroStatSurfaceArea);
                             aeroFARFieldInfoMidChordSweep.SetValue(aeroFARModuleReference, aeroStatMidChordSweep);
                             aeroFARFieldInfoTaperRatio.SetValue(aeroFARModuleReference, aeroStatTaperRatio);
-                            
+
                             if (isCtrlSrf)
                             {
                                 aeroFARFieldInfoControlSurfaceFraction.SetValue(aeroFARModuleReference, aeroConstControlSurfaceFraction);
@@ -2493,7 +2496,7 @@ namespace WingProcedural
                         }
                     }
                 }
-                
+
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
                 {
                     DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR | Segment ended");
@@ -2513,7 +2516,7 @@ namespace WingProcedural
         {
             bool running = updateTimeDelay > 0;
             updateTimeDelay = 0.5f;
-            
+
             if (running)
             {
                 yield break;
@@ -2524,7 +2527,7 @@ namespace WingProcedural
                 updateTimeDelay -= TimeWarp.deltaTime;
                 yield return null;
             }
-            
+
             if (assemblyFARUsed)
             {
                 if (part.Modules.Contains("FARWingAerodynamicModel"))
@@ -2542,7 +2545,7 @@ namespace WingProcedural
                 part.DragCubes.Cubes.Add(DragCube);
                 part.DragCubes.ResetCubeWeights();
             }
-            
+
             if (HighLogic.LoadedSceneIsEditor)
             {
                 GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
@@ -2720,7 +2723,7 @@ namespace WingProcedural
                 bool returnEarly = false;
                 GUILayout.BeginHorizontal();
                 GUILayout.BeginVertical();
-                
+
                 if (uiLastFieldName.Length > 0)
                 {
                     GUILayout.Label("Last: " + uiLastFieldName, UIUtility.uiStyleLabelMedium);
@@ -2730,22 +2733,40 @@ namespace WingProcedural
                     GUILayout.Label("Property editor", UIUtility.uiStyleLabelMedium);
                 }
 
-                if (uiLastFieldTooltip.Length > 0)
+                if (handlesEnabled && handlesVisible && EditorHandle.AnyHandleDragging)
+                {
+                    GUILayout.Label("LeftCtrl: Axis Locking\nX: lock Offset. Y: lock Length\n_________________________", UIUtility.uiStyleLabelHint, GUILayout.MaxHeight(44f), GUILayout.MinHeight(44f)); // 58f for four lines
+                }
+                else if (uiLastFieldTooltip.Length > 0)
                 {
                     GUILayout.Label(uiLastFieldTooltip + "\n_________________________", UIUtility.uiStyleLabelHint, GUILayout.MaxHeight(44f), GUILayout.MinHeight(44f)); // 58f for four lines
                 }
 
                 GUILayout.EndVertical();
-                
+                GUILayout.BeginVertical();
+
                 if (GUILayout.Button("Close", UIUtility.uiStyleButton, GUILayout.MaxWidth(50f)))
                 {
                     EditorLogic.fetch.Unlock("WingProceduralWindow");
                     uiWindowActive = false;
                     returnEarly = true;
                 }
-                
+
+                if (GUILayout.Button("Handles", UIUtility.uiStyleButton, GUILayout.MaxWidth(50f)))
+                {
+                    handlesVisible = !handlesVisible;
+                    StaticWingGlobals.handlesRoot.SetActive(handlesVisible);
+                }
+
+                if (GUILayout.Button("#", UIUtility.uiStyleButton, GUILayout.MaxWidth(50f)))
+                {
+                    UIUtility.numericInput = !UIUtility.numericInput;
+                }
+
+                GUILayout.EndVertical();
+
                 GUILayout.EndHorizontal();
-                
+
                 if (returnEarly)
                 {
                     return;
@@ -2851,7 +2872,7 @@ namespace WingProcedural
                 {
                     GUILayout.Label("_________________________\n\nOptions options allow you to match the part properties to it's parent", UIUtility.uiStyleLabelHint);
                     GUILayout.BeginHorizontal();
-                    
+
                     if (inheritancePossibleOnShape)
                     {
                         if (GUILayout.Button("Shape", UIUtility.uiStyleButton))
@@ -2869,12 +2890,12 @@ namespace WingProcedural
                             InheritParentValues(2);
                         }
                     }
-                    
+
                     if (inheritancePossibleOnMaterials && GUILayout.Button("Color", UIUtility.uiStyleButton))
                     {
                         InheritParentValues(3);
                     }
-                    
+
                     GUILayout.EndHorizontal();
                 }
             }
@@ -2948,30 +2969,31 @@ namespace WingProcedural
 
         private int GetFieldMode()
         {
-			return isCtrlSrf ? 2 : 1;
-		}
+            return isCtrlSrf ? 2 : 1;
+        }
 
-		private float SetupFieldValue(float value, Vector2 limits, float defaultValue)
+        private float SetupFieldValue(float value, Vector2 limits, float defaultValue)
         {
-			return isSetToDefaultValues ? Mathf.Clamp(value, limits.x, limits.y) : defaultValue;
-		}
+            return isSetToDefaultValues ? Mathf.Clamp(value, limits.x, limits.y) : defaultValue;
+        }
 
-		/// <summary>
-		///
-		/// </summary>
-		/// <param name="field">the value to draw</param>
-		/// <param name="increment">mouse drag increment</param>
-		/// <param name="incrementLarge">button increment</param>
-		/// <param name="limits">min/max value</param>
-		/// <param name="name">the field name to display</param>
-		/// <param name="hsbColor">field colour</param>
-		/// <param name="fieldID">tooltip stuff</param>
-		/// <param name="fieldType">tooltip stuff</param>
-		/// <param name="allowFine">Whether right click drag behaves as fine control or not</param>
-		private void DrawField(ref float field, float increment, float incrementLarge, Vector2 limits, string name, Vector4 hsbColor, int fieldID, int fieldType, bool allowFine = true)
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="field">the value to draw</param>
+        /// <param name="increment">mouse drag increment</param>
+        /// <param name="incrementLarge">button increment</param>
+        /// <param name="limits">min/max value</param>
+        /// <param name="name">the field name to display</param>
+        /// <param name="hsbColor">field colour</param>
+        /// <param name="fieldID">tooltip stuff</param>
+        /// <param name="fieldType">tooltip stuff</param>
+        /// <param name="allowFine">Whether right click drag behaves as fine control or not</param>
+        private void DrawField(ref float field, float increment, float incrementLarge, Vector2 limits, string name, Vector4 hsbColor, int fieldID, int fieldType, bool allowFine = true)
         {
-			field = UIUtility.FieldSlider(field, increment, incrementLarge, limits, name, out bool changed, ColorHSBToRGB(hsbColor), fieldType, allowFine);
-			if (changed)
+            field = UIUtility.FieldSlider(field, increment, incrementLarge, limits, name, out bool changed, ColorHSBToRGB(hsbColor), fieldType, allowFine);
+
+            if (changed)
             {
                 uiLastFieldName = name;
                 uiLastFieldTooltip = UpdateTooltipText(fieldID);
@@ -3011,115 +3033,115 @@ namespace WingProcedural
             // Base descriptions
             if (fieldID == 0) // sharedBaseLength))
             {
-				return !isCtrlSrf
-					? "Lateral measurement of the wing, \nalso referred to as semispan"
-					: "Lateral measurement of the control \nsurface at it's root";
-			}
-			else if (fieldID == 1) // sharedBaseWidthRoot))
+                return !isCtrlSrf
+                    ? "Lateral measurement of the wing, \nalso referred to as semispan"
+                    : "Lateral measurement of the control \nsurface at it's root";
+            }
+            else if (fieldID == 1) // sharedBaseWidthRoot))
             {
-				return !isCtrlSrf
-					? "Longitudinal measurement of the wing \nat the root cross section"
-					: "Longitudinal measurement of \nthe root chord";
-			}
-			else if (fieldID == 2) // sharedBaseWidthTip))
+                return !isCtrlSrf
+                    ? "Longitudinal measurement of the wing \nat the root cross section"
+                    : "Longitudinal measurement of \nthe root chord";
+            }
+            else if (fieldID == 2) // sharedBaseWidthTip))
             {
-				return !isCtrlSrf ? "Longitudinal measurement of the wing \nat the tip cross section" : "Longitudinal measurement of \nthe tip chord";
-			}
-			else if (fieldID == 3) // sharedBaseOffsetRoot))
+                return !isCtrlSrf ? "Longitudinal measurement of the wing \nat the tip cross section" : "Longitudinal measurement of \nthe tip chord";
+            }
+            else if (fieldID == 3) // sharedBaseOffsetRoot))
             {
-				return !isCtrlSrf
-					? "This property shouldn't be accessible \non a wing"
-					: "Offset of the trailing edge \nroot corner on the lateral axis";
-			}
-			else if (fieldID == 4) // sharedBaseOffsetTip))
+                return !isCtrlSrf
+                    ? "This property shouldn't be accessible \non a wing"
+                    : "Offset of the trailing edge \nroot corner on the lateral axis";
+            }
+            else if (fieldID == 4) // sharedBaseOffsetTip))
             {
-				return !isCtrlSrf
-					? "Distance between midpoints of the cross \nsections on the longitudinal axis"
-					: "Offset of the trailing edge \ntip corner on the lateral axis";
-			}
-			else if (fieldID == 5) // sharedBaseThicknessRoot))
+                return !isCtrlSrf
+                    ? "Distance between midpoints of the cross \nsections on the longitudinal axis"
+                    : "Offset of the trailing edge \ntip corner on the lateral axis";
+            }
+            else if (fieldID == 5) // sharedBaseThicknessRoot))
             {
-				return !isCtrlSrf
-					? "Thickness at the root cross section \nUsually kept proportional to edge width"
-					: "Thickness at the root cross section \nUsually kept proportional to edge width";
-			}
-			else if (fieldID == 6) // sharedBaseThicknessTip))
+                return !isCtrlSrf
+                    ? "Thickness at the root cross section \nUsually kept proportional to edge width"
+                    : "Thickness at the root cross section \nUsually kept proportional to edge width";
+            }
+            else if (fieldID == 6) // sharedBaseThicknessTip))
             {
-				return !isCtrlSrf
-					? "Thickness at the tip cross section \nUsually kept proportional to edge width"
-					: "Thickness at the tip cross section \nUsually kept proportional to edge width";
-			}
+                return !isCtrlSrf
+                    ? "Thickness at the tip cross section \nUsually kept proportional to edge width"
+                    : "Thickness at the tip cross section \nUsually kept proportional to edge width";
+            }
 
-			// Edge descriptions
-			else if (fieldID == 7) // sharedEdgeTypeTrailing))
+            // Edge descriptions
+            else if (fieldID == 7) // sharedEdgeTypeTrailing))
             {
-				return !isCtrlSrf
-					? "Shape of the trailing edge cross \nsection (round/biconvex/sharp)"
-					: "Shape of the trailing edge cross \nsection (round/biconvex/sharp)";
-			}
-			else if (fieldID == 8) // sharedEdgeWidthTrailingRoot))
+                return !isCtrlSrf
+                    ? "Shape of the trailing edge cross \nsection (round/biconvex/sharp)"
+                    : "Shape of the trailing edge cross \nsection (round/biconvex/sharp)";
+            }
+            else if (fieldID == 8) // sharedEdgeWidthTrailingRoot))
             {
-				return !isCtrlSrf
-					? "Longitudinal measurement of the trailing \nedge cross section at wing root"
-					: "Longitudinal measurement of the trailing \nedge cross section at with root";
-			}
-			else if (fieldID == 9) // sharedEdgeWidthTrailingTip))
+                return !isCtrlSrf
+                    ? "Longitudinal measurement of the trailing \nedge cross section at wing root"
+                    : "Longitudinal measurement of the trailing \nedge cross section at with root";
+            }
+            else if (fieldID == 9) // sharedEdgeWidthTrailingTip))
             {
-				return !isCtrlSrf
-					? "Longitudinal measurement of the trailing \nedge cross section at wing tip"
-					: "Longitudinal measurement of the trailing \nedge cross section at with tip";
-			}
-			else if (fieldID == 10) // sharedEdgeTypeLeading))
+                return !isCtrlSrf
+                    ? "Longitudinal measurement of the trailing \nedge cross section at wing tip"
+                    : "Longitudinal measurement of the trailing \nedge cross section at with tip";
+            }
+            else if (fieldID == 10) // sharedEdgeTypeLeading))
             {
-				return !isCtrlSrf
-					? "Shape of the leading edge cross \nsection (round/biconvex/sharp)"
-					: "Shape of the leading edge cross \nsection (round/biconvex/sharp)";
-			}
-			else if (fieldID == 11) // sharedEdgeWidthLeadingRoot))
+                return !isCtrlSrf
+                    ? "Shape of the leading edge cross \nsection (round/biconvex/sharp)"
+                    : "Shape of the leading edge cross \nsection (round/biconvex/sharp)";
+            }
+            else if (fieldID == 11) // sharedEdgeWidthLeadingRoot))
             {
-				return !isCtrlSrf
-					? "Longitudinal measurement of the leading \nedge cross section at wing root"
-					: "Longitudinal measurement of the leading \nedge cross section at wing root";
-			}
-			else if (fieldID == 12) // sharedEdgeWidthLeadingTip))
+                return !isCtrlSrf
+                    ? "Longitudinal measurement of the leading \nedge cross section at wing root"
+                    : "Longitudinal measurement of the leading \nedge cross section at wing root";
+            }
+            else if (fieldID == 12) // sharedEdgeWidthLeadingTip))
             {
-				return !isCtrlSrf
-					? "Longitudinal measurement of the leading \nedge cross section at with tip"
-					: "Longitudinal measurement of the leading \nedge cross section at with tip";
-			}
+                return !isCtrlSrf
+                    ? "Longitudinal measurement of the leading \nedge cross section at with tip"
+                    : "Longitudinal measurement of the leading \nedge cross section at with tip";
+            }
 
-			// Surface descriptions
-			else if (fieldID == 13)
+            // Surface descriptions
+            else if (fieldID == 13)
             {
-				return !isCtrlSrf
-					? "Surface material (uniform fill, plating, \nLRSI/HRSI tiles and so on)"
-					: "Surface material (uniform fill, plating, \nLRSI/HRSI tiles and so on)";
-			}
-			else if (fieldID == 14)
+                return !isCtrlSrf
+                    ? "Surface material (uniform fill, plating, \nLRSI/HRSI tiles and so on)"
+                    : "Surface material (uniform fill, plating, \nLRSI/HRSI tiles and so on)";
+            }
+            else if (fieldID == 14)
             {
-				return !isCtrlSrf
-					? "Fairly self-explanatory, controls the paint \nopacity: no paint at 0, full coverage at 1"
-					: "Fairly self-explanatory, controls the paint \nopacity: no paint at 0, full coverage at 1";
-			}
-			else if (fieldID == 15)
+                return !isCtrlSrf
+                    ? "Fairly self-explanatory, controls the paint \nopacity: no paint at 0, full coverage at 1"
+                    : "Fairly self-explanatory, controls the paint \nopacity: no paint at 0, full coverage at 1";
+            }
+            else if (fieldID == 15)
             {
-				return !isCtrlSrf
-					? "Controls the paint hue (HSB axis): \nvalues from zero to one make full circle"
-					: "Controls the paint hue (HSB axis): \nvalues from zero to one make full circle";
-			}
-			else if (fieldID == 16)
+                return !isCtrlSrf
+                    ? "Controls the paint hue (HSB axis): \nvalues from zero to one make full circle"
+                    : "Controls the paint hue (HSB axis): \nvalues from zero to one make full circle";
+            }
+            else if (fieldID == 16)
             {
-				return !isCtrlSrf
-					? "Controls the paint saturation (HSB axis): \ncolorless at 0, full color at 1"
-					: "Controls the paint saturation (HSB axis): \ncolorless at 0, full color at 1";
-			}
-			else if (fieldID == 17)
+                return !isCtrlSrf
+                    ? "Controls the paint saturation (HSB axis): \ncolorless at 0, full color at 1"
+                    : "Controls the paint saturation (HSB axis): \ncolorless at 0, full color at 1";
+            }
+            else if (fieldID == 17)
             {
-				return !isCtrlSrf
-					? "Controls the paint brightness (HSB axis): black at 0, white at 1, primary at 0.5"
-					: "Controls the paint brightness (HSB axis): black at 0, white at 1, primary at 0.5";
-			}
-			else // This should not really happen
+                return !isCtrlSrf
+                    ? "Controls the paint brightness (HSB axis): black at 0, white at 1, primary at 0.5"
+                    : "Controls the paint brightness (HSB axis): black at 0, white at 1, primary at 0.5";
+            }
+            else // This should not really happen
             {
                 return "Unknown field\n";
             }
@@ -3142,7 +3164,7 @@ namespace WingProcedural
                         uiEditModeTimeout = true;
                     }
                 }
-                
+
                 if (Input.GetKeyDown(uiKeyCodeEdit))
                 {
                     uiInstanceIDTarget = part.GetInstanceID();
@@ -3153,7 +3175,7 @@ namespace WingProcedural
                     InheritanceStatusUpdate();
                 }
             }
-            
+
             if (state == 0)
             {
                 lastMousePos = Input.mousePosition;
@@ -3194,7 +3216,7 @@ namespace WingProcedural
 
                     sharedBaseLength += (isCtrlSrf ? 2 : 1) * diff.x * Vector3.Dot(EditorCamera.Instance.GetComponentCached<Camera>(ref editorCam).transform.right, part.transform.right) + diff.y * Vector3.Dot(EditorCamera.Instance.GetComponentCached<Camera>(ref editorCam).transform.up, part.transform.right);
                     sharedBaseLength = Mathf.Clamp(sharedBaseLength, GetLimitsFromType(sharedBaseLengthLimits).x, GetLimitsFromType(sharedBaseLengthLimits).y);
-                    
+
                     if (!isCtrlSrf)
                     {
                         sharedBaseOffsetTip -= diff.x * Vector3.Dot(EditorCamera.Instance.GetComponentCached<Camera>(ref editorCam).transform.right, part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.GetComponentCached<Camera>(ref editorCam).transform.up, part.transform.up);
@@ -3265,7 +3287,7 @@ namespace WingProcedural
 
                 StopWindowTimeout();
             }
-            
+
             if (uiInstanceIDLocal != uiInstanceIDTarget)
             {
                 return;
@@ -3290,7 +3312,20 @@ namespace WingProcedural
                     bool cursorInGUI = UIUtility.uiRectWindowEditor.Contains(UIUtility.GetMousePos());
                     if (!cursorInGUI && Input.GetKeyDown(KeyCode.Mouse0))
                     {
-                        ExitEditMode();
+
+
+                        GameSettings.PART_HIGHLIGHTER_BRIGHTNESSFACTOR = 0;
+
+
+
+                        RaycastHit hit;
+                        if (Physics.Raycast(EditorLogic.fetch.editorCamera.ScreenPointToRay(Input.mousePosition), out hit, 200, 1 << 2))
+                        {
+                            if (hit.collider.name.StartsWith("handle"))
+                                hit.collider.transform.GetComponent<EditorHandle>().OnMouseOver();
+                        }
+                        else
+                            ExitEditMode();
                     }
                 }
             }
@@ -3317,11 +3352,11 @@ namespace WingProcedural
             geometryUpdate |= CheckFieldValue(sharedEdgeWidthLeadingRoot, ref sharedEdgeWidthLeadingRootCached);
             geometryUpdate |= CheckFieldValue(sharedEdgeWidthLeadingTip, ref sharedEdgeWidthLeadingTipCached);
 
-			aeroUpdate |= geometryUpdate;
+            aeroUpdate |= geometryUpdate;
 
-			// all the fields that have no aero effects
+            // all the fields that have no aero effects
 
-			geometryUpdate |= CheckFieldValue(sharedMaterialST, ref sharedMaterialSTCached);
+            geometryUpdate |= CheckFieldValue(sharedMaterialST, ref sharedMaterialSTCached);
             geometryUpdate |= CheckFieldValue(sharedColorSTOpacity, ref sharedColorSTOpacityCached);
             geometryUpdate |= CheckFieldValue(sharedColorSTHue, ref sharedColorSTHueCached);
             geometryUpdate |= CheckFieldValue(sharedColorSTSaturation, ref sharedColorSTSaturationCached);
@@ -3378,48 +3413,152 @@ namespace WingProcedural
 
         private string GetWindowTitle()
         {
-			return 
-				!uiEditMode 
-					? "Inactive" 
-				: isCtrlSrf 
-					? "Control surface"
-				: isWingAsCtrlSrf 
-					? "All-moving control surface" 
-				: "Wing";
-		}
+            return
+                !uiEditMode
+                    ? "Inactive"
+                : isCtrlSrf
+                    ? "Control surface"
+                : isWingAsCtrlSrf
+                    ? "All-moving control surface"
+                : "Wing";
+        }
 
-		#endregion Alternative UI/input
-
-		#region Coloration
-
-		// XYZ
-		// HSB
-		// RGB
-
-		private Color GetVertexColor(int side)
+        #region Handle Gizmos by CarnationRED
+        private static bool handlesEnabled = false;
+        private static bool handlesVisible = true;
+        private void UpdateHandleGizmos()
         {
-			return ColorHSBToRGB(
-				side == 0
-					? new Vector4(sharedColorSTHue, sharedColorSTSaturation, sharedColorSTBrightness, sharedColorSTOpacity)
-				: side == 1
-					? new Vector4(sharedColorSBHue, sharedColorSBSaturation, sharedColorSBBrightness, sharedColorSBOpacity)
-				: side == 2
-					? new Vector4(sharedColorETHue, sharedColorETSaturation, sharedColorETBrightness, sharedColorETOpacity)
-				: new Vector4(sharedColorELHue, sharedColorELSaturation, sharedColorELBrightness, sharedColorELOpacity)
-			);
-		}
+            if (!uiEditMode)
+            {
+                if (handlesEnabled)
+                    DetachHandles();
+                return;
+            }
 
-		private Vector2 GetVertexUV2(float selectedLayer)
-		{
-			return selectedLayer == 0 ? new Vector2(0f, 1f) : new Vector2((selectedLayer - 1f) / 3f, 0f);
-		}
+            //Attach handles to current wing
+            if (handlesVisible && (!handlesEnabled || Input.GetKeyDown(uiKeyCodeEdit)) && part.GetInstanceID() == uiInstanceIDTarget) AttachHandles();
 
-		private Color ColorHSBToRGB(Vector4 hsbColor)
+            #region Update positions
+            StaticWingGlobals.handleLength.transform.localPosition = new Vector3(sharedBaseLength, -sharedBaseOffsetTip, 0);
+            float halfTipWidth = sharedBaseWidthTip * .5f;
+            StaticWingGlobals.handleWidthTipFront.transform.localPosition = new Vector3(sharedBaseLength, -sharedBaseOffsetTip + halfTipWidth, 0);
+            StaticWingGlobals.handleWidthTipBack.transform.localPosition = new Vector3(sharedBaseLength, -sharedBaseOffsetTip - halfTipWidth, 0);
+            float halfRootWidth = sharedBaseWidthRoot * .5f;
+            StaticWingGlobals.handleWidthRootFront.transform.localPosition = new Vector3(0, sharedBaseOffsetRoot + halfRootWidth, 0);
+            StaticWingGlobals.handleWidthRootBack.transform.localPosition = new Vector3(0, sharedBaseOffsetRoot - halfRootWidth, 0);
+            StaticWingGlobals.handleLeadingRoot.transform.localPosition = new Vector3(0, sharedBaseOffsetRoot + halfRootWidth + sharedEdgeWidthLeadingRoot, 0);
+            StaticWingGlobals.handleLeadingTip.transform.localPosition = new Vector3(sharedBaseLength, -sharedBaseOffsetTip + halfTipWidth + sharedEdgeWidthLeadingTip, 0);
+            StaticWingGlobals.handleTrailingRoot.transform.localPosition = new Vector3(0, sharedBaseOffsetRoot - halfRootWidth - sharedEdgeWidthTrailingRoot, 0);
+            StaticWingGlobals.handleTrailingTip.transform.localPosition = new Vector3(sharedBaseLength, -sharedBaseOffsetTip - halfTipWidth - sharedEdgeWidthTrailingTip, 0);
+            #endregion
+
+            if (EditorHandle.AnyHandleDragging)
+            {
+                EditorHandle draggingHandle = EditorHandle.draggingHandle;
+                var prev_sharedBaseLength = sharedBaseLength;
+                var prev_sharedEdgeWidthLeadingRoot = sharedEdgeWidthLeadingRoot;
+                var prev_sharedEdgeWidthLeadingTip = sharedEdgeWidthLeadingTip;
+                var prev_sharedEdgeWidthTrailingRoot = sharedEdgeWidthTrailingRoot;
+                var prev_sharedEdgeWidthTrailingTip = sharedEdgeWidthTrailingTip;
+                var prev_sharedBaseWidthRoot = sharedBaseWidthRoot;
+                var prev_sharedBaseWidthTip = sharedBaseWidthTip;
+
+                #region Handle being dragging
+                switch (draggingHandle.name)
+                {
+                    case "handleLength": sharedBaseLength += draggingHandle.axisX; sharedBaseOffsetTip -= draggingHandle.axisY; break;
+                    case "handleLeadingRoot": sharedEdgeWidthLeadingRoot += draggingHandle.axisY; break;
+                    case "handleLeadingTip": sharedEdgeWidthLeadingTip += draggingHandle.axisY; break;
+                    case "handleTrailingRoot": sharedEdgeWidthTrailingRoot += draggingHandle.axisY; break;
+                    case "handleTrailingTip": sharedEdgeWidthTrailingTip += draggingHandle.axisY; break;
+                    case "handleWidthRootFront": sharedBaseWidthRoot += draggingHandle.axisY; break;
+                    case "handleWidthRootBack": sharedBaseWidthRoot -= draggingHandle.axisY; break;
+                    case "handleWidthTipFront": sharedBaseWidthTip += draggingHandle.axisY; break;
+                    case "handleWidthTipBack": sharedBaseWidthTip -= draggingHandle.axisY; break;
+                    default:
+                        break;
+                }
+                #endregion
+                #region Update tips
+                sharedBaseLength = sharedBaseLength > 0 ? sharedBaseLength : 0;
+                sharedEdgeWidthLeadingRoot = sharedEdgeWidthLeadingRoot > 0 ? sharedEdgeWidthLeadingRoot : 0;
+                sharedEdgeWidthLeadingTip = sharedEdgeWidthLeadingTip > 0 ? sharedEdgeWidthLeadingTip : 0;
+                sharedEdgeWidthTrailingRoot = sharedEdgeWidthTrailingRoot > 0 ? sharedEdgeWidthTrailingRoot : 0;
+                sharedEdgeWidthTrailingTip = sharedEdgeWidthTrailingTip > 0 ? sharedEdgeWidthTrailingTip : 0;
+                sharedBaseWidthRoot = sharedBaseWidthRoot > 0 ? sharedBaseWidthRoot : 0;
+                sharedBaseWidthTip = sharedBaseWidthTip > 0 ? sharedBaseWidthTip : 0;
+
+                var lastFieldID = 0;
+
+                if (prev_sharedBaseLength != sharedBaseLength)
+                { uiLastFieldName = "Length"; lastFieldID = 0; }
+                else if (prev_sharedEdgeWidthLeadingRoot != sharedEdgeWidthLeadingRoot)
+                { uiLastFieldName = "Width (root)"; lastFieldID = 8; }
+                else if (prev_sharedEdgeWidthLeadingTip != sharedEdgeWidthLeadingTip)
+                { uiLastFieldName = "Width (tip)"; lastFieldID = 9; }
+                else if (prev_sharedEdgeWidthTrailingRoot != sharedEdgeWidthTrailingRoot)
+                { uiLastFieldName = "Width (root)"; lastFieldID = 11; }
+                else if (prev_sharedEdgeWidthTrailingTip != sharedEdgeWidthTrailingTip)
+                { uiLastFieldName = "Width (tip)"; lastFieldID = 12; }
+                else if (prev_sharedBaseWidthRoot != sharedBaseWidthRoot)
+                { uiLastFieldName = "Width (root)"; lastFieldID = 1; }
+                else if (prev_sharedBaseWidthTip != sharedBaseWidthTip)
+                { uiLastFieldName = "Width (tip)"; lastFieldID = 2; }
+                uiLastFieldTooltip = UpdateTooltipText(lastFieldID);
+                #endregion
+
+            }
+
+        }
+
+        private void DetachHandles()
+        {
+            StaticWingGlobals.handlesRoot.transform.SetParent(null, false);
+            StaticWingGlobals.handlesRoot.SetActive(false);
+            handlesEnabled = false;
+            if (EditorHandle.AnyHandleDragging) EditorHandle.draggingHandle.dragging = false;
+            DontDestroyOnLoad(StaticWingGlobals.handlesRoot);
+        }
+        private void AttachHandles()
+        {
+            StaticWingGlobals.handlesRoot.transform.SetParent(part.transform, false);
+            StaticWingGlobals.handlesRoot.SetActive(true);
+            handlesEnabled = true;
+        } 
+        #endregion
+
+        #endregion Alternative UI/input
+
+        #region Coloration
+
+        // XYZ
+        // HSB
+        // RGB
+
+        private Color GetVertexColor(int side)
+        {
+            return ColorHSBToRGB(
+                side == 0
+                    ? new Vector4(sharedColorSTHue, sharedColorSTSaturation, sharedColorSTBrightness, sharedColorSTOpacity)
+                : side == 1
+                    ? new Vector4(sharedColorSBHue, sharedColorSBSaturation, sharedColorSBBrightness, sharedColorSBOpacity)
+                : side == 2
+                    ? new Vector4(sharedColorETHue, sharedColorETSaturation, sharedColorETBrightness, sharedColorETOpacity)
+                : new Vector4(sharedColorELHue, sharedColorELSaturation, sharedColorELBrightness, sharedColorELOpacity)
+            );
+        }
+
+        private Vector2 GetVertexUV2(float selectedLayer)
+        {
+            return selectedLayer == 0 ? new Vector2(0f, 1f) : new Vector2((selectedLayer - 1f) / 3f, 0f);
+        }
+
+        private Color ColorHSBToRGB(Vector4 hsbColor)
         {
             float r = hsbColor.z;
             float g = hsbColor.z;
             float b = hsbColor.z;
-            
+
             if (hsbColor.y != 0)
             {
                 float max = hsbColor.z;
@@ -3525,20 +3664,20 @@ namespace WingProcedural
             }
 
             aeroStatVolume = 0.7f * sharedBaseLength * (sharedBaseWidthRoot + sharedBaseWidthTip) * (sharedBaseThicknessRoot + sharedBaseThicknessTip) / 4; // fudgeFactor * length * average thickness * average width
-            // no need to worry about symmetry as all symmetric parts will experience the volume change
+                                                                                                                                                            // no need to worry about symmetry as all symmetric parts will experience the volume change
             if (UseStockFuel)
             {
                 for (int i = 0; i < part.Resources.Count; ++i)
                 {
                     PartResource res = part.Resources[i];
-					if (StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources.TryGetValue(res.resourceName, out WingTankResource wres))
-					{
-						double fillPct = res.maxAmount > 0 ? res.amount / res.maxAmount : 1.0;
-						res.maxAmount = aeroStatVolume * StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources[res.resourceName].unitsPerVolume;
-						res.amount = res.maxAmount * fillPct;
-					}
-				}
-				UpdateWindow();
+                    if (StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources.TryGetValue(res.resourceName, out WingTankResource wres))
+                    {
+                        double fillPct = res.maxAmount > 0 ? res.amount / res.maxAmount : 1.0;
+                        res.maxAmount = aeroStatVolume * StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources[res.resourceName].unitsPerVolume;
+                        res.amount = res.maxAmount * fillPct;
+                    }
+                }
+                UpdateWindow();
             }
             else
             {
@@ -3596,15 +3735,15 @@ namespace WingProcedural
 
             if (!UseStockFuel)
             {
-				// send public event OnPartVolumeChanged, like ProceduralParts does
-				// MFT/RT also support this event
-				BaseEventDetails data = new BaseEventDetails(BaseEventDetails.Sender.USER);
+                // send public event OnPartVolumeChanged, like ProceduralParts does
+                // MFT/RT also support this event
+                BaseEventDetails data = new BaseEventDetails(BaseEventDetails.Sender.USER);
                 // PP uses two volume types: Tankage for resources and Habitation
                 data.Set<string>("volName", "Tankage");
                 // aeroStatVolume should be in m3
                 // to change the meaning for MFT, use ModuleFuelTanks.tankVolumeConversion field in part cfg
                 // for RF this field defaults to 1000, so nothing needs to be done
-                data.Set<double> ("newTotalVolume", aeroStatVolume); 
+                data.Set<double>("newTotalVolume", aeroStatVolume);
                 part.SendEvent("OnPartVolumeChanged", data, 0);
             }
             else
@@ -3616,7 +3755,7 @@ namespace WingProcedural
 
                 foreach (KeyValuePair<string, WingTankResource> kvp in StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources)
                 {
-					ConfigNode newResourceNode = new ConfigNode("RESOURCE");
+                    ConfigNode newResourceNode = new ConfigNode("RESOURCE");
                     newResourceNode.AddValue("name", kvp.Value.resource.name);
                     newResourceNode.AddValue("amount", kvp.Value.unitsPerVolume * aeroStatVolume);
                     newResourceNode.AddValue("maxAmount", kvp.Value.unitsPerVolume * aeroStatVolume);
@@ -3667,14 +3806,14 @@ namespace WingProcedural
             }
         }
 
-		public bool CanBeFueled => !isCtrlSrf && !isWingAsCtrlSrf && !isPanel;
-		public bool UseStockFuel => !(assemblyRFUsed || assemblyMFTUsed || moduleCCUsed);
+        public bool CanBeFueled => !isCtrlSrf && !isWingAsCtrlSrf && !isPanel;
+        public bool UseStockFuel => !(assemblyRFUsed || assemblyMFTUsed || moduleCCUsed);
 
-		#endregion Resources
+        #endregion Resources
 
-		#region Interfaces
+        #region Interfaces
 
-		public float GetModuleCost(float defaultCost, ModifierStagingSituation sit)
+        public float GetModuleCost(float defaultCost, ModifierStagingSituation sit)
         {
             return FuelGetAddedCost() + aeroUICost - part.partInfo.cost;
         }
@@ -3686,10 +3825,10 @@ namespace WingProcedural
 
         public float GetModuleMass(float defaultMass, ModifierStagingSituation sit)
         {
-			return assemblyFARUsed ? 0 : aeroUIMass - part.partInfo.partPrefab.mass;
-		}
+            return assemblyFARUsed ? 0 : aeroUIMass - part.partInfo.partPrefab.mass;
+        }
 
-		public ModifierChangeWhen GetModuleMassChangeWhen()
+        public ModifierChangeWhen GetModuleMassChangeWhen()
         {
             return ModifierChangeWhen.FIXED;
         }
