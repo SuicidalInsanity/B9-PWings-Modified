@@ -12,9 +12,12 @@ namespace WingProcedural
 
         public static Shader wingShader;
 
-        public static GameObject handlesRoot, handleLength,
-                           handleWidthRootFront, handleWidthRootBack, handleWidthTipFront, handleWidthTipBack,
-                           handleLeadingRoot, handleLeadingTip, handleTrailingRoot, handleTrailingTip;
+        public static GameObject handlesRoot, normalHandles, ctrlSurfHandles, hingeIndicator,
+                                 handleLength, handleWidthRootFront, handleWidthRootBack, handleWidthTipFront, handleWidthTipBack,
+                                 handleLeadingRoot, handleLeadingTip, handleTrailingRoot, handleTrailingTip;
+        public static GameObject ctrlHandleLength1, ctrlHandleLength2,
+                                 ctrlHandleRootWidthOffset, ctrlHandleTipWidthOffset,
+                                 ctrlHandleTrailingRoot, ctrlHandleTrailingTip;
 
         private static string _bundlePath;
         public string BundlePath
@@ -79,7 +82,7 @@ namespace WingProcedural
                 for (int i = 0; i < objects1.Length; i++)
                 {
                     GameObject item = objects1[i];
-                    if (item.name.Equals("handles"))
+                    if (item.name.Equals("handlesRoot"))
                     {
                         handlesRoot = Instantiate(item);
                         break;
@@ -89,56 +92,31 @@ namespace WingProcedural
                 {
                     handlesRoot.SetActive(false);
                     DontDestroyOnLoad(handlesRoot);
-                    handleLength = handlesRoot.transform.Find("handle_length").gameObject;
 
-                    handleLength.AddComponent<EditorHandle>();
+                    normalHandles = handlesRoot.transform.Find("Normal").gameObject;
+                    ctrlSurfHandles = handlesRoot.transform.Find("CtrlSurf").gameObject;
+                    hingeIndicator = handlesRoot.transform.Find("RotateAxis").gameObject;
+                    foreach (var obj in normalHandles.transform)
+                        ((Transform)obj).gameObject.AddComponent<EditorHandle>();
+                    foreach (var obj in ctrlSurfHandles.transform)
+                        ((Transform)obj).gameObject.AddComponent<EditorHandle>();
 
-                    var handleLeading = handlesRoot.transform.Find("handle_leading").gameObject;
-                    var handleWidth = handlesRoot.transform.Find("handle_width").gameObject;
-                    handleLeading.AddComponent<EditorHandle>();
-                    handleWidth.AddComponent<EditorHandle>();
+                    handleLength = normalHandles.transform.Find("handleLength").gameObject;
+                    handleWidthRootFront = normalHandles.transform.Find("handleWidthRootFront").gameObject;
+                    handleWidthRootBack = normalHandles.transform.Find("handleWidthRootBack").gameObject;
+                    handleWidthTipFront = normalHandles.transform.Find("handleWidthTipFront").gameObject;
+                    handleWidthTipBack = normalHandles.transform.Find("handleWidthTipBack").gameObject;
+                    handleLeadingRoot = normalHandles.transform.Find("handleLeadingRoot").gameObject;
+                    handleLeadingTip = normalHandles.transform.Find("handleLeadingTip").gameObject;
+                    handleTrailingRoot = normalHandles.transform.Find("handleTrailingRoot").gameObject;
+                    handleTrailingTip = normalHandles.transform.Find("handleTrailingTip").gameObject;
 
-                    handleLeadingRoot = Instantiate(handleLeading);
-                    handleLeadingTip = Instantiate(handleLeading);
-                    handleTrailingRoot = Instantiate(handleLeading);
-                    handleTrailingTip = handleLeading;
-
-                    handleWidthRootFront = Instantiate(handleWidth);
-                    handleWidthRootBack = Instantiate(handleWidth);
-                    handleWidthTipFront = Instantiate(handleWidth);
-                    handleWidthTipBack = handleWidth;
-
-                    handleLeadingRoot.transform.SetParent(handlesRoot.transform);
-                    handleLeadingTip.transform.SetParent(handlesRoot.transform);
-                    handleTrailingRoot.transform.SetParent(handlesRoot.transform);
-                    handleTrailingTip.transform.SetParent(handlesRoot.transform);
-                    handleWidthRootFront.transform.SetParent(handlesRoot.transform);
-                    handleWidthRootBack.transform.SetParent(handlesRoot.transform);
-                    handleWidthTipFront.transform.SetParent(handlesRoot.transform);
-                    handleWidthTipBack.transform.SetParent(handlesRoot.transform);
-
-                    handleLength.name = "handleLength";
-                    handleLeadingRoot.name = "handleLeadingRoot";
-                    handleLeadingTip.name = "handleLeadingTip";
-                    handleTrailingRoot.name = "handleTrailingRoot";
-                    handleTrailingTip.name = "handleTrailingTip";
-                    handleWidthRootFront.name = "handleWidthRootFront";
-                    handleWidthRootBack.name = "handleWidthRootBack";
-                    handleWidthTipFront.name = "handleWidthTipFront";
-                    handleWidthTipBack.name = "handleWidthTipBack";
-                    handleLength.layer = 2;
-                    handleLeadingRoot.layer = 2;
-                    handleLeadingTip.layer = 2;
-                    handleTrailingRoot.layer = 2;
-                    handleTrailingTip.layer = 2;
-                    handleWidthRootFront.layer = 2;
-                    handleWidthRootBack.layer = 2;
-                    handleWidthTipFront.layer = 2;
-                    handleWidthTipBack.layer = 2;
-                    handleWidthRootFront.transform.eulerAngles = new Vector3(0, 180, 0);
-                    handleWidthRootBack.transform.eulerAngles = new Vector3(0, 180, 0);
-                    handleTrailingRoot.transform.eulerAngles = new Vector3(180, 0, 0);
-                    handleTrailingTip.transform.eulerAngles = new Vector3(180, 0, 0);
+                    ctrlHandleLength1           = ctrlSurfHandles.transform.Find("ctrlHandleLength1").gameObject;
+                    ctrlHandleLength2           = ctrlSurfHandles.transform.Find("ctrlHandleLength2").gameObject;
+                    ctrlHandleRootWidthOffset = ctrlSurfHandles.transform.Find("ctrlHandleRootWidthOffset").gameObject;
+                    ctrlHandleTipWidthOffset    = ctrlSurfHandles.transform.Find("ctrlHandleTipWidthOffset").gameObject;
+                    ctrlHandleTrailingRoot       = ctrlSurfHandles.transform.Find("ctrlHandleTrailingRoot").gameObject;
+                    ctrlHandleTrailingTip        = ctrlSurfHandles.transform.Find("ctrlHandleTrailingTip").gameObject;
                 }
                 #endregion
 

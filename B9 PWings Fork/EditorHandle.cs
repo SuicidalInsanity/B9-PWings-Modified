@@ -14,7 +14,7 @@ namespace WingProcedural
         public static EditorHandle draggingHandle;
         public static bool AnyHandleDragging => draggingHandle && draggingHandle.dragging;
 
-        public static float Gain = 0.01f;
+        public static float Gain = 0.0125f;
 
         /// <summary>
         /// 0:None, 1:X, 2:Y
@@ -59,8 +59,25 @@ namespace WingProcedural
 
             var offset = Input.mousePosition - mouseLastPos;
             var speedMult = Mathf.Clamp(offset.sqrMagnitude * .025f, 0.4f, 1.25f);
-            axisX = axisLockState == 2 ? 0 : (Gain * speedMult * cameraDistanceGain * Vector3.Dot(offset, axisXProjectedToScreen));
-            axisY = axisLockState == 1 ? 0 : (Gain * speedMult * cameraDistanceGain * Vector3.Dot(offset, axisYProjectedToScreen));
+
+            // a=(x,y)                                x: axisXProjectedToScreen.x
+            // b =(z,w)                               y: axisXProjectedToScreen.y 
+            // c =(i,j)                               z: axisYProjectedToScreen.x 
+            // c=ma+nb                                w: axisYProjectedToScreen.y
+            //                                        m: xProjected
+            // i=mx+nz                                n: yProjected
+            // j=my+nw                                i: offset.x 
+            //                                        j: offset.y
+            // m=(i-nz)/x
+            //
+            // j= y(i-nz)/x+nw=yi/x+(w-yz/x)n
+            // n=(j-yi/x)/((w-yz/x))
+
+            var yProjected = (offset.y - axisXProjectedToScreen.y * offset.x / axisXProjectedToScreen.x) / ( (axisYProjectedToScreen.y - axisXProjectedToScreen.y *axisYProjectedToScreen.x / axisXProjectedToScreen.x));
+            var xProjected = (offset.x - yProjected * axisYProjectedToScreen.x) / axisXProjectedToScreen.x;
+
+            axisX = axisLockState == 2 ? 0 : (Gain * speedMult * cameraDistanceGain * xProjected);
+            axisY = axisLockState == 1 ? 0 : (Gain * speedMult * cameraDistanceGain * yProjected);
 
             if ((axisLockState == 0 && Input.GetKey(KeyCode.LeftControl)) || Input.GetKey(KeyCode.LeftCommand))
             {
@@ -84,9 +101,13 @@ namespace WingProcedural
                 dragging = true;
                 draggingHandle = this;
                 mouseLastPos = Input.mousePosition;
-                axisXProjectedToScreen = Camera.main.worldToCameraMatrix.MultiplyVector(transform.right).normalized;
-                axisYProjectedToScreen = Camera.main.worldToCameraMatrix.MultiplyVector(transform.up).normalized;
-                cameraDistanceGain = Mathf.Clamp(Mathf.Abs(Camera.main.worldToCameraMatrix.MultiplyPoint3x4(transform.position).z) * .2f, 0.0625f, 2f);
+                axisXProjectedToScreen = Camera.main.worldToCameraMatrix.MultiplyVector(transform.right);
+                axisYProjectedToScreen = Camera.main.worldToCameraMatrix.MultiplyVector(transform.up);
+                axisXProjectedToScreen.z = 0;
+                axisYProjectedToScreen.z = 0;
+                axisXProjectedToScreen.Scale(Vector3.one / Mathf.Max(0.01f, axisXProjectedToScreen.magnitude));
+                axisYProjectedToScreen.Scale(Vector3.one / Mathf.Max(0.01f, axisYProjectedToScreen.magnitude));
+                cameraDistanceGain = Mathf.Clamp(Mathf.Abs(Camera.main.worldToCameraMatrix.MultiplyPoint3x4(transform.position).z) * .02f, 0.0125f, 2f);
                 axisLockState = 0;
 
                 // Debug.Log($"Xprj:{axisXProjectedToScreen}\tYprj:{axisYProjectedToScreen}");

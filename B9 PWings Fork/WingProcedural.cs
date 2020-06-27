@@ -899,7 +899,8 @@ namespace WingProcedural
             DeformWing();
             CheckAllFieldValues(out bool updateGeo, out bool updateAero);
 
-            UpdateHandleGizmos();
+            if (part.GetInstanceID() == uiInstanceIDTarget)
+                UpdateHandleGizmos();
 
             if (updateGeo)
             {
@@ -996,7 +997,8 @@ namespace WingProcedural
                 float wingThicknessDeviationTip = (sharedBaseThicknessTip / 0.24f) / part.rescaleFactor;
                 float wingWidthTipBasedOffsetTrailing = (sharedBaseWidthTip / 2f + sharedBaseOffsetTip) / part.rescaleFactor;
                 float wingWidthTipBasedOffsetLeading = (-sharedBaseWidthTip / 2f + sharedBaseOffsetTip) / part.rescaleFactor;
-                float wingWidthRootBasedOffset = (sharedBaseWidthRoot / 2f) / part.rescaleFactor;
+                float wingWidthRoot = (sharedBaseWidthRoot / 2f) / part.rescaleFactor;
+                float wingWidthRootBasedOffset = -sharedBaseOffsetRoot / part.rescaleFactor;
                 float geometricWidthTip = sharedBaseWidthTip / part.rescaleFactor;
                 float geometricWidthRoot = sharedBaseWidthRoot / part.rescaleFactor;
                 float geometricOffsetTip = sharedBaseOffsetTip / part.rescaleFactor;
@@ -1036,12 +1038,12 @@ namespace WingProcedural
                         {
                             if (vp[i].z < 0f)
                             {
-                                vp[i] = new Vector3(vp[i].x, vp[i].y * wingThicknessDeviationRoot, -wingWidthRootBasedOffset);
+                                vp[i] = new Vector3(vp[i].x, vp[i].y * wingThicknessDeviationRoot, wingWidthRootBasedOffset - wingWidthRoot);
                                 uv[i] = new Vector2(geometricWidthRoot, uv[i].y);
                             }
                             else
                             {
-                                vp[i] = new Vector3(vp[i].x, vp[i].y * wingThicknessDeviationRoot, wingWidthRootBasedOffset);
+                                vp[i] = new Vector3(vp[i].x, vp[i].y * wingThicknessDeviationRoot, wingWidthRootBasedOffset + wingWidthRoot);
                                 uv[i] = new Vector2(0f, uv[i].y);
                             }
                         }
@@ -1109,13 +1111,13 @@ namespace WingProcedural
                         {
                             if (vp[i].z < 0f)
                             {
-                                vp[i] = new Vector3(vp[i].x, vp[i].y * wingThicknessDeviationRoot, -wingWidthRootBasedOffset);
-                                uv[i] = new Vector2(0.0f, 1f - 0.5f + geometricWidthRoot / 8f);
+                                vp[i] = new Vector3(vp[i].x, vp[i].y * wingThicknessDeviationRoot, wingWidthRootBasedOffset - wingWidthRoot);
+                                uv[i] = new Vector2(0.0f, 1f - 0.5f + (-wingWidthRootBasedOffset * 2f + geometricWidthRoot) / 8f);
                             }
                             else
                             {
-                                vp[i] = new Vector3(vp[i].x, vp[i].y * wingThicknessDeviationRoot, wingWidthRootBasedOffset);
-                                uv[i] = new Vector2(0f, 0f + 0.5f - geometricWidthRoot / 8f);
+                                vp[i] = new Vector3(vp[i].x, vp[i].y * wingThicknessDeviationRoot, wingWidthRootBasedOffset + wingWidthRoot);
+                                uv[i] = new Vector2(0f, 0f + 0.5f - (+wingWidthRootBasedOffset * 2f + geometricWidthRoot) / 8f);
                             }
                         }
 
@@ -1213,7 +1215,7 @@ namespace WingProcedural
                         }
                         else
                         {
-                            vp[i] = new Vector3(0f, vp[i].y * wingThicknessDeviationRoot, vp[i].z * wingEdgeWidthTrailingRootDeviation + geometricWidthRoot / 2f); // Root edge
+                            vp[i] = new Vector3(0f, vp[i].y * wingThicknessDeviationRoot, vp[i].z * wingEdgeWidthTrailingRootDeviation + geometricWidthRoot / 2f + wingWidthRootBasedOffset); // Root edge
                         }
 
                         if (nm[i].x == 0f && sharedEdgeTypeTrailing != 1)
@@ -1265,7 +1267,7 @@ namespace WingProcedural
                         }
                         else
                         {
-                            vp[i] = new Vector3(0f, vp[i].y * wingThicknessDeviationRoot, vp[i].z * wingEdgeWidthLeadingRootDeviation + geometricWidthRoot / 2f); // Root edge
+                            vp[i] = new Vector3(0f, vp[i].y * wingThicknessDeviationRoot, vp[i].z * wingEdgeWidthLeadingRootDeviation + geometricWidthRoot / 2f - wingWidthRootBasedOffset); // Root edge
                         }
 
                         if (nm[i].x == 0f && sharedEdgeTypeLeading != 1)
@@ -3318,7 +3320,7 @@ namespace WingProcedural
                         RaycastHit hit;
                         if (Physics.Raycast(EditorLogic.fetch.editorCamera.ScreenPointToRay(Input.mousePosition), out hit, 200, 1 << 2))
                         {
-                            if (hit.collider.name.StartsWith("handle"))
+                            if (hit.collider.name.StartsWith("handle") || hit.collider.name.StartsWith("ctrlHandle"))
                                 hit.collider.transform.GetComponent<EditorHandle>().OnMouseOver();
                         }
                         else
@@ -3436,22 +3438,37 @@ namespace WingProcedural
             if (handlesVisible && (!handlesEnabled || Input.GetKeyDown(uiKeyCodeEdit)) && part.GetInstanceID() == uiInstanceIDTarget) AttachHandles();
 
             #region Update positions
-            StaticWingGlobals.handleLength.transform.localPosition = new Vector3(sharedBaseLength, -sharedBaseOffsetTip, 0);
-            float halfTipWidth = sharedBaseWidthTip * .5f;
-            StaticWingGlobals.handleWidthTipFront.transform.localPosition = new Vector3(sharedBaseLength, -sharedBaseOffsetTip + halfTipWidth, 0);
-            StaticWingGlobals.handleWidthTipBack.transform.localPosition = new Vector3(sharedBaseLength, -sharedBaseOffsetTip - halfTipWidth, 0);
-            float halfRootWidth = sharedBaseWidthRoot * .5f;
-            StaticWingGlobals.handleWidthRootFront.transform.localPosition = new Vector3(0, sharedBaseOffsetRoot + halfRootWidth, 0);
-            StaticWingGlobals.handleWidthRootBack.transform.localPosition = new Vector3(0, sharedBaseOffsetRoot - halfRootWidth, 0);
-            StaticWingGlobals.handleLeadingRoot.transform.localPosition = new Vector3(0, sharedBaseOffsetRoot + halfRootWidth + sharedEdgeWidthLeadingRoot, 0);
-            StaticWingGlobals.handleLeadingTip.transform.localPosition = new Vector3(sharedBaseLength, -sharedBaseOffsetTip + halfTipWidth + sharedEdgeWidthLeadingTip, 0);
-            StaticWingGlobals.handleTrailingRoot.transform.localPosition = new Vector3(0, sharedBaseOffsetRoot - halfRootWidth - sharedEdgeWidthTrailingRoot, 0);
-            StaticWingGlobals.handleTrailingTip.transform.localPosition = new Vector3(sharedBaseLength, -sharedBaseOffsetTip - halfTipWidth - sharedEdgeWidthTrailingTip, 0);
+            if (!isCtrlSrf)
+            {
+                StaticWingGlobals.handleLength.transform.localPosition = new Vector3(sharedBaseLength, -sharedBaseOffsetTip, 0);
+                float halfTipWidth = sharedBaseWidthTip * .5f;
+                StaticWingGlobals.handleWidthTipFront.transform.localPosition = new Vector3(sharedBaseLength, -sharedBaseOffsetTip + halfTipWidth, 0);
+                StaticWingGlobals.handleWidthTipBack.transform.localPosition = new Vector3(sharedBaseLength, -sharedBaseOffsetTip - halfTipWidth, 0);
+                float halfRootWidth = sharedBaseWidthRoot * .5f;
+                StaticWingGlobals.handleWidthRootFront.transform.localPosition = new Vector3(0, sharedBaseOffsetRoot + halfRootWidth, 0);
+                StaticWingGlobals.handleWidthRootBack.transform.localPosition = new Vector3(0, sharedBaseOffsetRoot - halfRootWidth, 0);
+                StaticWingGlobals.handleLeadingRoot.transform.localPosition = new Vector3(0, sharedBaseOffsetRoot + halfRootWidth + sharedEdgeWidthLeadingRoot, 0);
+                StaticWingGlobals.handleLeadingTip.transform.localPosition = new Vector3(sharedBaseLength, -sharedBaseOffsetTip + halfTipWidth + sharedEdgeWidthLeadingTip, 0);
+                StaticWingGlobals.handleTrailingRoot.transform.localPosition = new Vector3(0, sharedBaseOffsetRoot - halfRootWidth - sharedEdgeWidthTrailingRoot, 0);
+                StaticWingGlobals.handleTrailingTip.transform.localPosition = new Vector3(sharedBaseLength, -sharedBaseOffsetTip - halfTipWidth - sharedEdgeWidthTrailingTip, 0);
+            }
+            else
+            {
+                var halfLength = sharedBaseLength * .5f;
+                StaticWingGlobals.ctrlHandleLength1.transform.localPosition = new Vector3(-halfLength, 0, 0);
+                StaticWingGlobals.ctrlHandleLength2.transform.localPosition = new Vector3(halfLength, 0, 0);
+                StaticWingGlobals.ctrlHandleRootWidthOffset.transform.localPosition = new Vector3(halfLength - sharedBaseWidthRoot * sharedBaseOffsetRoot, -sharedBaseWidthRoot, 0);
+                StaticWingGlobals.ctrlHandleTipWidthOffset.transform.localPosition = new Vector3(-halfLength - sharedBaseWidthTip * sharedBaseOffsetTip, -sharedBaseWidthTip, 0);
+                StaticWingGlobals.ctrlHandleTrailingRoot.transform.localPosition = new Vector3(halfLength - sharedBaseOffsetRoot * (sharedBaseWidthRoot + sharedEdgeWidthTrailingRoot), -(sharedBaseWidthRoot + sharedEdgeWidthTrailingRoot), 0);
+                StaticWingGlobals.ctrlHandleTrailingTip.transform.localPosition = new Vector3(-halfLength - sharedBaseOffsetTip * (sharedBaseWidthTip + sharedEdgeWidthTrailingTip), -(sharedBaseWidthTip + sharedEdgeWidthTrailingTip), 0);
+            }
             #endregion
 
             if (EditorHandle.AnyHandleDragging)
             {
                 EditorHandle draggingHandle = EditorHandle.draggingHandle;
+
+                var lastFieldID = 0;
                 var prev_sharedBaseLength = sharedBaseLength;
                 var prev_sharedEdgeWidthLeadingRoot = sharedEdgeWidthLeadingRoot;
                 var prev_sharedEdgeWidthLeadingTip = sharedEdgeWidthLeadingTip;
@@ -3459,24 +3476,37 @@ namespace WingProcedural
                 var prev_sharedEdgeWidthTrailingTip = sharedEdgeWidthTrailingTip;
                 var prev_sharedBaseWidthRoot = sharedBaseWidthRoot;
                 var prev_sharedBaseWidthTip = sharedBaseWidthTip;
-
-                #region Handle being dragging
-                switch (draggingHandle.name)
+                if (!isCtrlSrf)
                 {
-                    case "handleLength": sharedBaseLength += draggingHandle.axisX; sharedBaseOffsetTip -= draggingHandle.axisY; break;
-                    case "handleLeadingRoot": sharedEdgeWidthLeadingRoot += draggingHandle.axisY; break;
-                    case "handleLeadingTip": sharedEdgeWidthLeadingTip += draggingHandle.axisY; break;
-                    case "handleTrailingRoot": sharedEdgeWidthTrailingRoot += draggingHandle.axisY; break;
-                    case "handleTrailingTip": sharedEdgeWidthTrailingTip += draggingHandle.axisY; break;
-                    case "handleWidthRootFront": sharedBaseWidthRoot += draggingHandle.axisY; break;
-                    case "handleWidthRootBack": sharedBaseWidthRoot -= draggingHandle.axisY; break;
-                    case "handleWidthTipFront": sharedBaseWidthTip += draggingHandle.axisY; break;
-                    case "handleWidthTipBack": sharedBaseWidthTip -= draggingHandle.axisY; break;
-                    default:
-                        break;
+                    switch (draggingHandle.name)
+                    {
+                        case "handleLength": sharedBaseLength += draggingHandle.axisX; sharedBaseOffsetTip -= draggingHandle.axisY; break;
+                        case "handleLeadingRoot": sharedEdgeWidthLeadingRoot += draggingHandle.axisY; break;
+                        case "handleLeadingTip": sharedEdgeWidthLeadingTip += draggingHandle.axisY; break;
+                        case "handleTrailingRoot": sharedEdgeWidthTrailingRoot += draggingHandle.axisY; break;
+                        case "handleTrailingTip": sharedEdgeWidthTrailingTip += draggingHandle.axisY; break;
+                        case "handleWidthRootFront": sharedBaseWidthRoot -= draggingHandle.axisY; sharedBaseOffsetRoot -= draggingHandle.axisY * .5f; break;
+                        case "handleWidthRootBack": sharedBaseWidthRoot += draggingHandle.axisY; sharedBaseOffsetRoot -= draggingHandle.axisY * .5f; break;
+                        case "handleWidthTipFront": sharedBaseWidthTip += draggingHandle.axisY; sharedBaseOffsetTip -= draggingHandle.axisY * .5f; break;
+                        case "handleWidthTipBack": sharedBaseWidthTip -= draggingHandle.axisY; sharedBaseOffsetTip -= draggingHandle.axisY * .5f; break;
+                        default:
+                            break;
+                    }
+                    sharedBaseOffsetRoot = Mathf.Clamp(sharedBaseOffsetRoot, -0.5f * sharedBaseWidthRoot, 0.5f * sharedBaseWidthRoot);
                 }
-                #endregion
-                #region Update tips
+                else
+                {
+                    switch (draggingHandle.name)
+                    {
+                        case "ctrlHandleLength1": sharedBaseLength += draggingHandle.axisY; break;
+                        case "ctrlHandleLength2": sharedBaseLength -= draggingHandle.axisY; break;
+                        case "ctrlHandleRootWidthOffset": sharedBaseWidthRoot -= draggingHandle.axisY; sharedBaseOffsetRoot -= draggingHandle.axisX * .5F; break;
+                        case "ctrlHandleTipWidthOffset": sharedBaseWidthTip += draggingHandle.axisY; sharedBaseOffsetTip += draggingHandle.axisX * .5F; break;
+                        case "ctrlHandleTrailingRoot": sharedEdgeWidthTrailingRoot += draggingHandle.axisY; break;
+                        case "ctrlHandleTrailingTip": sharedEdgeWidthTrailingTip += draggingHandle.axisY; break;
+                        default: break;
+                    }
+                }
                 sharedBaseLength = sharedBaseLength > 0 ? sharedBaseLength : 0;
                 sharedEdgeWidthLeadingRoot = sharedEdgeWidthLeadingRoot > 0 ? sharedEdgeWidthLeadingRoot : 0;
                 sharedEdgeWidthLeadingTip = sharedEdgeWidthLeadingTip > 0 ? sharedEdgeWidthLeadingTip : 0;
@@ -3484,8 +3514,6 @@ namespace WingProcedural
                 sharedEdgeWidthTrailingTip = sharedEdgeWidthTrailingTip > 0 ? sharedEdgeWidthTrailingTip : 0;
                 sharedBaseWidthRoot = sharedBaseWidthRoot > 0 ? sharedBaseWidthRoot : 0;
                 sharedBaseWidthTip = sharedBaseWidthTip > 0 ? sharedBaseWidthTip : 0;
-
-                var lastFieldID = 0;
 
                 if (prev_sharedBaseLength != sharedBaseLength)
                 { uiLastFieldName = "Length"; lastFieldID = 0; }
@@ -3502,10 +3530,14 @@ namespace WingProcedural
                 else if (prev_sharedBaseWidthTip != sharedBaseWidthTip)
                 { uiLastFieldName = "Width (tip)"; lastFieldID = 2; }
                 uiLastFieldTooltip = UpdateTooltipText(lastFieldID);
-                #endregion
 
+                // show/hide hinge position indicator
+                if (!isCtrlSrf && isWingAsCtrlSrf)
+                {
+                    StaticWingGlobals.hingeIndicator.SetActive(sharedBaseOffsetRoot != 0);
+                    //StaticWingGlobals.hingeIndicator.transform.localPosition = new Vector3(0, sharedBaseOffsetRoot,0);
+                }
             }
-
         }
 
         private void DetachHandles()
@@ -3520,8 +3552,12 @@ namespace WingProcedural
         {
             StaticWingGlobals.handlesRoot.transform.SetParent(part.transform, false);
             StaticWingGlobals.handlesRoot.SetActive(true);
+            // StaticWingGlobals.handlesRoot.transform.localEulerAngles = new Vector3(0, isCtrlSrf ? 180 : 0, 0);
+            StaticWingGlobals.normalHandles.SetActive(!isCtrlSrf);
+            StaticWingGlobals.ctrlSurfHandles.SetActive(isCtrlSrf);
+            StaticWingGlobals.hingeIndicator.SetActive(!isCtrlSrf && isWingAsCtrlSrf && sharedBaseOffsetRoot != 0);
             handlesEnabled = true;
-        } 
+        }
         #endregion
 
         #endregion Alternative UI/input
