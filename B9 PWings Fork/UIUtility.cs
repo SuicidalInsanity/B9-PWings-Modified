@@ -111,12 +111,6 @@ namespace WingProcedural
                     fontSize = 11
                 };
                 uiStyleInputField.normal.textColor = Color.white;
-                uiStyleInputField.normal.background = Color.black.WithAlpha(0).GetTexture2D();
-                uiStyleInputField.hover.background = Color.black.WithAlpha(0).GetTexture2D();
-                uiStyleInputField.active.background = Color.black.WithAlpha(0).GetTexture2D();
-                uiStyleInputField.onNormal.background = Color.black.WithAlpha(0).GetTexture2D();
-                uiStyleInputField.onHover.background = Color.black.WithAlpha(0).GetTexture2D();
-                uiStyleInputField.onActive.background = Color.black.WithAlpha(0).GetTexture2D();
 
                 uiStyleConfigured = true;
             }
@@ -221,7 +215,7 @@ namespace WingProcedural
             else
             {
                 changed = false;
-                if (float.TryParse(GUI.TextField(rectLabelValue, value.ToString("0.0##"), UIUtility.uiStyleInputField), out var temp)) // Add optional numeric input
+                if (float.TryParse(GUI.TextField(rectLabelValue, value.ToString("F3"), UIUtility.uiStyleInputField), out var temp)) // Add optional numeric input
                 {
                     value = temp;
                     value01 = (value - limits.x) / range;

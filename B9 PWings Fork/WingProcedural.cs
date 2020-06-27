@@ -3311,12 +3311,6 @@ namespace WingProcedural
                     bool cursorInGUI = UIUtility.uiRectWindowEditor.Contains(UIUtility.GetMousePos());
                     if (!cursorInGUI && Input.GetKeyDown(KeyCode.Mouse0))
                     {
-
-
-                        GameSettings.PART_HIGHLIGHTER_BRIGHTNESSFACTOR = 0;
-
-
-
                         RaycastHit hit;
                         if (Physics.Raycast(EditorLogic.fetch.editorCamera.ScreenPointToRay(Input.mousePosition), out hit, 200, 1 << 2))
                         {
@@ -3498,8 +3492,8 @@ namespace WingProcedural
                 {
                     switch (draggingHandle.name)
                     {
-                        case "ctrlHandleLength1": sharedBaseLength += draggingHandle.axisY; break;
-                        case "ctrlHandleLength2": sharedBaseLength -= draggingHandle.axisY; break;
+                        case "ctrlHandleLength1": sharedBaseLength -= draggingHandle.axisY; break;
+                        case "ctrlHandleLength2": sharedBaseLength += draggingHandle.axisY; break;
                         case "ctrlHandleRootWidthOffset": sharedBaseWidthRoot -= draggingHandle.axisY; sharedBaseOffsetRoot -= draggingHandle.axisX * .5F; break;
                         case "ctrlHandleTipWidthOffset": sharedBaseWidthTip += draggingHandle.axisY; sharedBaseOffsetTip += draggingHandle.axisX * .5F; break;
                         case "ctrlHandleTrailingRoot": sharedEdgeWidthTrailingRoot += draggingHandle.axisY; break;
@@ -3535,7 +3529,6 @@ namespace WingProcedural
                 if (!isCtrlSrf && isWingAsCtrlSrf)
                 {
                     StaticWingGlobals.hingeIndicator.SetActive(sharedBaseOffsetRoot != 0);
-                    //StaticWingGlobals.hingeIndicator.transform.localPosition = new Vector3(0, sharedBaseOffsetRoot,0);
                 }
             }
         }
