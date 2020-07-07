@@ -2649,14 +2649,17 @@ namespace WingProcedural
             {
                 if (_myWindow == null)
                 {
-                    UIPartActionWindow[] windows = FindObjectsOfType<UIPartActionWindow>();
-                    foreach (UIPartActionWindow window in windows)
-                    {
-                        if (window.part == part)
-                        {
-                            _myWindow = window;
-                        }
-                    }
+                    // 7/7/2020 CarnationRED: A faster way to get PAW, improves performance
+                    _myWindow = part.PartActionWindow;
+
+                    //UIPartActionWindow[] windows = FindObjectsOfType<UIPartActionWindow>();
+                    //foreach (UIPartActionWindow window in windows)
+                    //{
+                    //	if (window.part == part)
+                    //	{
+                    //		_myWindow = window;
+                    //	}
+                    //}
                 }
                 return _myWindow;
             }
@@ -2734,7 +2737,7 @@ namespace WingProcedural
 
                 if (handlesEnabled && handlesVisible && EditorHandle.AnyHandleDragging)
                 {
-                    GUILayout.Label("LeftCtrl: Axis Locking\nX: lock Offset. Y: lock Length\n_________________________", UIUtility.uiStyleLabelHint, GUILayout.MaxHeight(44f), GUILayout.MinHeight(44f)); // 58f for four lines
+                    GUILayout.Label("LeftCtrl: Auto Axis Locking\nX: lock Offset. Y: lock Length\n_________________________", UIUtility.uiStyleLabelHint, GUILayout.MaxHeight(44f), GUILayout.MinHeight(44f)); // 58f for four lines
                 }
                 else if (uiLastFieldTooltip.Length > 0)
                 {
