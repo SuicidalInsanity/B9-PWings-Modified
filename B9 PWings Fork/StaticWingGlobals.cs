@@ -96,10 +96,11 @@ namespace WingProcedural
                     normalHandles = handlesRoot.transform.Find("Normal").gameObject;
                     ctrlSurfHandles = handlesRoot.transform.Find("CtrlSurf").gameObject;
                     hingeIndicator = handlesRoot.transform.Find("RotateAxis").gameObject;
-                    foreach (var obj in normalHandles.transform)
-                        ((Transform)obj).gameObject.AddComponent<EditorHandle>();
-                    foreach (var obj in ctrlSurfHandles.transform)
-                        ((Transform)obj).gameObject.AddComponent<EditorHandle>();
+                    foreach (Transform obj in normalHandles.transform)
+                        obj.gameObject.AddComponent<EditorHandle>();
+
+                    foreach (Transform obj in ctrlSurfHandles.transform) 
+                        obj.gameObject.AddComponent<EditorHandle>();
 
                     handleLength = normalHandles.transform.Find("handleLength").gameObject;
                     handleWidthRootFront = normalHandles.transform.Find("handleWidthRootFront").gameObject;
@@ -111,12 +112,12 @@ namespace WingProcedural
                     handleTrailingRoot = normalHandles.transform.Find("handleTrailingRoot").gameObject;
                     handleTrailingTip = normalHandles.transform.Find("handleTrailingTip").gameObject;
 
-                    ctrlHandleLength1           = ctrlSurfHandles.transform.Find("ctrlHandleLength1").gameObject;
-                    ctrlHandleLength2           = ctrlSurfHandles.transform.Find("ctrlHandleLength2").gameObject;
+                    ctrlHandleLength1 = ctrlSurfHandles.transform.Find("ctrlHandleLength1").gameObject;
+                    ctrlHandleLength2 = ctrlSurfHandles.transform.Find("ctrlHandleLength2").gameObject;
                     ctrlHandleRootWidthOffset = ctrlSurfHandles.transform.Find("ctrlHandleRootWidthOffset").gameObject;
-                    ctrlHandleTipWidthOffset    = ctrlSurfHandles.transform.Find("ctrlHandleTipWidthOffset").gameObject;
-                    ctrlHandleTrailingRoot       = ctrlSurfHandles.transform.Find("ctrlHandleTrailingRoot").gameObject;
-                    ctrlHandleTrailingTip        = ctrlSurfHandles.transform.Find("ctrlHandleTrailingTip").gameObject;
+                    ctrlHandleTipWidthOffset = ctrlSurfHandles.transform.Find("ctrlHandleTipWidthOffset").gameObject;
+                    ctrlHandleTrailingRoot = ctrlSurfHandles.transform.Find("ctrlHandleTrailingRoot").gameObject;
+                    ctrlHandleTrailingTip = ctrlSurfHandles.transform.Find("ctrlHandleTrailingTip").gameObject;
                 }
                 #endregion
 

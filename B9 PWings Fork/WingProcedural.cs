@@ -3318,7 +3318,10 @@ namespace WingProcedural
                         if (Physics.Raycast(EditorLogic.fetch.editorCamera.ScreenPointToRay(Input.mousePosition), out hit, 200, 1 << 2))
                         {
                             if (hit.collider.name.StartsWith("handle") || hit.collider.name.StartsWith("ctrlHandle"))
+                            {
                                 hit.collider.transform.GetComponent<EditorHandle>().OnMouseOver();
+                                BackupProperties();
+                            }
                         }
                         else
                             ExitEditMode();
@@ -3422,6 +3425,20 @@ namespace WingProcedural
         #region Handle Gizmos by CarnationRED
         private static bool handlesEnabled = false;
         private static bool handlesVisible = true;
+        private static float backupsharedBaseLength;
+        private static float backupsharedBaseWidthRoot;
+        private static float backupsharedBaseWidthTip;
+        private static float backupsharedBaseOffsetRoot;
+        private static float backupsharedBaseOffsetTip;
+
+        public void BackupProperties()
+        {
+            backupsharedBaseLength = sharedBaseLength;
+            backupsharedBaseWidthRoot = sharedBaseWidthRoot;
+            backupsharedBaseWidthTip = sharedBaseWidthTip;
+            backupsharedBaseOffsetRoot = sharedBaseOffsetRoot;
+            backupsharedBaseOffsetTip = sharedBaseOffsetTip;
+        }
         private void UpdateHandleGizmos()
         {
             if (!uiEditMode)
@@ -3477,7 +3494,7 @@ namespace WingProcedural
                 {
                     switch (draggingHandle.name)
                     {
-                        case "handleLength": sharedBaseLength += draggingHandle.axisX; sharedBaseOffsetTip -= draggingHandle.axisY; break;
+                        case "handleLength": sharedBaseLength = backupsharedBaseLength + draggingHandle.LockDeltaAxisX; sharedBaseOffsetTip = backupsharedBaseOffsetTip - draggingHandle.LockDeltaAxisY; break;
                         case "handleLeadingRoot": sharedEdgeWidthLeadingRoot += draggingHandle.axisY; break;
                         case "handleLeadingTip": sharedEdgeWidthLeadingTip += draggingHandle.axisY; break;
                         case "handleTrailingRoot": sharedEdgeWidthTrailingRoot += draggingHandle.axisY; break;
@@ -3489,16 +3506,17 @@ namespace WingProcedural
                         default:
                             break;
                     }
-                    sharedBaseOffsetRoot = Mathf.Clamp(sharedBaseOffsetRoot, -0.5f * sharedBaseWidthRoot, 0.5f * sharedBaseWidthRoot);
+                    if (!isWingAsCtrlSrf)
+                        sharedBaseOffsetRoot = Mathf.Clamp(sharedBaseOffsetRoot, -0.5f * sharedBaseWidthRoot, 0.5f * sharedBaseWidthRoot);
                 }
                 else
                 {
                     switch (draggingHandle.name)
                     {
-                        case "ctrlHandleLength1": sharedBaseLength -= draggingHandle.axisY; break;
-                        case "ctrlHandleLength2": sharedBaseLength += draggingHandle.axisY; break;
-                        case "ctrlHandleRootWidthOffset": sharedBaseWidthRoot -= draggingHandle.axisY; sharedBaseOffsetRoot -= draggingHandle.axisX * .5F; break;
-                        case "ctrlHandleTipWidthOffset": sharedBaseWidthTip += draggingHandle.axisY; sharedBaseOffsetTip += draggingHandle.axisX * .5F; break;
+                        case "ctrlHandleLength1": sharedBaseLength = backupsharedBaseLength - draggingHandle.LockDeltaAxisY; break;
+                        case "ctrlHandleLength2": sharedBaseLength = backupsharedBaseLength + draggingHandle.LockDeltaAxisY; break;
+                        case "ctrlHandleRootWidthOffset": sharedBaseWidthRoot = backupsharedBaseWidthRoot - draggingHandle.LockDeltaAxisY; sharedBaseOffsetRoot = backupsharedBaseOffsetRoot - draggingHandle.LockDeltaAxisX * .5F; break;
+                        case "ctrlHandleTipWidthOffset": sharedBaseWidthTip = backupsharedBaseWidthTip + draggingHandle.LockDeltaAxisY; sharedBaseOffsetTip = backupsharedBaseOffsetTip + draggingHandle.LockDeltaAxisX * .5F; break;
                         case "ctrlHandleTrailingRoot": sharedEdgeWidthTrailingRoot += draggingHandle.axisY; break;
                         case "ctrlHandleTrailingTip": sharedEdgeWidthTrailingTip += draggingHandle.axisY; break;
                         default: break;
@@ -3548,7 +3566,6 @@ namespace WingProcedural
         {
             StaticWingGlobals.handlesRoot.transform.SetParent(part.transform, false);
             StaticWingGlobals.handlesRoot.SetActive(true);
-            // StaticWingGlobals.handlesRoot.transform.localEulerAngles = new Vector3(0, isCtrlSrf ? 180 : 0, 0);
             StaticWingGlobals.normalHandles.SetActive(!isCtrlSrf);
             StaticWingGlobals.ctrlSurfHandles.SetActive(isCtrlSrf);
             StaticWingGlobals.hingeIndicator.SetActive(!isCtrlSrf && isWingAsCtrlSrf && sharedBaseOffsetRoot != 0);
