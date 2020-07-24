@@ -12,6 +12,13 @@ namespace WingProcedural
 
         public static Shader wingShader;
 
+        public static GameObject handlesRoot, normalHandles, ctrlSurfHandles, hingeIndicator,
+                                 handleLength, handleWidthRootFront, handleWidthRootBack, handleWidthTipFront, handleWidthTipBack,
+                                 handleLeadingRoot, handleLeadingTip, handleTrailingRoot, handleTrailingTip;
+        public static GameObject ctrlHandleLength1, ctrlHandleLength2,
+                                 ctrlHandleRootWidthOffset, ctrlHandleTipWidthOffset,
+                                 ctrlHandleTrailingRoot, ctrlHandleTrailingTip;
+
         private static string _bundlePath;
         public string BundlePath
         {
@@ -69,6 +76,50 @@ namespace WingProcedural
                         Debug.Log($"[B9 PWings] Wing shader \"{wingShader.name}\" loaded. Shader supported? {wingShader.isSupported}");
                     }
                 }
+
+                #region Handle gizmos---CarnationRED 2020-6
+                GameObject[] objects1 = shaderBundle.LoadAllAssets<GameObject>();
+                for (int i = 0; i < objects1.Length; i++)
+                {
+                    GameObject item = objects1[i];
+                    if (item.name.Equals("handlesRoot"))
+                    {
+                        handlesRoot = Instantiate(item);
+                        break;
+                    }
+                }
+                if (handlesRoot)
+                {
+                    handlesRoot.SetActive(false);
+                    DontDestroyOnLoad(handlesRoot);
+
+                    normalHandles = handlesRoot.transform.Find("Normal").gameObject;
+                    ctrlSurfHandles = handlesRoot.transform.Find("CtrlSurf").gameObject;
+                    hingeIndicator = handlesRoot.transform.Find("RotateAxis").gameObject;
+                    foreach (Transform obj in normalHandles.transform)
+                        obj.gameObject.AddComponent<EditorHandle>();
+
+                    foreach (Transform obj in ctrlSurfHandles.transform) 
+                        obj.gameObject.AddComponent<EditorHandle>();
+
+                    handleLength = normalHandles.transform.Find("handleLength").gameObject;
+                    handleWidthRootFront = normalHandles.transform.Find("handleWidthRootFront").gameObject;
+                    handleWidthRootBack = normalHandles.transform.Find("handleWidthRootBack").gameObject;
+                    handleWidthTipFront = normalHandles.transform.Find("handleWidthTipFront").gameObject;
+                    handleWidthTipBack = normalHandles.transform.Find("handleWidthTipBack").gameObject;
+                    handleLeadingRoot = normalHandles.transform.Find("handleLeadingRoot").gameObject;
+                    handleLeadingTip = normalHandles.transform.Find("handleLeadingTip").gameObject;
+                    handleTrailingRoot = normalHandles.transform.Find("handleTrailingRoot").gameObject;
+                    handleTrailingTip = normalHandles.transform.Find("handleTrailingTip").gameObject;
+
+                    ctrlHandleLength1 = ctrlSurfHandles.transform.Find("ctrlHandleLength1").gameObject;
+                    ctrlHandleLength2 = ctrlSurfHandles.transform.Find("ctrlHandleLength2").gameObject;
+                    ctrlHandleRootWidthOffset = ctrlSurfHandles.transform.Find("ctrlHandleRootWidthOffset").gameObject;
+                    ctrlHandleTipWidthOffset = ctrlSurfHandles.transform.Find("ctrlHandleTipWidthOffset").gameObject;
+                    ctrlHandleTrailingRoot = ctrlSurfHandles.transform.Find("ctrlHandleTrailingRoot").gameObject;
+                    ctrlHandleTrailingTip = ctrlSurfHandles.transform.Find("ctrlHandleTrailingTip").gameObject;
+                }
+                #endregion
 
                 yield return null;
                 yield return null; // unknown how neccesary this is

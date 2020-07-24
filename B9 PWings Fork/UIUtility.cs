@@ -14,12 +14,15 @@ namespace WingProcedural
         public static GUIStyle uiStyleSlider = new GUIStyle();
         public static GUIStyle uiStyleSliderThumb = new GUIStyle();
         public static GUIStyle uiStyleToggle = new GUIStyle();
+        public static GUIStyle uiStyleInputField = new GUIStyle();
         public static bool uiStyleConfigured = false;
 
         public static Font uiFont = null;
         private static float alphaNormal = 0.5f;
         private static float alphaHover = 0.35f;
         private static float alphaActive = 0.75f;
+
+        public static bool numericInput = false;
 
         public static void ConfigureStyles()
         {
@@ -29,7 +32,8 @@ namespace WingProcedural
             }
             if (uiFont != null)
             {
-                uiStyleWindow = new GUIStyle(HighLogic.Skin.window) {
+                uiStyleWindow = new GUIStyle(HighLogic.Skin.window)
+                {
                     fixedWidth = 300f,
                     wordWrap = true
                 };
@@ -39,7 +43,8 @@ namespace WingProcedural
                 uiStyleWindow.fontSize = 13;
                 uiStyleWindow.alignment = TextAnchor.UpperLeft;
 
-                uiStyleLabelMedium = new GUIStyle(HighLogic.Skin.label) {
+                uiStyleLabelMedium = new GUIStyle(HighLogic.Skin.label)
+                {
                     stretchWidth = true,
                     font = uiFont,
                     fontStyle = FontStyle.Normal,
@@ -47,7 +52,8 @@ namespace WingProcedural
                 };
                 uiStyleLabelMedium.normal.textColor = Color.white;
 
-                uiStyleLabelHint = new GUIStyle(HighLogic.Skin.label) {
+                uiStyleLabelHint = new GUIStyle(HighLogic.Skin.label)
+                {
                     stretchWidth = true,
                     font = uiFont,
                     fontStyle = FontStyle.Normal,
@@ -87,7 +93,8 @@ namespace WingProcedural
                 uiStyleSliderThumb.fixedWidth = 0f;
                 uiStyleSliderThumb.fixedHeight = 16;
 
-                uiStyleToggle = new GUIStyle(HighLogic.Skin.toggle) {
+                uiStyleToggle = new GUIStyle(HighLogic.Skin.toggle)
+                {
                     font = uiFont,
                     fontStyle = FontStyle.Normal,
                     fontSize = 11
@@ -95,6 +102,15 @@ namespace WingProcedural
                 uiStyleToggle.normal.textColor = Color.white;
                 uiStyleToggle.padding = new RectOffset(4, 4, 4, 4);
                 uiStyleToggle.margin = new RectOffset(4, 4, 4, 4);
+
+                uiStyleInputField = new GUIStyle(HighLogic.Skin.textField)
+                {
+                    stretchWidth = true,
+                    font = uiFont,
+                    fontStyle = FontStyle.Normal,
+                    fontSize = 11
+                };
+                uiStyleInputField.normal.textColor = Color.white;
 
                 uiStyleConfigured = true;
             }
@@ -131,11 +147,11 @@ namespace WingProcedural
 
             GUILayout.Label(string.Empty, UIUtility.uiStyleLabelHint);
             Rect rectLast = GUILayoutUtility.GetLastRect();
-			Rect rectSlider = new Rect(rectLast.xMin + buttonWidth + spaceWidth, rectLast.yMin, rectLast.width - 2 * (buttonWidth + spaceWidth), rectLast.height);
-			Rect rectSliderValue = new Rect(rectSlider.xMin, rectSlider.yMin, rectSlider.width * (float)value01, rectSlider.height - 3f);
-			Rect rectButtonL = new Rect(rectLast.xMin, rectLast.yMin, buttonWidth, rectLast.height);
-			Rect rectButtonR = new Rect(rectLast.xMin + rectLast.width - buttonWidth, rectLast.yMin, buttonWidth, rectLast.height);
-			Rect rectLabelValue = new Rect(rectSlider.xMin + rectSlider.width * 0.75f, rectSlider.yMin, rectSlider.width * 0.25f, rectSlider.height);
+            Rect rectSlider = new Rect(rectLast.xMin + buttonWidth + spaceWidth, rectLast.yMin, rectLast.width - 2 * (buttonWidth + spaceWidth), rectLast.height);
+            Rect rectSliderValue = new Rect(rectSlider.xMin, rectSlider.yMin, rectSlider.width * (float)value01, rectSlider.height - 3f);
+            Rect rectButtonL = new Rect(rectLast.xMin, rectLast.yMin, buttonWidth, rectLast.height);
+            Rect rectButtonR = new Rect(rectLast.xMin + rectLast.width - buttonWidth, rectLast.yMin, buttonWidth, rectLast.height);
+            Rect rectLabelValue = new Rect(rectSlider.xMin + rectSlider.width * 0.75f, rectSlider.yMin, rectSlider.width * 0.25f, rectSlider.height);
 
             if (GUI.Button(rectButtonL, string.Empty, UIUtility.uiStyleButton))
             {
@@ -160,36 +176,53 @@ namespace WingProcedural
                 }
             }
 
-            if (rectLast.Contains(Event.current.mousePosition) && (Event.current.type == EventType.MouseDrag || Event.current.type == EventType.MouseDown) // right click drag doesn't work properly without the event check
-                    && Event.current.type != EventType.MouseUp) // drag event covers this, but don't want it to
+            if (!numericInput)
             {
-                value01 = GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, UIUtility.uiStyleSlider, UIUtility.uiStyleSliderThumb);
-
-                if (valueOld != value01)
+                if (rectLast.Contains(Event.current.mousePosition) && (Event.current.type == EventType.MouseDrag || Event.current.type == EventType.MouseDown) // right click drag doesn't work properly without the event check
+                        && Event.current.type != EventType.MouseUp) // drag event covers this, but don't want it to
                 {
-                    if (Input.GetMouseButton(0) || !allowFine) // normal control
+                    value01 = GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, UIUtility.uiStyleSlider, UIUtility.uiStyleSliderThumb);
+
+                    if (valueOld != value01)
                     {
-                        double excess = value01 / increment01;
-                        value01 -= (excess - Math.Round(excess)) * increment01;
-                    }
-                    else if (Input.GetMouseButton(1) && allowFine) // fine control
-                    {
-                        double excess = valueOld / increment01;
-                        value01 = (valueOld - (excess - Math.Round(excess)) * increment01) + Math.Min(value01 - 0.5, 0.4999) * increment01;
+                        if (Input.GetMouseButton(0) || !allowFine) // normal control
+                        {
+                            double excess = value01 / increment01;
+                            value01 -= (excess - Math.Round(excess)) * increment01;
+                        }
+                        else if (Input.GetMouseButton(1) && allowFine) // fine control
+                        {
+                            double excess = valueOld / increment01;
+                            value01 = (valueOld - (excess - Math.Round(excess)) * increment01) + Math.Min(value01 - 0.5, 0.4999) * increment01;
+                        }
                     }
                 }
+                else
+                {
+                    GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, UIUtility.uiStyleSlider, UIUtility.uiStyleSliderThumb);
+                }
+            }
+
+
+            GUI.DrawTexture(rectSliderValue, backgroundColor.GetTexture2D()); // slider filled area
+            GUI.Label(rectSlider, $"  {name}", UIUtility.uiStyleLabelHint); // slider name
+            if (!numericInput)
+            {
+                value = Mathf.Clamp((float)(value01 * range + limits.x), Mathf.Min((float)(limits.x * 0.5), limits.x), limits.y); // lower limit is halved so the fine control can reduce it further but the normal tweak still snaps. Min makes -ve values work
+                changed = valueOld != value;
+                GUI.Label(rectLabelValue, GetValueTranslation(value, valueType), UIUtility.uiStyleLabelHint); // slider value
             }
             else
             {
-                GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, UIUtility.uiStyleSlider, UIUtility.uiStyleSliderThumb);
+                changed = false;
+                if (float.TryParse(GUI.TextField(rectLabelValue, value.ToString("F3"), UIUtility.uiStyleInputField), out var temp)) // Add optional numeric input
+                {
+                    value = temp;
+                    value01 = (value - limits.x) / range;
+                    changed = valueOld != value01;
+                }
+                value = Mathf.Clamp(value, limits.x, limits.y);
             }
-
-            value = Mathf.Clamp((float)(value01 * range + limits.x), Mathf.Min((float)(limits.x * 0.5), limits.x), limits.y); // lower limit is halved so the fine control can reduce it further but the normal tweak still snaps. Min makes -ve values work
-            changed = valueOld != value;
-
-            GUI.DrawTexture(rectSliderValue, backgroundColor.GetTexture2D());
-            GUI.Label(rectSlider, $"  {name}", UIUtility.uiStyleLabelHint);
-            GUI.Label(rectLabelValue, GetValueTranslation(value, valueType), UIUtility.uiStyleLabelHint);
 
             GUILayout.EndHorizontal();
             return value;
@@ -225,14 +258,14 @@ namespace WingProcedural
             string valString = prevValue.ToString();
             TextEntryField(label, labelWidth, ref valString);
 
-			return
-				!double.TryParse(valString, out double temp) 
-					? prevValue
-					: temp
-			;
-		}
+            return
+                !double.TryParse(valString, out double temp)
+                    ? prevValue
+                    : temp
+            ;
+        }
 
-		public static void TextEntryField(string label, int labelWidth, ref string inputOutput)
+        public static void TextEntryField(string label, int labelWidth, ref string inputOutput)
         {
             GUILayout.BeginHorizontal();
             GUILayout.Label(label, GUILayout.Width(labelWidth));
@@ -258,7 +291,7 @@ namespace WingProcedural
         }
 
         private static readonly string[][] stringIDs = new string[][] {
-																new string[] { "Uniform", "Standard", "Reinforced", "LRSI", "HRSI" },
+                                                                new string[] { "Uniform", "Standard", "Reinforced", "LRSI", "HRSI" },
                                                                 new string[] { "", "No Edge", "Rounded", "Biconvex", "Triangular" },
                                                                 new string[] { "", "No Edge", "Rounded", "Biconvex", "Triangular" }
                                                         }; // yup, I'm feeling lazy here...
@@ -266,8 +299,8 @@ namespace WingProcedural
         public static string GetValueTranslation(float value, int type)
         {
             return (type < 1 || type > 3)
-	                ? value.ToString("F3")
-	                : stringIDs[type - 1][(int)value] // dont check for range errors, any range exceptions need to be visible in testing
+                    ? value.ToString("F3")
+                    : stringIDs[type - 1][(int)value] // dont check for range errors, any range exceptions need to be visible in testing
                 ;
         }
     }
