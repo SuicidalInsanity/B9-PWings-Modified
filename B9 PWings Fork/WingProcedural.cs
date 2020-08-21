@@ -973,6 +973,7 @@ namespace WingProcedural
             SetupMeshFilters();
             SetupMeshReferences();
             ReportOnMeshReferences();
+            UpdateMaterials();
             UpdateGeometry(true);
             UpdateWindow();
         }
