@@ -3515,8 +3515,8 @@ namespace WingProcedural
                     {
                         case "ctrlHandleLength1": sharedBaseLength = backupsharedBaseLength - draggingHandle.LockDeltaAxisY; break;
                         case "ctrlHandleLength2": sharedBaseLength = backupsharedBaseLength + draggingHandle.LockDeltaAxisY; break;
-                        case "ctrlHandleRootWidthOffset": sharedBaseWidthRoot = backupsharedBaseWidthRoot - draggingHandle.LockDeltaAxisY; sharedBaseOffsetRoot = backupsharedBaseOffsetRoot - draggingHandle.LockDeltaAxisX * .5F; break;
-                        case "ctrlHandleTipWidthOffset": sharedBaseWidthTip = backupsharedBaseWidthTip + draggingHandle.LockDeltaAxisY; sharedBaseOffsetTip = backupsharedBaseOffsetTip + draggingHandle.LockDeltaAxisX * .5F; break;
+                        case "ctrlHandleRootWidthOffset": sharedBaseWidthRoot = backupsharedBaseWidthRoot - draggingHandle.LockDeltaAxisY; sharedBaseOffsetRoot = backupsharedBaseOffsetRoot + (!isMirrored && isCtrlSrf && !isWingAsCtrlSrf ? 1f : -1f) * draggingHandle.LockDeltaAxisX * .5F; break;
+                        case "ctrlHandleTipWidthOffset": sharedBaseWidthTip = backupsharedBaseWidthTip + draggingHandle.LockDeltaAxisY; sharedBaseOffsetTip = backupsharedBaseOffsetTip + (!isMirrored && isCtrlSrf && !isWingAsCtrlSrf ? -1f : 1f) * draggingHandle.LockDeltaAxisX * .5F; break;
                         case "ctrlHandleTrailingRoot": sharedEdgeWidthTrailingRoot += draggingHandle.axisY; break;
                         case "ctrlHandleTrailingTip": sharedEdgeWidthTrailingTip += draggingHandle.axisY; break;
                         default: break;
@@ -3557,6 +3557,7 @@ namespace WingProcedural
         private void DetachHandles()
         {
             StaticWingGlobals.handlesRoot.transform.SetParent(null, false);
+            StaticWingGlobals.handlesRoot.transform.localScale = Vector3.one;
             StaticWingGlobals.handlesRoot.SetActive(false);
             handlesEnabled = false;
             if (EditorHandle.AnyHandleDragging) EditorHandle.draggingHandle.dragging = false;
@@ -3565,6 +3566,7 @@ namespace WingProcedural
         private void AttachHandles()
         {
             StaticWingGlobals.handlesRoot.transform.SetParent(part.transform, false);
+            StaticWingGlobals.handlesRoot.transform.localScale = (!isMirrored && isCtrlSrf && !isWingAsCtrlSrf) ? new Vector3(-1f, 1f, 1f) : Vector3.one;
             StaticWingGlobals.handlesRoot.SetActive(true);
             StaticWingGlobals.normalHandles.SetActive(!isCtrlSrf);
             StaticWingGlobals.ctrlSurfHandles.SetActive(isCtrlSrf);

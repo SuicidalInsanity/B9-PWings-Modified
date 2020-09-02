@@ -153,8 +153,11 @@ namespace WingProcedural
             Rect rectButtonR = new Rect(rectLast.xMin + rectLast.width - buttonWidth, rectLast.yMin, buttonWidth, rectLast.height);
             Rect rectLabelValue = new Rect(rectSlider.xMin + rectSlider.width * 0.75f, rectSlider.yMin, rectSlider.width * 0.25f, rectSlider.height);
 
+            bool buttonAdjust = false;
+
             if (GUI.Button(rectButtonL, string.Empty, UIUtility.uiStyleButton))
             {
+                buttonAdjust = true;
                 if (Input.GetMouseButtonUp(0) || !allowFine)
                 {
                     value01 -= incrementLarge / range;
@@ -163,9 +166,11 @@ namespace WingProcedural
                 {
                     value01 -= increment01;
                 }
+                else buttonAdjust = false;
             }
             if (GUI.Button(rectButtonR, string.Empty, UIUtility.uiStyleButton))
             {
+                buttonAdjust = true;
                 if (Input.GetMouseButtonUp(0) || !allowFine)
                 {
                     value01 += incrementLarge / range;
@@ -174,6 +179,7 @@ namespace WingProcedural
                 {
                     value01 += increment01;
                 }
+                else buttonAdjust = false;
             }
 
             if (!numericInput)
@@ -217,8 +223,13 @@ namespace WingProcedural
                 changed = false;
                 if (float.TryParse(GUI.TextField(rectLabelValue, value.ToString("F3"), UIUtility.uiStyleInputField), out var temp)) // Add optional numeric input
                 {
-                    value = temp;
-                    value01 = (value - limits.x) / range;
+                    if (!buttonAdjust)
+                    {
+                        value = temp;
+                        value01 = (value - limits.x) / range;
+                    }
+                    else
+                        value = Mathf.Clamp((float)(value01 * range + limits.x), Mathf.Min((float)(limits.x * 0.5), limits.x), limits.y); // lower limit is halved so the fine control can reduce it further but the normal tweak still snaps. Min makes -ve values work
                     changed = valueOld != value01;
                 }
                 value = Mathf.Clamp(value, limits.x, limits.y);
