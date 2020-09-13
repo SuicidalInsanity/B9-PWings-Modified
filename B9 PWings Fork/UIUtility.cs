@@ -131,7 +131,239 @@ namespace WingProcedural
             uiStyleButton.border = new RectOffset(0, 0, 0, 0);
         }
 
-        public static float FieldSlider(float value, float increment, float incrementLarge, Vector2 limits, string name, out bool changed, Color backgroundColor, int valueType, bool allowFine = true)
+        public static float FieldSlider(float value, float increment, float incrementLarge, float range, string name, out bool changed, Color backgroundColor, int valueType, ref int delta, bool allowFine = true)
+        {
+            if (!UIUtility.uiStyleConfigured)
+            {
+                UIUtility.ConfigureStyles();
+            }
+
+            GUILayout.BeginHorizontal();
+            int newDelta = (int)(value / range);
+            if (newDelta != delta | newDelta != delta + 1)
+                delta = newDelta;
+            double value01 = (value - delta * range) / range;
+            double increment01 = increment / range;
+            double valueOld = value01;
+            const float buttonWidth = 12, spaceWidth = 3;
+
+            GUILayout.Label(string.Empty, UIUtility.uiStyleLabelHint);
+            Rect rectLast = GUILayoutUtility.GetLastRect();
+            Rect rectSlider = new Rect(rectLast.xMin + buttonWidth + spaceWidth, rectLast.yMin, rectLast.width - 2 * (buttonWidth + spaceWidth), rectLast.height);
+            Rect rectSliderValue = new Rect(rectSlider.xMin, rectSlider.yMin, rectSlider.width * (float)value01, rectSlider.height - 3f);
+            Rect rectButtonL = new Rect(rectLast.xMin, rectLast.yMin, buttonWidth, rectLast.height);
+            Rect rectButtonR = new Rect(rectLast.xMin + rectLast.width - buttonWidth, rectLast.yMin, buttonWidth, rectLast.height);
+            Rect rectLabelValue = new Rect(rectSlider.xMin + rectSlider.width * 0.75f, rectSlider.yMin, rectSlider.width * 0.25f, rectSlider.height);
+
+            bool buttonAdjust = false;
+
+            if (GUI.Button(rectButtonL, string.Empty, UIUtility.uiStyleButton))
+            {
+                buttonAdjust = true;
+                if (Input.GetMouseButtonUp(0) || !allowFine)
+                {
+                    if (delta == 0)
+                        value01 = 0;
+                    else
+                        delta -= 1;
+                }
+                else if (Input.GetMouseButtonUp(1) && allowFine)
+                {
+                    value01 -= increment01;
+                }
+                else buttonAdjust = false;
+            }
+            if (GUI.Button(rectButtonR, string.Empty, UIUtility.uiStyleButton))
+            {
+                buttonAdjust = true;
+                if (Input.GetMouseButtonUp(0) || !allowFine)
+                {
+                    if (value01 != 1)
+                        value01 = 1;
+                    else
+                        delta += 1;
+                }
+                else if (Input.GetMouseButtonUp(1) && allowFine)
+                {
+                    value01 += increment01;
+                }
+                else buttonAdjust = false;
+            }
+
+            if (!numericInput)
+            {
+                if (rectLast.Contains(Event.current.mousePosition) && (Event.current.type == EventType.MouseDrag || Event.current.type == EventType.MouseDown) // right click drag doesn't work properly without the event check
+                        && Event.current.type != EventType.MouseUp) // drag event covers this, but don't want it to
+                {
+                    value01 = GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, UIUtility.uiStyleSlider, UIUtility.uiStyleSliderThumb);
+
+                    if (valueOld != value01)
+                    {
+                        if (Input.GetMouseButton(0) || !allowFine) // normal control
+                        {
+                            double excess = value01 / increment01;
+                            value01 -= (excess - Math.Round(excess)) * increment01;
+                        }
+                        else if (Input.GetMouseButton(1) && allowFine) // fine control
+                        {
+                            double excess = valueOld / increment01;
+                            value01 = (valueOld - (excess - Math.Round(excess)) * increment01) + Math.Min(value01 - 0.5, 0.4999) * increment01;
+                        }
+                    }
+                }
+                else
+                {
+                    GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, UIUtility.uiStyleSlider, UIUtility.uiStyleSliderThumb);
+                }
+            }
+
+
+            GUI.DrawTexture(rectSliderValue, backgroundColor.GetTexture2D()); // slider filled area
+            GUI.Label(rectSlider, $"  {name}", UIUtility.uiStyleLabelHint); // slider name
+            if (!numericInput)
+            {
+                value = (float)((value01 + delta) * range);
+                changed = valueOld != value ? true : false;
+                GUI.Label(rectLabelValue, GetValueTranslation(value, valueType), UIUtility.uiStyleLabelHint); // slider value
+            }
+            else
+            {
+                changed = false;
+                if (float.TryParse(GUI.TextField(rectLabelValue, value.ToString("F3"), UIUtility.uiStyleInputField), out var temp)) // Add optional numeric input
+                {
+                    if (!buttonAdjust)
+                    {
+                        value = temp;
+                        value01 = (value - delta * range) / range;
+                    }
+                    else
+                        value = (float)((value01 + delta) * range);
+                    changed = valueOld != value01 ? true : false;
+                }
+                value = Mathf.Clamp(value, 0, float.PositiveInfinity);
+            }
+
+            GUILayout.EndHorizontal();
+            return value;
+        }
+
+        public static float OffsetSlider(float value, float increment, float incrementLarge, float range, string name, out bool changed, Color backgroundColor, int valueType, ref int delta, bool allowFine = true)
+        {
+            if (!UIUtility.uiStyleConfigured)
+            {
+                UIUtility.ConfigureStyles();
+            }
+
+            GUILayout.BeginHorizontal();
+            value += range / 2;
+            int newDelta = (int)(value / range);
+            if (newDelta != delta & newDelta != delta + 1)
+                delta = newDelta;
+            double value01 = (value - delta * range) / range;
+            double increment01 = increment / range;
+            double valueOld = value01;
+            const float buttonWidth = 12, spaceWidth = 3;
+
+            GUILayout.Label(string.Empty, UIUtility.uiStyleLabelHint);
+            Rect rectLast = GUILayoutUtility.GetLastRect();
+            Rect rectSlider = new Rect(rectLast.xMin + buttonWidth + spaceWidth, rectLast.yMin, rectLast.width - 2 * (buttonWidth + spaceWidth), rectLast.height);
+            Rect rectSliderValue = new Rect(rectSlider.xMin, rectSlider.yMin, rectSlider.width * (float)value01, rectSlider.height - 3f);
+            Rect rectButtonL = new Rect(rectLast.xMin, rectLast.yMin, buttonWidth, rectLast.height);
+            Rect rectButtonR = new Rect(rectLast.xMin + rectLast.width - buttonWidth, rectLast.yMin, buttonWidth, rectLast.height);
+            Rect rectLabelValue = new Rect(rectSlider.xMin + rectSlider.width * 0.75f, rectSlider.yMin, rectSlider.width * 0.25f, rectSlider.height);
+
+            bool buttonAdjust = false;
+
+            if (GUI.Button(rectButtonL, string.Empty, UIUtility.uiStyleButton))
+            {
+                buttonAdjust = true;
+                if (Input.GetMouseButtonUp(0) || !allowFine)
+                {
+                    if (delta == 0 & value01 > 0.5) value01 = 0.5;
+                    else if (value01 == 0) delta -= 1;
+                    else value01 = 0;
+                }
+                else if (Input.GetMouseButtonUp(1) && allowFine)
+                {
+                    value01 -= increment01;
+                }
+                else buttonAdjust = false;
+            }
+            if (GUI.Button(rectButtonR, string.Empty, UIUtility.uiStyleButton))
+            {
+                buttonAdjust = true;
+                if (Input.GetMouseButtonUp(0) || !allowFine)
+                {
+                    if (delta == 0 & value01 < 0.5) value01 = 0.5;
+                    else if (value01 == 1) delta += 1;
+                    else value01 = 1;
+                }
+                else if (Input.GetMouseButtonUp(1) && allowFine)
+                {
+                    value01 += increment01;
+                }
+                else buttonAdjust = false;
+            }
+
+            if (!numericInput)
+            {
+                if (rectLast.Contains(Event.current.mousePosition) && (Event.current.type == EventType.MouseDrag || Event.current.type == EventType.MouseDown) // right click drag doesn't work properly without the event check
+                        && Event.current.type != EventType.MouseUp) // drag event covers this, but don't want it to
+                {
+                    value01 = GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, UIUtility.uiStyleSlider, UIUtility.uiStyleSliderThumb);
+
+                    if (valueOld != value01)
+                    {
+                        if (Input.GetMouseButton(0) || !allowFine) // normal control
+                        {
+                            double excess = value01 / increment01;
+                            value01 -= (excess - Math.Round(excess)) * increment01;
+                        }
+                        else if (Input.GetMouseButton(1) && allowFine) // fine control
+                        {
+                            double excess = valueOld / increment01;
+                            value01 = (valueOld - (excess - Math.Round(excess)) * increment01) + Math.Min(value01 - 0.5, 0.4999) * increment01;
+                        }
+                    }
+                }
+                else
+                {
+                    GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, UIUtility.uiStyleSlider, UIUtility.uiStyleSliderThumb);
+                }
+            }
+
+
+            GUI.DrawTexture(rectSliderValue, backgroundColor.GetTexture2D()); // slider filled area
+            GUI.Label(rectSlider, $"  {name}", UIUtility.uiStyleLabelHint); // slider name
+            if (!numericInput)
+            {
+                value = (float)(value01 * range + range * delta - range / 2);
+                changed = valueOld != value ? true : false;
+                GUI.Label(rectLabelValue, GetValueTranslation(value, valueType), UIUtility.uiStyleLabelHint); // slider value
+            }
+            else
+            {
+                value -= range / 2;
+                changed = false;
+                if (float.TryParse(GUI.TextField(rectLabelValue, value.ToString("F3"), UIUtility.uiStyleInputField), out var temp)) // Add optional numeric input
+                {
+                    if (!buttonAdjust)
+                    {
+                        value = temp;
+                        value01 = (value - delta * range) / range;
+                    }
+                    else
+                        value = (float)(value01 * range + range * delta - range / 2);
+                    changed = valueOld != value01 ? true : false;
+                }
+                value = Mathf.Clamp(value, float.NegativeInfinity, float.PositiveInfinity);
+            }
+
+            GUILayout.EndHorizontal();
+            return value;
+        }
+
+        public static float LimitedSlider(float value, float increment, float incrementLarge, Vector2 limits, string name, out bool changed, Color backgroundColor, int valueType, bool allowFine = true)
         {
             if (!UIUtility.uiStyleConfigured)
             {
@@ -239,6 +471,100 @@ namespace WingProcedural
             return value;
         }
 
+        public static float IntegerSlider(float value, float increment, float incrementLarge, int min, int max, string name, out bool changed, Color backgroundColor, int valueType, bool allowFine = true)
+        {
+            if (!UIUtility.uiStyleConfigured)
+            {
+                UIUtility.ConfigureStyles();
+            }
+
+            GUILayout.BeginHorizontal();
+            int range = max - min;
+            double value01 = (value - min) / range;
+            double increment01 = 1 / range;
+            double valueOld = value01;
+            const float buttonWidth = 12, spaceWidth = 3;
+
+            GUILayout.Label(string.Empty, UIUtility.uiStyleLabelHint);
+            Rect rectLast = GUILayoutUtility.GetLastRect();
+            Rect rectSlider = new Rect(rectLast.xMin + buttonWidth + spaceWidth, rectLast.yMin, rectLast.width - 2 * (buttonWidth + spaceWidth), rectLast.height);
+            Rect rectSliderValue = new Rect(rectSlider.xMin, rectSlider.yMin, rectSlider.width * (float)value01, rectSlider.height - 3f);
+            Rect rectButtonL = new Rect(rectLast.xMin, rectLast.yMin, buttonWidth, rectLast.height);
+            Rect rectButtonR = new Rect(rectLast.xMin + rectLast.width - buttonWidth, rectLast.yMin, buttonWidth, rectLast.height);
+            Rect rectLabelValue = new Rect(rectSlider.xMin + rectSlider.width * 0.75f, rectSlider.yMin, rectSlider.width * 0.25f, rectSlider.height);
+
+            bool buttonAdjust = false;
+
+            if (GUI.Button(rectButtonL, string.Empty, UIUtility.uiStyleButton))
+            {
+                buttonAdjust = true;
+                if (Input.GetMouseButtonUp(0) || !allowFine)
+                {
+                    value01 -= incrementLarge / range;
+                }
+                else if (Input.GetMouseButtonUp(1) && allowFine)
+                {
+                    value01 -= increment01;
+                }
+                else buttonAdjust = false;
+            }
+            if (GUI.Button(rectButtonR, string.Empty, UIUtility.uiStyleButton))
+            {
+                buttonAdjust = true;
+                if (Input.GetMouseButtonUp(0) || !allowFine)
+                {
+                    value01 += incrementLarge / range;
+                }
+                else if (Input.GetMouseButtonUp(1) && allowFine)
+                {
+                    value01 += increment01;
+                }
+                else buttonAdjust = false;
+            }
+
+            if (!numericInput)
+            {
+                if (rectLast.Contains(Event.current.mousePosition) && (Event.current.type == EventType.MouseDrag || Event.current.type == EventType.MouseDown) // right click drag doesn't work properly without the event check
+                        && Event.current.type != EventType.MouseUp) // drag event covers this, but don't want it to
+                {
+                    value01 = GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, UIUtility.uiStyleSlider, UIUtility.uiStyleSliderThumb);
+                }
+                else
+                {
+                    GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, UIUtility.uiStyleSlider, UIUtility.uiStyleSliderThumb);
+                }
+            }
+
+
+            GUI.DrawTexture(rectSliderValue, backgroundColor.GetTexture2D()); // slider filled area
+            GUI.Label(rectSlider, $"  {name}", UIUtility.uiStyleLabelHint); // slider name
+            if (!numericInput)
+            {
+                value = Mathf.Round((float)value01 * range) + min;
+                changed = valueOld != value ? true : false;
+                GUI.Label(rectLabelValue, GetValueTranslation(value, valueType), UIUtility.uiStyleLabelHint); // slider value
+            }
+            else
+            {
+                changed = false;
+                if (float.TryParse(GUI.TextField(rectLabelValue, value.ToString("F3"), UIUtility.uiStyleInputField), out var temp)) // Add optional numeric input
+                {
+                    if (!buttonAdjust)
+                    {
+                        value = temp;
+                        value01 = (value - min) / range;
+                    }
+                    else
+                        value = Mathf.Round((float)value01 * range) + min;
+                    changed = valueOld != value01;
+                }
+                value = Mathf.Clamp(value, min, max);
+            }
+
+            GUILayout.EndHorizontal();
+            return value;
+        }
+
         public static Rect ClampToScreen(Rect window)
         {
             window.x = Mathf.Clamp(window.x, -window.width + 20, Screen.width - 20);
@@ -301,18 +627,66 @@ namespace WingProcedural
             return mousepos;
         }
 
-        private static readonly string[][] stringIDs = new string[][] {
-                                                                new string[] { "Uniform", "Standard", "Reinforced", "LRSI", "HRSI" },
-                                                                new string[] { "", "No Edge", "Rounded", "Biconvex", "Triangular" },
-                                                                new string[] { "", "No Edge", "Rounded", "Biconvex", "Triangular" }
-                                                        }; // yup, I'm feeling lazy here...
-
         public static string GetValueTranslation(float value, int type)
         {
-            return (type < 1 || type > 3)
-                    ? value.ToString("F3")
-                    : stringIDs[type - 1][(int)value] // dont check for range errors, any range exceptions need to be visible in testing
-                ;
+            if (type == 1)
+            {
+                if (value == 0f) return "Uniform";
+                else if (value == 1f) return "Standard";
+                else if (value == 2f) return "Reinforced";
+                else if (value == 3f) return "LRSI";
+                else if (value == 4f) return "HRSI";
+                else return "Unknown material";
+            }
+            else if (type == 2)
+            {
+                if (value == 1f) return "No edge";
+                else if (value == 2f) return "Rounded";
+                else if (value == 3f) return "Biconvex";
+                else if (value == 4f) return "Triangular";
+                else return "Unknown";
+            }
+            else if (type == 3)
+            {
+                if (value == 1f) return "Rounded";
+                else if (value == 2f) return "Biconvex";
+                else if (value == 3f) return "Triangular";
+                else return "Unknown";
+            }
+            else return value.ToString("F3");
+        }
+        public static bool CheckBox(string desc, string choice1, string choice2, bool value, out bool changed)
+        {
+            float buttonWidth = 50;
+            //float spaceWidth = 3;
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("", UIUtility.uiStyleLabelHint);
+            Rect rectLast = GUILayoutUtility.GetLastRect();
+            Rect rectButton = new Rect(rectLast.x + rectLast.width - 53, rectLast.y, buttonWidth, rectLast.height);
+            //Rect rectChoice = new Rect(rectButton.xMin, rectButton.yMin, rectButton.width, rectButton.height); 
+            Rect rectDesc = new Rect(rectLast.x, rectLast.y, rectLast.width - 53, rectLast.height);
+            string choice;
+            changed = false;
+            choice = getChoice(choice1, choice2, value);
+            if (GUI.Button(rectButton, choice, UIUtility.uiStyleButton))
+            {
+                value = !value;
+                changed = true;
+            }
+            GUI.Label(rectDesc, "  " + desc, UIUtility.uiStyleLabelHint);
+
+
+            GUILayout.EndHorizontal();
+            return value;
+        }
+        public static string getChoice(string choice1, string choice2, bool state)
+        {
+            string choice;
+            if (!state)
+                choice = choice1;
+            else
+                choice = choice2;
+            return choice;
         }
     }
 }
