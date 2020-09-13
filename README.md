@@ -1,6 +1,7 @@
 # Version 1.0.0B
-### This is my edit based on [Rafterman82](https://github.com/Rafterman82/B9-PWings-Fork)'s v1.0.0 B9PW
-### Tested on KSP1.9.1 and KSP1.10.1
+### This is [CarnationRED's](https://github.com/CarnationRED/B9-PWings-Fork) edit based on [Rafterman82](https://github.com/Rafterman82/B9-PWings-Fork)'s v1.0.0 B9PW with some modification by me
+     
+### Tested on KSP1.10.1
 
 ## New Feature in 1.0.0B ##
  1. 　You can now attach all-moving wings to all-movings, and they will share the same deflection if their rotaion axis are aligned
