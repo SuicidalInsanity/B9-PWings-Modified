@@ -9,8 +9,70 @@ namespace WingProcedural
 
     public struct MathD
     {
+        public const double PI = 3.14159265358979;
+        public const double Infinity = double.PositiveInfinity;
+        public const double NegativeInfinity = double.NegativeInfinity;
         public const double Deg2Rad = Math.PI / 180;
         public const double Rad2Deg = 180 / Math.PI;
+        public const double Epsilon = double.Epsilon;
+
+        public static double Sin(double d)
+        {
+            return Math.Sin(d);
+        }
+
+        public static double Cos(double d)
+        {
+            return Math.Cos(d);
+        }
+
+        public static double Tan(double d)
+        {
+            return Math.Tan(d);
+        }
+
+        public static double Asin(double d)
+        {
+            return Math.Asin(d);
+        }
+
+        public static double Acos(double d)
+        {
+            return Math.Acos(d);
+        }
+
+        public static double Atan(double d)
+        {
+            return Math.Atan(d);
+        }
+
+        public static double Atan2(double y, double x)
+        {
+            return Math.Atan2(y, x);
+        }
+
+        public static double Sqrt(double d)
+        {
+            return Math.Sqrt(d);
+        }
+
+        public static double Abs(double d)
+        {
+            return Math.Abs(d);
+        }
+
+        public static int Abs(int value)
+        {
+            return Math.Abs(value);
+        }
+
+        public static double Min(double a, double b)
+        {
+            if (a < b)
+                return a;
+            else
+                return b;
+        }
 
         public static double Min(params double[] values)
         {
@@ -50,6 +112,14 @@ namespace WingProcedural
             return num;
         }
 
+        public static double Max(double a, double b)
+        {
+            if (a > b)
+                return a;
+            else
+                return b;
+        }
+
         public static double Max(params double[] values)
         {
             int length = values.Length;
@@ -67,6 +137,14 @@ namespace WingProcedural
                 }
             }
             return num;
+        }
+
+        public static int Max(int a, int b)
+        {
+            if (a > b)
+                return a;
+            else
+                return b;
         }
 
         public static int Max(params int[] values)
@@ -88,6 +166,46 @@ namespace WingProcedural
             return num;
         }
 
+        public static double Pow(double d, double p)
+        {
+            return Math.Pow(d, p);
+        }
+
+        public static double Exp(double power)
+        {
+            return Math.Exp(power);
+        }
+
+        public static double Log(double d, double p)
+        {
+            return Math.Log(d, p);
+        }
+
+        public static double Log(double d)
+        {
+            return Math.Log(d);
+        }
+
+        public static double Log10(double d)
+        {
+            return Math.Log10(d);
+        }
+
+        public static double Ceil(double d)
+        {
+            return Math.Ceiling(d);
+        }
+
+        public static double Floor(double d)
+        {
+            return Math.Floor(d);
+        }
+
+        public static double Round(double d)
+        {
+            return Math.Round(d);
+        }
+
         public static int CeilToInt(double d)
         {
             return (int)Math.Ceiling(d);
@@ -101,6 +219,11 @@ namespace WingProcedural
         public static int RoundToInt(double d)
         {
             return (int)Math.Round(d);
+        }
+
+        public static double Sign(double d)
+        {
+            return d >= 0.0 ? 1d : -1d;
         }
 
         public static T Clamp<T>(T value, T min, T max) where T : IComparable<T>
