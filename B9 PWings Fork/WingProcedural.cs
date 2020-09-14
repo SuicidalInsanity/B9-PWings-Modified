@@ -933,13 +933,13 @@ namespace WingProcedural
         public void CalcBase()
         {
             sharedBaseWidthTip = sharedBaseWidthRoot - 1 / (float)(Math.Tan(Mathf.Deg2Rad * sharedSweptAngleFront)) * sharedBaseLength + 1 / (float)(Math.Tan(Mathf.Deg2Rad * sharedSweptAngleBack)) * sharedBaseLength;
-            sharedBaseOffsetTip = (1 / (float)(Math.Tan(Mathf.Deg2Rad * sharedSweptAngleFront)) * sharedBaseLength + 1 / (float)(Math.Tan(Mathf.Deg2Rad * sharedSweptAngleBack)) * sharedBaseLength) / 2;
+            sharedBaseOffsetTip = (1 / (float)(Math.Tan(Mathf.Deg2Rad * sharedSweptAngleFront)) * sharedBaseLength + 1 / (float)(Math.Tan(Mathf.Deg2Rad * sharedSweptAngleBack)) * sharedBaseLength) / 2 - sharedBaseOffsetRoot;
         }
 
         public void CalcAngle()
         {
-            sharedSweptAngleBack = (float)Math.Atan(sharedBaseLength / (-sharedBaseWidthRoot / 2 + sharedBaseWidthTip / 2 + sharedBaseOffsetTip)) / Mathf.Deg2Rad;
-            sharedSweptAngleFront = (float)Math.Atan(sharedBaseLength / (sharedBaseWidthRoot / 2 - sharedBaseWidthTip / 2 + sharedBaseOffsetTip)) / Mathf.Deg2Rad;
+            sharedSweptAngleBack = (float)Math.Atan(sharedBaseLength / (-sharedBaseWidthRoot / 2 + sharedBaseWidthTip / 2 + sharedBaseOffsetTip + sharedBaseOffsetRoot)) / Mathf.Deg2Rad;
+            sharedSweptAngleFront = (float)Math.Atan(sharedBaseLength / (sharedBaseWidthRoot / 2 - sharedBaseWidthTip / 2 + sharedBaseOffsetTip + sharedBaseOffsetRoot)) / Mathf.Deg2Rad;
             if (sharedSweptAngleFront < 0)
                 sharedSweptAngleFront += 180;
             if (sharedSweptAngleBack < 0)
