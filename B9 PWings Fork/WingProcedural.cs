@@ -3152,21 +3152,23 @@ namespace WingProcedural
 
         private void SetupFields()
         {
-            sharedBaseLength = SetupFieldValue(sharedBaseLength, GetLimitsFromType(sharedBaseLengthLimits), GetDefault(sharedBaseLengthDefaults));
-            sharedBaseWidthRoot = SetupFieldValue(sharedBaseWidthRoot, GetLimitsFromType(sharedBaseWidthRootLimits), GetDefault(sharedBaseWidthRootDefaults));
-            sharedBaseWidthTip = SetupFieldValue(sharedBaseWidthTip, GetLimitsFromType(sharedBaseWidthTipLimits), GetDefault(sharedBaseWidthTipDefaults));
-            sharedBaseThicknessRoot = SetupFieldValue(sharedBaseThicknessRoot, sharedBaseThicknessLimits, GetDefault(sharedBaseThicknessRootDefaults));
-            sharedBaseThicknessTip = SetupFieldValue(sharedBaseThicknessTip, sharedBaseThicknessLimits, GetDefault(sharedBaseThicknessTipDefaults));
-            sharedBaseOffsetRoot = SetupFieldValue(sharedBaseOffsetRoot, GetLimitsFromType(sharedBaseOffsetLimits), GetDefault(sharedBaseOffsetRootDefaults));
-            sharedBaseOffsetTip = SetupFieldValue(sharedBaseOffsetTip, GetLimitsFromType(sharedBaseOffsetLimits), GetDefault(sharedBaseOffsetTipDefaults));
 
-            sharedEdgeTypeTrailing = SetupFieldValue(sharedEdgeTypeTrailing, GetLimitsFromType(sharedEdgeTypeLimits), GetDefault(sharedEdgeTypeTrailingDefaults));
-            sharedEdgeWidthTrailingRoot = SetupFieldValue(sharedEdgeWidthTrailingRoot, GetLimitsFromType(sharedEdgeWidthLimits), GetDefault(sharedEdgeWidthTrailingRootDefaults));
-            sharedEdgeWidthTrailingTip = SetupFieldValue(sharedEdgeWidthTrailingTip, GetLimitsFromType(sharedEdgeWidthLimits), GetDefault(sharedEdgeWidthTrailingTipDefaults));
 
-            sharedEdgeTypeLeading = SetupFieldValue(sharedEdgeTypeLeading, GetLimitsFromType(sharedEdgeTypeLimits), GetDefault(sharedEdgeTypeLeadingDefaults));
-            sharedEdgeWidthLeadingRoot = SetupFieldValue(sharedEdgeWidthLeadingRoot, GetLimitsFromType(sharedEdgeWidthLimits), GetDefault(sharedEdgeWidthLeadingRootDefaults));
-            sharedEdgeWidthLeadingTip = SetupFieldValue(sharedEdgeWidthLeadingTip, GetLimitsFromType(sharedEdgeWidthLimits), GetDefault(sharedEdgeWidthLeadingTipDefaults));
+            sharedBaseLength = SetupFieldValue(sharedBaseLength, getLimits(sharedBaseLength, getStep(sharedBaseLengthLimits)), GetDefault(sharedBaseLengthDefaults));
+            sharedBaseWidthRoot = SetupFieldValue(sharedBaseWidthRoot, getLimits(sharedBaseWidthRoot, getStep(sharedBaseWidthRootLimits)), GetDefault(sharedBaseWidthRootDefaults));
+            sharedBaseWidthTip = SetupFieldValue(sharedBaseWidthTip, getLimits(sharedBaseWidthTip, getStep(sharedBaseWidthTipLimits)), GetDefault(sharedBaseWidthTipDefaults));
+            sharedBaseThicknessRoot = SetupFieldValue(sharedBaseThicknessRoot, getLimits(sharedBaseThicknessRoot, getStep(sharedBaseThicknessLimits)), GetDefault(sharedBaseThicknessRootDefaults));
+            sharedBaseThicknessTip = SetupFieldValue(sharedBaseThicknessTip, getLimits(sharedBaseThicknessTip, getStep(sharedBaseThicknessLimits)), GetDefault(sharedBaseThicknessTipDefaults));
+            sharedBaseOffsetRoot = SetupFieldValue(sharedBaseOffsetRoot, getLimits(sharedBaseOffsetRoot, getStep(sharedBaseOffsetLimits)), GetDefault(sharedBaseOffsetRootDefaults));
+            sharedBaseOffsetTip = SetupFieldValue(sharedBaseOffsetTip, getLimits(sharedBaseOffsetTip, getStep(sharedBaseOffsetLimits)), GetDefault(sharedBaseOffsetTipDefaults));
+
+            sharedEdgeTypeTrailing = SetupFieldValue(sharedEdgeTypeTrailing, sharedEdgeTypeLimits, GetDefault(sharedEdgeTypeTrailingDefaults));
+            sharedEdgeWidthTrailingRoot = SetupFieldValue(sharedEdgeWidthTrailingRoot, getLimits(sharedEdgeWidthTrailingRoot, getStep(sharedEdgeWidthLimits)), GetDefault(sharedEdgeWidthTrailingRootDefaults));
+            sharedEdgeWidthTrailingTip = SetupFieldValue(sharedEdgeWidthTrailingTip, getLimits(sharedEdgeWidthTrailingTip, getStep(sharedEdgeWidthLimits)), GetDefault(sharedEdgeWidthTrailingTipDefaults));
+
+            sharedEdgeTypeLeading = SetupFieldValue(sharedEdgeTypeLeading, sharedEdgeTypeLimits, GetDefault(sharedEdgeTypeLeadingDefaults));
+            sharedEdgeWidthLeadingRoot = SetupFieldValue(sharedEdgeWidthLeadingRoot, getLimits(sharedEdgeWidthLeadingRoot, getStep(sharedBaseOffsetLimits)), GetDefault(sharedEdgeWidthLeadingRootDefaults));
+            sharedEdgeWidthLeadingTip = SetupFieldValue(sharedEdgeWidthLeadingTip, getLimits(sharedEdgeWidthLeadingTip, getStep(sharedBaseOffsetLimits)), GetDefault(sharedEdgeWidthLeadingTipDefaults));
 
             sharedMaterialST = SetupFieldValue(sharedMaterialST, sharedMaterialLimits, GetDefault(sharedMaterialSTDefaults));
             sharedColorSTOpacity = SetupFieldValue(sharedColorSTOpacity, sharedColorLimits, GetDefault(sharedColorSTOpacityDefaults));
@@ -3191,7 +3193,7 @@ namespace WingProcedural
             sharedColorELHue = SetupFieldValue(sharedColorELHue, sharedColorLimits, GetDefault(sharedColorELHueDefaults));
             sharedColorELSaturation = SetupFieldValue(sharedColorELSaturation, sharedColorLimits, GetDefault(sharedColorELSaturationDefaults));
             sharedColorELBrightness = SetupFieldValue(sharedColorELBrightness, sharedColorLimits, GetDefault(sharedColorELBrightnessDefaults));
-
+            
             UpdateWindow();
             isSetToDefaultValues = true;
         }
