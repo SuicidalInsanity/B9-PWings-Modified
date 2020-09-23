@@ -3204,10 +3204,15 @@ namespace WingProcedural
         }
 
         private float SetupFieldValue(float value, Vector2 limits, float defaultValue)
-        {
+        /*{
             return isSetToDefaultValues ? Mathf.Clamp(value, limits.x, limits.y) : defaultValue;
-        }
-
+        }*/
+        {
+            if (!isSetToDefaultValues)
+                return defaultValue;
+            else
+                return value;
+        }// bypass limit check
         /// <summary>
         ///
         /// </summary>
