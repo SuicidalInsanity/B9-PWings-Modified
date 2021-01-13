@@ -701,6 +701,8 @@ namespace WingProcedural
             sharedBaseWidthRoot = parent.sharedBaseWidthTip;
             sharedBaseThicknessRoot = parent.sharedBaseThicknessTip;
 
+            sharedBaseOffsetRoot = -parent.sharedBaseOffsetTip;
+
             sharedEdgeTypeLeading = parent.sharedEdgeTypeLeading;
             sharedEdgeWidthLeadingRoot = parent.sharedEdgeWidthLeadingTip;
 
@@ -1117,9 +1119,16 @@ namespace WingProcedural
             SetupMeshFilters();
             SetupMeshReferences();
             ReportOnMeshReferences();
-            UpdateMaterials();
+            if (ApplyLegacyTextures())
+            {
+                UpdateMaterials();
+            }
             UpdateGeometry(true);
             UpdateWindow();
+        }
+        private bool ApplyLegacyTextures()
+        {
+            return part.GetComponent("KSPTextureSwitch") is null;
         }
 
         #endregion Unity stuff and Callbacks/events
@@ -1328,107 +1337,111 @@ namespace WingProcedural
 
                 // Next, we fetch appropriate mesh reference and mesh filter for the edges and modify the meshes
                 // Geometry is split into groups through simple vertex normal filtering
-
-                if (meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt] != null)
+                for (int j = 0; j < meshTypeCountEdgeWing; j++)
                 {
-                    MeshReference meshReference = meshReferencesWingEdge[wingEdgeTypeTrailingInt];
-                    int length = meshReference.vp.Length;
-                    Vector3[] vp = new Vector3[length];
-                    Array.Copy(meshReference.vp, vp, length);
-                    Vector3[] nm = new Vector3[length];
-                    Array.Copy(meshReference.nm, nm, length);
-                    Vector2[] uv = new Vector2[length];
-                    Array.Copy(meshReference.uv, uv, length);
-                    Color[] cl = new Color[length];
-                    Vector2[] uv2 = new Vector2[length];
-
-                    if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
+                    if (meshFiltersWingEdgeTrailing[j] != null)
                     {
-                        DebugLogWithID("UpdateGeometry", "Wing edge trailing | Passed array setup");
-                    }
+                        MeshReference meshReference = meshReferencesWingEdge[j];
+                        int length = meshReference.vp.Length;
+                        Vector3[] vp = new Vector3[length];
+                        Array.Copy(meshReference.vp, vp, length);
+                        Vector3[] nm = new Vector3[length];
+                        Array.Copy(meshReference.nm, nm, length);
+                        Vector2[] uv = new Vector2[length];
+                        Array.Copy(meshReference.uv, uv, length);
+                        Color[] cl = new Color[length];
+                        Vector2[] uv2 = new Vector2[length];
 
-                    for (int i = 0; i < vp.Length; ++i)
-                    {
-                        if (vp[i].x < -0.1f)
+                        if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
                         {
-                            vp[i] = new Vector3(-geometricLength, vp[i].y * wingThicknessDeviationTip, vp[i].z * wingEdgeWidthTrailingTipDeviation + geometricWidthTip / 2f + geometricOffsetTip); // Tip edge
-                            if (nm[i].x == 0f)
+                            DebugLogWithID("UpdateGeometry", "Wing edge trailing | Passed array setup");
+                        }
+
+                        for (int i = 0; i < vp.Length; ++i)
+                        {
+                            if (vp[i].x < -0.1f)
                             {
-                                uv[i] = new Vector2(geometricLength, uv[i].y);
+                                vp[i] = new Vector3(-geometricLength, vp[i].y * wingThicknessDeviationTip, vp[i].z * wingEdgeWidthTrailingTipDeviation + geometricWidthTip / 2f + geometricOffsetTip); // Tip edge
+                                if (nm[i].x == 0f)
+                                {
+                                    uv[i] = new Vector2(geometricLength, uv[i].y);
+                                }
+                            }
+                            else
+                            {
+                                vp[i] = new Vector3(0f, vp[i].y * wingThicknessDeviationRoot, vp[i].z * wingEdgeWidthTrailingRootDeviation + geometricWidthRoot / 2f + wingWidthRootBasedOffset); // Root edge
+                            }
+
+                            if (nm[i].x == 0f && sharedEdgeTypeTrailing != 1)
+                            {
+                                cl[i] = GetVertexColor(2);
+                                uv2[i] = GetVertexUV2(sharedMaterialET);
                             }
                         }
-                        else
+
+                        meshFiltersWingEdgeTrailing[j].mesh.vertices = vp;
+                        meshFiltersWingEdgeTrailing[j].mesh.uv = uv;
+                        meshFiltersWingEdgeTrailing[j].mesh.uv2 = uv2;
+                        meshFiltersWingEdgeTrailing[j].mesh.colors = cl;
+                        meshFiltersWingEdgeTrailing[j].mesh.RecalculateBounds();
+
+                        if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
                         {
-                            vp[i] = new Vector3(0f, vp[i].y * wingThicknessDeviationRoot, vp[i].z * wingEdgeWidthTrailingRootDeviation + geometricWidthRoot / 2f + wingWidthRootBasedOffset); // Root edge
+                            DebugLogWithID("UpdateGeometry", "Wing edge trailing | Finished");
                         }
-
-                        if (nm[i].x == 0f && sharedEdgeTypeTrailing != 1)
-                        {
-                            cl[i] = GetVertexColor(2);
-                            uv2[i] = GetVertexUV2(sharedMaterialET);
-                        }
-                    }
-
-                    meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.vertices = vp;
-                    meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.uv = uv;
-                    meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.uv2 = uv2;
-                    meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.colors = cl;
-                    meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.RecalculateBounds();
-
-                    if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
-                    {
-                        DebugLogWithID("UpdateGeometry", "Wing edge trailing | Finished");
                     }
                 }
-
-                if (meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt] != null)
+                for (int j = 0; j < meshTypeCountEdgeWing; j++)
                 {
-                    MeshReference meshReference = meshReferencesWingEdge[wingEdgeTypeLeadingInt];
-                    int length = meshReference.vp.Length;
-                    Vector3[] vp = new Vector3[length];
-                    Array.Copy(meshReference.vp, vp, length);
-                    Vector3[] nm = new Vector3[length];
-                    Array.Copy(meshReference.nm, nm, length);
-                    Vector2[] uv = new Vector2[length];
-                    Array.Copy(meshReference.uv, uv, length);
-                    Color[] cl = new Color[length];
-                    Vector2[] uv2 = new Vector2[length];
-
-                    if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
+                    if (meshFiltersWingEdgeLeading[j] != null)
                     {
-                        DebugLogWithID("UpdateGeometry", "Wing edge leading | Passed array setup");
-                    }
+                        MeshReference meshReference = meshReferencesWingEdge[j];
+                        int length = meshReference.vp.Length;
+                        Vector3[] vp = new Vector3[length];
+                        Array.Copy(meshReference.vp, vp, length);
+                        Vector3[] nm = new Vector3[length];
+                        Array.Copy(meshReference.nm, nm, length);
+                        Vector2[] uv = new Vector2[length];
+                        Array.Copy(meshReference.uv, uv, length);
+                        Color[] cl = new Color[length];
+                        Vector2[] uv2 = new Vector2[length];
 
-                    for (int i = 0; i < vp.Length; ++i)
-                    {
-                        if (vp[i].x < -0.1f)
+                        if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
                         {
-                            vp[i] = new Vector3(-geometricLength, vp[i].y * wingThicknessDeviationTip, vp[i].z * wingEdgeWidthLeadingTipDeviation + geometricWidthTip / 2f - geometricOffsetTip); // Tip edge
-                            if (nm[i].x == 0f)
+                            DebugLogWithID("UpdateGeometry", "Wing edge leading | Passed array setup");
+                        }
+
+                        for (int i = 0; i < vp.Length; ++i)
+                        {
+                            if (vp[i].x < -0.1f)
                             {
-                                uv[i] = new Vector2(geometricLength, uv[i].y);
+                                vp[i] = new Vector3(-geometricLength, vp[i].y * wingThicknessDeviationTip, vp[i].z * wingEdgeWidthLeadingTipDeviation + geometricWidthTip / 2f - geometricOffsetTip); // Tip edge
+                                if (nm[i].x == 0f)
+                                {
+                                    uv[i] = new Vector2(geometricLength, uv[i].y);
+                                }
+                            }
+                            else
+                            {
+                                vp[i] = new Vector3(0f, vp[i].y * wingThicknessDeviationRoot, vp[i].z * wingEdgeWidthLeadingRootDeviation + geometricWidthRoot / 2f - wingWidthRootBasedOffset); // Root edge
+                            }
+
+                            if (nm[i].x == 0f && sharedEdgeTypeLeading != 1)
+                            {
+                                cl[i] = GetVertexColor(3);
+                                uv2[i] = GetVertexUV2(sharedMaterialEL);
                             }
                         }
-                        else
-                        {
-                            vp[i] = new Vector3(0f, vp[i].y * wingThicknessDeviationRoot, vp[i].z * wingEdgeWidthLeadingRootDeviation + geometricWidthRoot / 2f - wingWidthRootBasedOffset); // Root edge
-                        }
 
-                        if (nm[i].x == 0f && sharedEdgeTypeLeading != 1)
+                        meshFiltersWingEdgeLeading[j].mesh.vertices = vp;
+                        meshFiltersWingEdgeLeading[j].mesh.uv = uv;
+                        meshFiltersWingEdgeLeading[j].mesh.uv2 = uv2;
+                        meshFiltersWingEdgeLeading[j].mesh.colors = cl;
+                        meshFiltersWingEdgeLeading[j].mesh.RecalculateBounds();
+                        if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
                         {
-                            cl[i] = GetVertexColor(3);
-                            uv2[i] = GetVertexUV2(sharedMaterialEL);
+                            DebugLogWithID("UpdateGeometry", "Wing edge leading | Finished");
                         }
-                    }
-
-                    meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.vertices = vp;
-                    meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.uv = uv;
-                    meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.uv2 = uv2;
-                    meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.colors = cl;
-                    meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.RecalculateBounds();
-                    if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
-                    {
-                        DebugLogWithID("UpdateGeometry", "Wing edge leading | Finished");
                     }
                 }
             }
@@ -1569,89 +1582,91 @@ namespace WingProcedural
 
                 // Now we can modify geometry
                 // Copy-pasted frame deformation sequence at the moment, to be pruned later
-
-                if (meshFiltersCtrlEdge[ctrlEdgeTypeInt] != null)
+                for (int j = 0; j < meshTypeCountEdgeCtrl; j++)
                 {
-                    MeshReference meshReference = meshReferencesCtrlEdge[ctrlEdgeTypeInt];
-                    int length = meshReference.vp.Length;
-                    Vector3[] vp = new Vector3[length];
-                    Array.Copy(meshReference.vp, vp, length);
-                    Vector3[] nm = new Vector3[length];
-                    Array.Copy(meshReference.nm, nm, length);
-                    Vector2[] uv = new Vector2[length];
-                    Array.Copy(meshReference.uv, uv, length);
-                    Color[] cl = new Color[length];
-                    Vector2[] uv2 = new Vector2[length];
-
-                    if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
+                    if (meshFiltersCtrlEdge[j] != null)
                     {
-                        DebugLogWithID("UpdateGeometry", "Control surface edge | Passed array setup");
-                    }
+                        MeshReference meshReference = meshReferencesCtrlEdge[j];
+                        int length = meshReference.vp.Length;
+                        Vector3[] vp = new Vector3[length];
+                        Array.Copy(meshReference.vp, vp, length);
+                        Vector3[] nm = new Vector3[length];
+                        Array.Copy(meshReference.nm, nm, length);
+                        Vector2[] uv = new Vector2[length];
+                        Array.Copy(meshReference.uv, uv, length);
+                        Color[] cl = new Color[length];
+                        Vector2[] uv2 = new Vector2[length];
 
-                    for (int i = 0; i < vp.Length; ++i)
-                    {
-                        // Thickness correction (X), edge width correction (Y) and span-based offset (Z)
-                        vp[i] = vp[i].z < 0f
-                            ? new Vector3(vp[i].x * ctrlThicknessDeviationTip, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationTip) - 0.5f, vp[i].z + 0.5f - geometricLength / 2f)
-                            : new Vector3(vp[i].x * ctrlThicknessDeviationRoot, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationRoot) - 0.5f, vp[i].z - 0.5f + geometricLength / 2f);
-
-                        // Left/right sides
-                        if (nm[i] == new Vector3(0f, 0f, 1f) || nm[i] == new Vector3(0f, 0f, -1f))
+                        if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
                         {
-                            vp[i] = vp[i].z < 0f
-                                ? new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlTipWidth, vp[i].z)
-                                : new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlRootWidth, vp[i].z);
+                            DebugLogWithID("UpdateGeometry", "Control surface edge | Passed array setup");
                         }
 
-                        // Trailing edge
-                        else
+                        for (int i = 0; i < vp.Length; ++i)
                         {
-                            // Filtering out root neighbours
-                            if (vp[i].y < -0.1f)
+                            // Thickness correction (X), edge width correction (Y) and span-based offset (Z)
+                            vp[i] = vp[i].z < 0f
+                                ? new Vector3(vp[i].x * ctrlThicknessDeviationTip, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationTip) - 0.5f, vp[i].z + 0.5f - geometricLength / 2f)
+                                : new Vector3(vp[i].x * ctrlThicknessDeviationRoot, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationRoot) - 0.5f, vp[i].z - 0.5f + geometricLength / 2f);
+
+                            // Left/right sides
+                            if (nm[i] == new Vector3(0f, 0f, 1f) || nm[i] == new Vector3(0f, 0f, -1f))
                             {
                                 vp[i] = vp[i].z < 0f
                                     ? new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlTipWidth, vp[i].z)
                                     : new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlRootWidth, vp[i].z);
                             }
-                        }
 
-                        // Offset-based distortion
-                        if (vp[i].z < 0f)
-                        {
-                            vp[i] = new Vector3(vp[i].x, vp[i].y, vp[i].z + vp[i].y * ctrlOffsetTipClamped);
-                            if (nm[i] != new Vector3(0f, 0f, 1f) && nm[i] != new Vector3(0f, 0f, -1f))
+                            // Trailing edge
+                            else
                             {
-                                uv[i] = new Vector2(uv[i].x - (vp[i].y * ctrlOffsetTipClamped) / 4f, uv[i].y);
+                                // Filtering out root neighbours
+                                if (vp[i].y < -0.1f)
+                                {
+                                    vp[i] = vp[i].z < 0f
+                                        ? new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlTipWidth, vp[i].z)
+                                        : new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlRootWidth, vp[i].z);
+                                }
+                            }
+
+                            // Offset-based distortion
+                            if (vp[i].z < 0f)
+                            {
+                                vp[i] = new Vector3(vp[i].x, vp[i].y, vp[i].z + vp[i].y * ctrlOffsetTipClamped);
+                                if (nm[i] != new Vector3(0f, 0f, 1f) && nm[i] != new Vector3(0f, 0f, -1f))
+                                {
+                                    uv[i] = new Vector2(uv[i].x - (vp[i].y * ctrlOffsetTipClamped) / 4f, uv[i].y);
+                                }
+                            }
+                            else
+                            {
+                                vp[i] = new Vector3(vp[i].x, vp[i].y, vp[i].z + vp[i].y * ctrlOffsetRootClamped);
+                                if (nm[i] != new Vector3(0f, 0f, 1f) && nm[i] != new Vector3(0f, 0f, -1f))
+                                {
+                                    uv[i] = new Vector2(uv[i].x - (vp[i].y * ctrlOffsetRootClamped) / 4f, uv[i].y);
+                                }
+                            }
+
+                            // Trailing edge (UV adjustment, has to be the last as it's based on cumulative vertex positions)
+                            if (nm[i] != new Vector3(0f, 1f, 0f) && nm[i] != new Vector3(0f, 0f, 1f) && nm[i] != new Vector3(0f, 0f, -1f) && uv[i].y < 0.3f)
+                            {
+                                uv[i] = vp[i].z < 0f ? new Vector2(vp[i].z, uv[i].y) : new Vector2(vp[i].z, uv[i].y);
+
+                                // Color has to be applied there to avoid blanking out cross sections
+                                cl[i] = GetVertexColor(2);
+                                uv2[i] = GetVertexUV2(sharedMaterialET);
                             }
                         }
-                        else
+
+                        meshFiltersCtrlEdge[j].mesh.vertices = vp;
+                        meshFiltersCtrlEdge[j].mesh.uv = uv;
+                        meshFiltersCtrlEdge[j].mesh.uv2 = uv2;
+                        meshFiltersCtrlEdge[j].mesh.colors = cl;
+                        meshFiltersCtrlEdge[j].mesh.RecalculateBounds();
+                        if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
                         {
-                            vp[i] = new Vector3(vp[i].x, vp[i].y, vp[i].z + vp[i].y * ctrlOffsetRootClamped);
-                            if (nm[i] != new Vector3(0f, 0f, 1f) && nm[i] != new Vector3(0f, 0f, -1f))
-                            {
-                                uv[i] = new Vector2(uv[i].x - (vp[i].y * ctrlOffsetRootClamped) / 4f, uv[i].y);
-                            }
+                            DebugLogWithID("UpdateGeometry", "Control surface edge | Finished");
                         }
-
-                        // Trailing edge (UV adjustment, has to be the last as it's based on cumulative vertex positions)
-                        if (nm[i] != new Vector3(0f, 1f, 0f) && nm[i] != new Vector3(0f, 0f, 1f) && nm[i] != new Vector3(0f, 0f, -1f) && uv[i].y < 0.3f)
-                        {
-                            uv[i] = vp[i].z < 0f ? new Vector2(vp[i].z, uv[i].y) : new Vector2(vp[i].z, uv[i].y);
-
-                            // Color has to be applied there to avoid blanking out cross sections
-                            cl[i] = GetVertexColor(2);
-                            uv2[i] = GetVertexUV2(sharedMaterialET);
-                        }
-                    }
-
-                    meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.vertices = vp;
-                    meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.uv = uv;
-                    meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.uv2 = uv2;
-                    meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.colors = cl;
-                    meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.RecalculateBounds();
-                    if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
-                    {
-                        DebugLogWithID("UpdateGeometry", "Control surface edge | Finished");
                     }
                 }
 
@@ -3029,46 +3044,49 @@ namespace WingProcedural
                     DrawField(ref sharedEdgeWidthTrailingTip, sharedIncrementSmall, sharedIncrementSmall, getStep(sharedEdgeWidthLimits), "Width (tip)", uiColorSliderEdgeT, 12, 0, ref sharedEdgeWidthTTInt);
                 }
 
-                DrawFieldGroupHeader(ref sharedFieldGroupColorSTStatic, "Surface (top)");
-                if (sharedFieldGroupColorSTStatic)
+                if (ApplyLegacyTextures())
                 {
-                    DrawInt(ref sharedMaterialST, sharedIncrementInt, sharedIncrementInt, 0, 4, "Material", uiColorSliderColorsST, 13, 1);
-                    DrawLimited(ref sharedColorSTOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Opacity", uiColorSliderColorsST, 14, 0, true);
-                    DrawLimited(ref sharedColorSTHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Hue", uiColorSliderColorsST, 15, 0, true);
-                    DrawLimited(ref sharedColorSTSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Saturation", uiColorSliderColorsST, 16, 0, true);
-                    DrawLimited(ref sharedColorSTBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Brightness", uiColorSliderColorsST, 17, 0, true);
-                }
-
-                DrawFieldGroupHeader(ref sharedFieldGroupColorSBStatic, "Surface (bottom)");
-                if (sharedFieldGroupColorSBStatic)
-                {
-                    DrawInt(ref sharedMaterialSB, sharedIncrementInt, sharedIncrementInt, 0, 4, "Material", uiColorSliderColorsSB, 13, 1);
-                    DrawLimited(ref sharedColorSBOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Opacity", uiColorSliderColorsSB, 14, 0, true);
-                    DrawLimited(ref sharedColorSBHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Hue", uiColorSliderColorsSB, 15, 0, true);
-                    DrawLimited(ref sharedColorSBSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Saturation", uiColorSliderColorsSB, 16, 0, true);
-                    DrawLimited(ref sharedColorSBBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Brightness", uiColorSliderColorsSB, 17, 0, true);
-                }
-
-                DrawFieldGroupHeader(ref sharedFieldGroupColorETStatic, "Surface (trailing edge)");
-                if (sharedFieldGroupColorETStatic)
-                {
-                    DrawInt(ref sharedMaterialET, sharedIncrementInt, sharedIncrementInt, 0, 4, "Material", uiColorSliderColorsET, 13, 1);
-                    DrawLimited(ref sharedColorETOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Opacity", uiColorSliderColorsET, 14, 0, true);
-                    DrawLimited(ref sharedColorETHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Hue", uiColorSliderColorsET, 15, 0, true);
-                    DrawLimited(ref sharedColorETSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Saturation", uiColorSliderColorsET, 16, 0, true);
-                    DrawLimited(ref sharedColorETBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Brightness", uiColorSliderColorsET, 17, 0, true);
-                }
-
-                if (!isCtrlSrf)
-                {
-                    DrawFieldGroupHeader(ref sharedFieldGroupColorELStatic, "Surface (leading edge)");
-                    if (sharedFieldGroupColorELStatic)
+                    DrawFieldGroupHeader(ref sharedFieldGroupColorSTStatic, "Surface (top)");
+                    if (sharedFieldGroupColorSTStatic)
                     {
-                        DrawInt(ref sharedMaterialEL, sharedIncrementInt, sharedIncrementInt, 0, 4, "Material", uiColorSliderColorsEL, 13, 1);
-                        DrawLimited(ref sharedColorELOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Opacity", uiColorSliderColorsEL, 14, 0, true);
-                        DrawLimited(ref sharedColorELHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Hue", uiColorSliderColorsEL, 15, 0, true);
-                        DrawLimited(ref sharedColorELSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Saturation", uiColorSliderColorsEL, 16, 0, true);
-                        DrawLimited(ref sharedColorELBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Brightness", uiColorSliderColorsEL, 17, 0, true);
+                        DrawInt(ref sharedMaterialST, sharedIncrementInt, sharedIncrementInt, 0, 4, "Material", uiColorSliderColorsST, 13, 1);
+                        DrawLimited(ref sharedColorSTOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Opacity", uiColorSliderColorsST, 14, 0, true);
+                        DrawLimited(ref sharedColorSTHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Hue", uiColorSliderColorsST, 15, 0, true);
+                        DrawLimited(ref sharedColorSTSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Saturation", uiColorSliderColorsST, 16, 0, true);
+                        DrawLimited(ref sharedColorSTBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Brightness", uiColorSliderColorsST, 17, 0, true);
+                    }
+
+                    DrawFieldGroupHeader(ref sharedFieldGroupColorSBStatic, "Surface (bottom)");
+                    if (sharedFieldGroupColorSBStatic)
+                    {
+                        DrawInt(ref sharedMaterialSB, sharedIncrementInt, sharedIncrementInt, 0, 4, "Material", uiColorSliderColorsSB, 13, 1);
+                        DrawLimited(ref sharedColorSBOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Opacity", uiColorSliderColorsSB, 14, 0, true);
+                        DrawLimited(ref sharedColorSBHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Hue", uiColorSliderColorsSB, 15, 0, true);
+                        DrawLimited(ref sharedColorSBSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Saturation", uiColorSliderColorsSB, 16, 0, true);
+                        DrawLimited(ref sharedColorSBBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Brightness", uiColorSliderColorsSB, 17, 0, true);
+                    }
+
+                    DrawFieldGroupHeader(ref sharedFieldGroupColorETStatic, "Surface (trailing edge)");
+                    if (sharedFieldGroupColorETStatic)
+                    {
+                        DrawInt(ref sharedMaterialET, sharedIncrementInt, sharedIncrementInt, 0, 4, "Material", uiColorSliderColorsET, 13, 1);
+                        DrawLimited(ref sharedColorETOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Opacity", uiColorSliderColorsET, 14, 0, true);
+                        DrawLimited(ref sharedColorETHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Hue", uiColorSliderColorsET, 15, 0, true);
+                        DrawLimited(ref sharedColorETSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Saturation", uiColorSliderColorsET, 16, 0, true);
+                        DrawLimited(ref sharedColorETBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Brightness", uiColorSliderColorsET, 17, 0, true);
+                    }
+
+                    if (!isCtrlSrf)
+                    {
+                        DrawFieldGroupHeader(ref sharedFieldGroupColorELStatic, "Surface (leading edge)");
+                        if (sharedFieldGroupColorELStatic)
+                        {
+                            DrawInt(ref sharedMaterialEL, sharedIncrementInt, sharedIncrementInt, 0, 4, "Material", uiColorSliderColorsEL, 13, 1);
+                            DrawLimited(ref sharedColorELOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Opacity", uiColorSliderColorsEL, 14, 0, true);
+                            DrawLimited(ref sharedColorELHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Hue", uiColorSliderColorsEL, 15, 0, true);
+                            DrawLimited(ref sharedColorELSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Saturation", uiColorSliderColorsEL, 16, 0, true);
+                            DrawLimited(ref sharedColorELBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Brightness", uiColorSliderColorsEL, 17, 0, true);
+                        }
                     }
                 }
 
@@ -4210,7 +4228,7 @@ namespace WingProcedural
 
         public Vector3 GetModuleSize(Vector3 defaultSize, ModifierStagingSituation sit)
         {
-            return new Vector3(sharedBaseLength, sharedBaseWidthRoot, sharedBaseThicknessRoot) - new Vector3(4, 4, 0.2f);
+            return Vector3.zero;
         }
 
         public ModifierChangeWhen GetModuleSizeChangeWhen()
