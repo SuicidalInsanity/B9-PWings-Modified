@@ -44,7 +44,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="FerramAerospaceResearch">
-      <HintPath>..\..\..\..\Downloads\FerramAerospaceResearch\Plugins\FerramAerospaceResearch.dll</HintPath>
+      <HintPath>..\..\..\..\Downloads\FAR_0_16_0_1_Mader\GameData\FerramAerospaceResearch\Plugins\FerramAerospaceResearch.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />

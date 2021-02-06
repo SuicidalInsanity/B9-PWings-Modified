@@ -151,6 +151,8 @@ namespace WingProcedural
         private static Vector4 sharedEdgeWidthLimits = new Vector4(0f, 6f, 0f, 6f);
         private static Vector2 sharedMaterialLimits = new Vector2(0f, 4f);
         private static Vector2 sharedColorLimits = new Vector2(0f, 1f);
+        private static Vector2 positiveinf = new Vector2(0.05f, float.PositiveInfinity);
+        private static Vector2 nolimit = new Vector2(float.NegativeInfinity, float.PositiveInfinity);
 
         private static readonly float sharedIncrementColor = 0.01f;
         private static readonly float sharedIncrementColorLarge = 0.10f;
@@ -934,7 +936,7 @@ namespace WingProcedural
 
         public void CalcBase()
         {
-            sharedBaseWidthTip = sharedBaseWidthRoot - 1 / (float)(Math.Tan(Mathf.Deg2Rad * sharedSweptAngleFront)) * sharedBaseLength + 1 / (float)(Math.Tan(Mathf.Deg2Rad * sharedSweptAngleBack)) * sharedBaseLength;
+            sharedBaseWidthTip = Mathf.Clamp(sharedBaseWidthRoot - 1 / (float)(Math.Tan(Mathf.Deg2Rad * sharedSweptAngleFront)) * sharedBaseLength + 1 / (float)(Math.Tan(Mathf.Deg2Rad * sharedSweptAngleBack)) * sharedBaseLength, 0.05f, float.PositiveInfinity);
             sharedBaseOffsetTip = (1 / (float)(Math.Tan(Mathf.Deg2Rad * sharedSweptAngleFront)) * sharedBaseLength + 1 / (float)(Math.Tan(Mathf.Deg2Rad * sharedSweptAngleBack)) * sharedBaseLength) / 2 - sharedBaseOffsetRoot;
         }
 
@@ -1091,8 +1093,8 @@ namespace WingProcedural
                 }
 
             if (connectedCtrlSrfWings.Count > 1)
-                if (assemblyFARUsed) CtrlSrfWingSynchronizer.FARAddSynchronizer(ctrlSrfWingRoot, connectedCtrlSrfWings);
-                else CtrlSrfWingSynchronizer.AddSynchronizer(ctrlSrfWingRoot, connectedCtrlSrfWings);
+                /*if (assemblyFARUsed) CtrlSrfWingSynchronizer.FARAddSynchronizer(ctrlSrfWingRoot, connectedCtrlSrfWings);
+                else */CtrlSrfWingSynchronizer.AddSynchronizer(ctrlSrfWingRoot, connectedCtrlSrfWings);
         }
 
         public void OnSceneSwitch(GameScenes scene)
@@ -2325,9 +2327,12 @@ namespace WingProcedural
 
         public float aeroUICost;
         public float aeroStatVolume = 3.84f;
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = true, guiName = "Mass")]
         public float aeroUIMass;
 
         public double aeroStatCd;
+
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = true, guiName = "Stock lifting area")]
         public double aeroStatCl;
         public double aeroStatClChildren;
         public double aeroStatMass;
@@ -3172,21 +3177,21 @@ namespace WingProcedural
         {
 
 
-            sharedBaseLength = SetupFieldValue(sharedBaseLength, getLimits(sharedBaseLength, getStep(sharedBaseLengthLimits)), GetDefault(sharedBaseLengthDefaults));
-            sharedBaseWidthRoot = SetupFieldValue(sharedBaseWidthRoot, getLimits(sharedBaseWidthRoot, getStep(sharedBaseWidthRootLimits)), GetDefault(sharedBaseWidthRootDefaults));
-            sharedBaseWidthTip = SetupFieldValue(sharedBaseWidthTip, getLimits(sharedBaseWidthTip, getStep(sharedBaseWidthTipLimits)), GetDefault(sharedBaseWidthTipDefaults));
-            sharedBaseThicknessRoot = SetupFieldValue(sharedBaseThicknessRoot, getLimits(sharedBaseThicknessRoot, getStep(sharedBaseThicknessLimits)), GetDefault(sharedBaseThicknessRootDefaults));
-            sharedBaseThicknessTip = SetupFieldValue(sharedBaseThicknessTip, getLimits(sharedBaseThicknessTip, getStep(sharedBaseThicknessLimits)), GetDefault(sharedBaseThicknessTipDefaults));
-            sharedBaseOffsetRoot = SetupFieldValue(sharedBaseOffsetRoot, getLimits(sharedBaseOffsetRoot, getStep(sharedBaseOffsetLimits)), GetDefault(sharedBaseOffsetRootDefaults));
-            sharedBaseOffsetTip = SetupFieldValue(sharedBaseOffsetTip, getLimits(sharedBaseOffsetTip, getStep(sharedBaseOffsetLimits)), GetDefault(sharedBaseOffsetTipDefaults));
+            sharedBaseLength = SetupFieldValue(sharedBaseLength, positiveinf, GetDefault(sharedBaseLengthDefaults));
+            sharedBaseWidthRoot = SetupFieldValue(sharedBaseWidthRoot, positiveinf, GetDefault(sharedBaseWidthRootDefaults));
+            sharedBaseWidthTip = SetupFieldValue(sharedBaseWidthTip, positiveinf, GetDefault(sharedBaseWidthTipDefaults));
+            sharedBaseThicknessRoot = SetupFieldValue(sharedBaseThicknessRoot, positiveinf, GetDefault(sharedBaseThicknessRootDefaults));
+            sharedBaseThicknessTip = SetupFieldValue(sharedBaseThicknessTip, positiveinf, GetDefault(sharedBaseThicknessTipDefaults));
+            sharedBaseOffsetRoot = SetupFieldValue(sharedBaseOffsetRoot, nolimit, GetDefault(sharedBaseOffsetRootDefaults));
+            sharedBaseOffsetTip = SetupFieldValue(sharedBaseOffsetTip, nolimit, GetDefault(sharedBaseOffsetTipDefaults));
 
             sharedEdgeTypeTrailing = SetupFieldValue(sharedEdgeTypeTrailing, sharedEdgeTypeLimits, GetDefault(sharedEdgeTypeTrailingDefaults));
-            sharedEdgeWidthTrailingRoot = SetupFieldValue(sharedEdgeWidthTrailingRoot, getLimits(sharedEdgeWidthTrailingRoot, getStep(sharedEdgeWidthLimits)), GetDefault(sharedEdgeWidthTrailingRootDefaults));
-            sharedEdgeWidthTrailingTip = SetupFieldValue(sharedEdgeWidthTrailingTip, getLimits(sharedEdgeWidthTrailingTip, getStep(sharedEdgeWidthLimits)), GetDefault(sharedEdgeWidthTrailingTipDefaults));
+            sharedEdgeWidthTrailingRoot = SetupFieldValue(sharedEdgeWidthTrailingRoot, positiveinf, GetDefault(sharedEdgeWidthTrailingRootDefaults));
+            sharedEdgeWidthTrailingTip = SetupFieldValue(sharedEdgeWidthTrailingTip, positiveinf, GetDefault(sharedEdgeWidthTrailingTipDefaults));
 
             sharedEdgeTypeLeading = SetupFieldValue(sharedEdgeTypeLeading, sharedEdgeTypeLimits, GetDefault(sharedEdgeTypeLeadingDefaults));
-            sharedEdgeWidthLeadingRoot = SetupFieldValue(sharedEdgeWidthLeadingRoot, getLimits(sharedEdgeWidthLeadingRoot, getStep(sharedBaseOffsetLimits)), GetDefault(sharedEdgeWidthLeadingRootDefaults));
-            sharedEdgeWidthLeadingTip = SetupFieldValue(sharedEdgeWidthLeadingTip, getLimits(sharedEdgeWidthLeadingTip, getStep(sharedBaseOffsetLimits)), GetDefault(sharedEdgeWidthLeadingTipDefaults));
+            sharedEdgeWidthLeadingRoot = SetupFieldValue(sharedEdgeWidthLeadingRoot, positiveinf, GetDefault(sharedEdgeWidthLeadingRootDefaults));
+            sharedEdgeWidthLeadingTip = SetupFieldValue(sharedEdgeWidthLeadingTip, positiveinf, GetDefault(sharedEdgeWidthLeadingTipDefaults));
 
             sharedMaterialST = SetupFieldValue(sharedMaterialST, sharedMaterialLimits, GetDefault(sharedMaterialSTDefaults));
             sharedColorSTOpacity = SetupFieldValue(sharedColorSTOpacity, sharedColorLimits, GetDefault(sharedColorSTOpacityDefaults));
@@ -3222,15 +3227,16 @@ namespace WingProcedural
         }
 
         private float SetupFieldValue(float value, Vector2 limits, float defaultValue)
-        /*{
-            return isSetToDefaultValues ? Mathf.Clamp(value, limits.x, limits.y) : defaultValue;
-        }*/
         {
+            return isSetToDefaultValues ? Mathf.Clamp(value, limits.x, limits.y) : defaultValue;
+        }
+        /*{
             if (!isSetToDefaultValues)
                 return defaultValue;
             else
                 return value;
-        }// bypass limit check
+        }*/
+        // bypass limit check
         /// <summary>
         ///
         /// </summary>

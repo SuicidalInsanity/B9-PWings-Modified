@@ -225,6 +225,7 @@ namespace WingProcedural
                 value = (float)((value01 + delta) * range);
                 changed = valueOld != value ? true : false;
                 GUI.Label(rectLabelValue, GetValueTranslation(value, valueType), UIUtility.uiStyleLabelHint); // slider value
+                value = Mathf.Clamp(value, 0.05f, float.PositiveInfinity);
             }
             else
             {
@@ -240,7 +241,7 @@ namespace WingProcedural
                         value = (float)((value01 + delta) * range);
                     changed = valueOld != value01 ? true : false;
                 }
-                value = Mathf.Clamp(value, 0, float.PositiveInfinity);
+                value = Mathf.Clamp(value, 0.05f, float.PositiveInfinity);
             }
 
             GUILayout.EndHorizontal();
