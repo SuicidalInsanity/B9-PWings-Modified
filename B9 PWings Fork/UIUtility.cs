@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using KSP.Localization;
 
 namespace WingProcedural
 {
@@ -223,13 +224,11 @@ namespace WingProcedural
             if (!numericInput)
             {
                 value = (float)((value01 + delta) * range);
-                changed = valueOld != value ? true : false;
                 GUI.Label(rectLabelValue, GetValueTranslation(value, valueType), UIUtility.uiStyleLabelHint); // slider value
-                value = Mathf.Clamp(value, 0.05f, float.PositiveInfinity);
+                value = Mathf.Clamp(value, 0.0f, float.PositiveInfinity);
             }
             else
             {
-                changed = false;
                 if (float.TryParse(GUI.TextField(rectLabelValue, value.ToString("F3"), UIUtility.uiStyleInputField), out var temp)) // Add optional numeric input
                 {
                     if (!buttonAdjust)
@@ -239,11 +238,10 @@ namespace WingProcedural
                     }
                     else
                         value = (float)((value01 + delta) * range);
-                    changed = valueOld != value01 ? true : false;
                 }
-                value = Mathf.Clamp(value, 0.05f, float.PositiveInfinity);
+                value = Mathf.Clamp(value, 0.0f, float.PositiveInfinity);
             }
-
+            changed = valueOld != value01;
             GUILayout.EndHorizontal();
             return value;
         }
@@ -339,13 +337,11 @@ namespace WingProcedural
             if (!numericInput)
             {
                 value = (float)(value01 * range + range * delta - range / 2);
-                changed = valueOld != value ? true : false;
                 GUI.Label(rectLabelValue, GetValueTranslation(value, valueType), UIUtility.uiStyleLabelHint); // slider value
             }
             else
             {
                 value -= range / 2;
-                changed = false;
                 if (float.TryParse(GUI.TextField(rectLabelValue, value.ToString("F3"), UIUtility.uiStyleInputField), out var temp)) // Add optional numeric input
                 {
                     if (!buttonAdjust)
@@ -355,11 +351,10 @@ namespace WingProcedural
                     }
                     else
                         value = (float)(value01 * range + range * delta - range / 2);
-                    changed = valueOld != value01 ? true : false;
                 }
                 value = Mathf.Clamp(value, float.NegativeInfinity, float.PositiveInfinity);
             }
-
+            changed = valueOld != value01;
             GUILayout.EndHorizontal();
             return value;
         }
@@ -448,12 +443,11 @@ namespace WingProcedural
             if (!numericInput)
             {
                 value = Mathf.Clamp((float)(value01 * range + limits.x), Mathf.Min((float)(limits.x * 0.5), limits.x), limits.y); // lower limit is halved so the fine control can reduce it further but the normal tweak still snaps. Min makes -ve values work
-                changed = valueOld != value;
+
                 GUI.Label(rectLabelValue, GetValueTranslation(value, valueType), UIUtility.uiStyleLabelHint); // slider value
             }
             else
             {
-                changed = false;
                 if (float.TryParse(GUI.TextField(rectLabelValue, value.ToString("F3"), UIUtility.uiStyleInputField), out var temp)) // Add optional numeric input
                 {
                     if (!buttonAdjust)
@@ -463,11 +457,10 @@ namespace WingProcedural
                     }
                     else
                         value = Mathf.Clamp((float)(value01 * range + limits.x), Mathf.Min((float)(limits.x * 0.5), limits.x), limits.y); // lower limit is halved so the fine control can reduce it further but the normal tweak still snaps. Min makes -ve values work
-                    changed = valueOld != value01;
                 }
                 value = Mathf.Clamp(value, limits.x, limits.y);
             }
-
+            changed = valueOld != value01;
             GUILayout.EndHorizontal();
             return value;
         }
@@ -542,12 +535,10 @@ namespace WingProcedural
             if (!numericInput)
             {
                 value = Mathf.Round((float)value01 * range) + min;
-                changed = valueOld != value ? true : false;
                 GUI.Label(rectLabelValue, GetValueTranslation(value, valueType), UIUtility.uiStyleLabelHint); // slider value
             }
             else
             {
-                changed = false;
                 if (float.TryParse(GUI.TextField(rectLabelValue, value.ToString("F3"), UIUtility.uiStyleInputField), out var temp)) // Add optional numeric input
                 {
                     if (!buttonAdjust)
@@ -557,11 +548,10 @@ namespace WingProcedural
                     }
                     else
                         value = Mathf.Round((float)value01 * range) + min;
-                    changed = valueOld != value01;
                 }
                 value = Mathf.Clamp(value, min, max);
             }
-
+            changed = valueOld != value01;
             GUILayout.EndHorizontal();
             return value;
         }
@@ -632,27 +622,27 @@ namespace WingProcedural
         {
             if (type == 1)
             {
-                if (value == 0f) return "Uniform";
-                else if (value == 1f) return "Standard";
-                else if (value == 2f) return "Reinforced";
-                else if (value == 3f) return "LRSI";
-                else if (value == 4f) return "HRSI";
-                else return "Unknown material";
+                if (value == 0f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000133");		// #autoLOC_B9_Aerospace_WingStuff_1000133 = Uniform
+                else if (value == 1f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000134");		// #autoLOC_B9_Aerospace_WingStuff_1000134 = Standard
+                else if (value == 2f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000135");		// #autoLOC_B9_Aerospace_WingStuff_1000135 = Reinforced
+                else if (value == 3f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000136");		// #autoLOC_B9_Aerospace_WingStuff_1000136 = LRSI
+                else if (value == 4f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000137");		// #autoLOC_B9_Aerospace_WingStuff_1000137 = HRSI
+                else return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000138");		// #autoLOC_B9_Aerospace_WingStuff_1000138 = Unknown material
             }
             else if (type == 2)
             {
-                if (value == 1f) return "No edge";
-                else if (value == 2f) return "Rounded";
-                else if (value == 3f) return "Biconvex";
-                else if (value == 4f) return "Triangular";
-                else return "Unknown";
+                if (value == 1f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000139");		// #autoLOC_B9_Aerospace_WingStuff_1000139 = No edge
+                else if (value == 2f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000140");		// #autoLOC_B9_Aerospace_WingStuff_1000140 = Rounded
+                else if (value == 3f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000141");		// #autoLOC_B9_Aerospace_WingStuff_1000141 = Biconvex
+                else if (value == 4f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000142");		// #autoLOC_B9_Aerospace_WingStuff_1000142 = Triangular
+                else return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000143");		// #autoLOC_B9_Aerospace_WingStuff_1000143 = Unknown
             }
             else if (type == 3)
             {
-                if (value == 1f) return "Rounded";
-                else if (value == 2f) return "Biconvex";
-                else if (value == 3f) return "Triangular";
-                else return "Unknown";
+                if (value == 1f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000144");		// #autoLOC_B9_Aerospace_WingStuff_1000144 = Rounded
+                else if (value == 2f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000145");		// #autoLOC_B9_Aerospace_WingStuff_1000145 = Biconvex
+                else if (value == 3f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000146");		// #autoLOC_B9_Aerospace_WingStuff_1000146 = Triangular
+                else return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000147");		// #autoLOC_B9_Aerospace_WingStuff_1000147 = Unknown
             }
             else return value.ToString("F3");
         }
