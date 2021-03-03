@@ -73,7 +73,7 @@ namespace WingProcedural
                     if (objects[i].name == "KSP/Specular Layered")
                     {
                         wingShader = objects[i];
-                        Debug.Log($"[B9 PWings] Wing shader \"{wingShader.name}\" loaded. Shader supported? {wingShader.isSupported}");
+                        Debug.Log($"[B9PW] Wing shader \"{wingShader.name}\" loaded. Shader supported? {wingShader.isSupported}");
                     }
                 }
 
