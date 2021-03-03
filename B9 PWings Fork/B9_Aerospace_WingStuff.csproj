@@ -89,7 +89,6 @@
   <ItemGroup>
     <Compile Include="CtrlSrfWingSynchronizer.cs" />
     <Compile Include="EditorHandle.cs" />
-    <Compile Include="MathD.cs" />
     <Compile Include="StaticWingGlobals.cs" />
     <Compile Include="UIUtility.cs" />
     <Compile Include="UtilityTexture.cs" />

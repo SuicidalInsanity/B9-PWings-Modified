@@ -19,11 +19,12 @@ namespace WingProcedural
         public static bool uiStyleConfigured = false;
 
         public static Font uiFont = null;
-        private static float alphaNormal = 0.5f;
-        private static float alphaHover = 0.35f;
-        private static float alphaActive = 0.75f;
+        private static readonly float alphaNormal = 0.5f;
+        private static readonly float alphaHover = 0.35f;
+        private static readonly float alphaActive = 0.75f;
 
         public static bool numericInput = false;
+        public static bool angleChangd = false;
 
         public static void ConfigureStyles()
         {
@@ -132,7 +133,7 @@ namespace WingProcedural
             uiStyleButton.border = new RectOffset(0, 0, 0, 0);
         }
 
-        public static float FieldSlider(float value, float increment, float incrementLarge, float range, string name, out bool changed, Color backgroundColor, int valueType, ref int delta, bool allowFine = true)
+        public static float FieldSlider(float value, float increment, float range, string name, out bool changed, Color backgroundColor, int valueType, ref int delta, bool allowFine = true)
         {
             if (!UIUtility.uiStyleConfigured)
             {
@@ -246,7 +247,7 @@ namespace WingProcedural
             return value;
         }
 
-        public static float OffsetSlider(float value, float increment, float incrementLarge, float range, string name, out bool changed, Color backgroundColor, int valueType, ref int delta, bool allowFine = true)
+        public static float OffsetSlider(float value, float increment, float range, string name, out bool changed, Color backgroundColor, int valueType, ref int delta, bool allowFine = true)
         {
             if (!UIUtility.uiStyleConfigured)
             {
@@ -465,7 +466,7 @@ namespace WingProcedural
             return value;
         }
 
-        public static float IntegerSlider(float value, float increment, float incrementLarge, int min, int max, string name, out bool changed, Color backgroundColor, int valueType, bool allowFine = true)
+        public static float IntegerSlider(float value, float incrementLarge, int min, int max, string name, out bool changed, Color backgroundColor, int valueType, bool allowFine = true)
         {
             if (!UIUtility.uiStyleConfigured)
             {
@@ -601,8 +602,6 @@ namespace WingProcedural
             GUILayout.EndHorizontal();
         }
 
-        private static Vector3 mousePos = Vector3.zero;
-
         public static Vector3 GetMousePos()
         {
             Vector3 mousePos = Input.mousePosition;
@@ -658,7 +657,7 @@ namespace WingProcedural
             Rect rectDesc = new Rect(rectLast.x, rectLast.y, rectLast.width - 53, rectLast.height);
             string choice;
             changed = false;
-            choice = getChoice(choice1, choice2, value);
+            choice = GetChoice(choice1, choice2, value);
             if (GUI.Button(rectButton, choice, UIUtility.uiStyleButton))
             {
                 value = !value;
@@ -670,7 +669,7 @@ namespace WingProcedural
             GUILayout.EndHorizontal();
             return value;
         }
-        public static string getChoice(string choice1, string choice2, bool state)
+        public static string GetChoice(string choice1, string choice2, bool state)
         {
             string choice;
             if (!state)

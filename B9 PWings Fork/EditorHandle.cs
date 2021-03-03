@@ -109,7 +109,7 @@ namespace WingProcedural
             var yProjected = (offset.y - axisXProjectedToScreen.y * offset.x / axisXProjectedToScreen.x) / ((axisYProjectedToScreen.y - axisXProjectedToScreen.y * axisYProjectedToScreen.x / axisXProjectedToScreen.x));
             var xProjected = (offset.x - yProjected * axisYProjectedToScreen.x) / axisXProjectedToScreen.x;
 
-            var speedMult = Mathf.Clamp(offset.sqrMagnitude * .025f, 0.4f, 1.25f);
+            var speedMult = MathD.Clamp(offset.sqrMagnitude * .025f, 0.4f, 1.25f);
             axisX = Gain * speedMult * cameraDistanceGain * xProjected;
             axisY = Gain * speedMult * cameraDistanceGain * yProjected;
             deltaAxisX += axisX;
@@ -146,7 +146,7 @@ namespace WingProcedural
             axisYProjectedToScreen.z = 0;
             axisXProjectedToScreen.Scale(Vector3.one / Mathf.Max(0.01f, axisXProjectedToScreen.magnitude));
             axisYProjectedToScreen.Scale(Vector3.one / Mathf.Max(0.01f, axisYProjectedToScreen.magnitude));
-            cameraDistanceGain = Mathf.Clamp(Mathf.Abs(Camera.main.worldToCameraMatrix.MultiplyPoint3x4(transform.position).z) * .02f, 0.0125f, 2f);
+            cameraDistanceGain = MathD.Clamp(Mathf.Abs(Camera.main.worldToCameraMatrix.MultiplyPoint3x4(transform.position).z) * .02f, 0.0125f, 2f);
             axisLockState = 0;
         }
     }
