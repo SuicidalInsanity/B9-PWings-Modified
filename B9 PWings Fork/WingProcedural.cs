@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
@@ -828,8 +829,11 @@ namespace WingProcedural
 
             if (!HighLogic.LoadedSceneIsEditor)
             {
+                if (HighLogic.LoadedSceneIsFlight && isWingAsCtrlSrf) FindConnectedCtrlSrfWings();
                 return;
             }
+
+            GameEvents.onEditorPartEvent.Add(OnEditorPartEvent);
 
             uiInstanceIDLocal = uiInstanceIDTarget = 0;
 
@@ -884,6 +888,7 @@ namespace WingProcedural
         public void OnDestroy()
         {
             GameEvents.onGameSceneLoadRequested.Remove(OnSceneSwitch);
+            GameEvents.onEditorPartEvent.Remove(OnEditorPartEvent);
         }
 
         public void Update()
@@ -947,6 +952,89 @@ namespace WingProcedural
 
             isAttached = false;
             uiEditMode = false;
+        }
+
+        /// <summary>
+        /// Make possible to attach one all-moving wing to another
+        /// </summary>
+        public void OnEditorPartEvent(ConstructionEventType type, Part p)
+        {
+            if (isWingAsCtrlSrf)
+            {
+                if (type == ConstructionEventType.PartCopied || type == ConstructionEventType.PartPicked|| type == ConstructionEventType.PartCreated || type == ConstructionEventType.PartDetached)
+                    if (p.name.StartsWith("B9.Aero.Wing.Procedural.TypeC"))
+                    {
+                        var wproc = FirstOfTypeOrDefault<WingProcedural>(p.Modules);
+                        if (wproc && wproc.isWingAsCtrlSrf)
+                            part.attachRules.allowSrfAttach = true;
+                        else
+                            part.attachRules.allowSrfAttach = false;
+                    }
+                    else
+                        part.attachRules.allowSrfAttach = false;
+            }
+        }
+
+        private bool connectedCtrlSrfWingsChecked = false;
+        /// <summary>
+        /// Find all connected all-moving wings, and add a plugin to sync their defelctions (called on flight start)
+        /// </summary>
+        public void FindConnectedCtrlSrfWings()
+        {
+            if (connectedCtrlSrfWingsChecked)
+                return;
+            connectedCtrlSrfWingsChecked = true;
+
+            List<WingProcedural> connectedCtrlSrfWings = new List<WingProcedural>() { this };
+
+            //Find connected all-moving wing's root
+            var ctrlSrfWingRoot = part;
+            do
+            {
+                if (!ctrlSrfWingRoot.parent || !ctrlSrfWingRoot.parent.name.StartsWith("B9.Aero.Wing.Procedural.TypeC"))
+                    break;
+                var temp = ctrlSrfWingRoot;
+                ctrlSrfWingRoot = ctrlSrfWingRoot.parent;
+                var wp = FirstOfTypeOrDefault<WingProcedural>(ctrlSrfWingRoot.Modules);
+                if (!wp || wp.connectedCtrlSrfWingsChecked)
+                {
+                    ctrlSrfWingRoot = temp;
+                    break;
+                }
+            } while (true);
+
+            //Find all connected all-moving wings 
+            IEnumerable<Part> ctrlSrfWingParts = ctrlSrfWingRoot.children.Where(c => c && c.name.StartsWith("B9.Aero.Wing.Procedural.TypeC"));
+            foreach (var p in ctrlSrfWingParts.ToList())
+            {
+                IEnumerable<Part> second = p.children.Where(c => c && c.name.StartsWith("B9.Aero.Wing.Procedural.TypeC"));
+                if (second.Count() > 0)
+                {
+                    ctrlSrfWingParts = ctrlSrfWingParts.Concat(second);
+                    foreach (var pp in second.ToList())
+                        ctrlSrfWingParts = ctrlSrfWingParts.Concat(pp.children.Where(c => c && c.name.StartsWith("B9.Aero.Wing.Procedural.TypeC")));
+                }
+            }
+
+            var childrenCtrlSrfWings = ctrlSrfWingParts
+                    .Select(c => FirstOfTypeOrDefault<WingProcedural>(c.Modules))
+                    .Where(wp => wp && wp.isWingAsCtrlSrf);
+
+            //Check, then add a synchronizer for connected all-moving wings
+            foreach (var wp in childrenCtrlSrfWings)
+                if (!wp.connectedCtrlSrfWingsChecked)
+                {
+                    //rotation axis is aligned
+                    if ((wp.transform.right - transform.right).magnitude < 0.05f)
+                    {
+                        wp.connectedCtrlSrfWingsChecked = true;
+                        connectedCtrlSrfWings.Add(wp);
+                    }
+                }
+
+            if (connectedCtrlSrfWings.Count > 1)
+                if (assemblyFARUsed) CtrlSrfWingSynchronizer.FARAddSynchronizer(ctrlSrfWingRoot, connectedCtrlSrfWings);
+                else CtrlSrfWingSynchronizer.AddSynchronizer(ctrlSrfWingRoot, connectedCtrlSrfWings);
         }
 
         public void OnSceneSwitch(GameScenes scene)
@@ -3535,8 +3623,8 @@ namespace WingProcedural
                     {
                         case "ctrlHandleLength1": sharedBaseLength = backupsharedBaseLength - draggingHandle.LockDeltaAxisY; break;
                         case "ctrlHandleLength2": sharedBaseLength = backupsharedBaseLength + draggingHandle.LockDeltaAxisY; break;
-                        case "ctrlHandleRootWidthOffset": sharedBaseWidthRoot = backupsharedBaseWidthRoot - draggingHandle.LockDeltaAxisY; sharedBaseOffsetRoot = backupsharedBaseOffsetRoot - draggingHandle.LockDeltaAxisX * .5F; break;
-                        case "ctrlHandleTipWidthOffset": sharedBaseWidthTip = backupsharedBaseWidthTip + draggingHandle.LockDeltaAxisY; sharedBaseOffsetTip = backupsharedBaseOffsetTip + draggingHandle.LockDeltaAxisX * .5F; break;
+                        case "ctrlHandleRootWidthOffset": sharedBaseWidthRoot = backupsharedBaseWidthRoot - draggingHandle.LockDeltaAxisY; sharedBaseOffsetRoot = backupsharedBaseOffsetRoot + (!isMirrored && isCtrlSrf && !isWingAsCtrlSrf ? 1f : -1f) * draggingHandle.LockDeltaAxisX * .5F; break;
+                        case "ctrlHandleTipWidthOffset": sharedBaseWidthTip = backupsharedBaseWidthTip + draggingHandle.LockDeltaAxisY; sharedBaseOffsetTip = backupsharedBaseOffsetTip + (!isMirrored && isCtrlSrf && !isWingAsCtrlSrf ? -1f : 1f) * draggingHandle.LockDeltaAxisX * .5F; break;
                         case "ctrlHandleTrailingRoot": sharedEdgeWidthTrailingRoot += draggingHandle.axisY; break;
                         case "ctrlHandleTrailingTip": sharedEdgeWidthTrailingTip += draggingHandle.axisY; break;
                         default: break;
@@ -3577,6 +3665,7 @@ namespace WingProcedural
         private void DetachHandles()
         {
             StaticWingGlobals.handlesRoot.transform.SetParent(null, false);
+            StaticWingGlobals.handlesRoot.transform.localScale = Vector3.one;
             StaticWingGlobals.handlesRoot.SetActive(false);
             handlesEnabled = false;
             if (EditorHandle.AnyHandleDragging) EditorHandle.draggingHandle.dragging = false;
@@ -3585,6 +3674,7 @@ namespace WingProcedural
         private void AttachHandles()
         {
             StaticWingGlobals.handlesRoot.transform.SetParent(part.transform, false);
+            StaticWingGlobals.handlesRoot.transform.localScale = (!isMirrored && isCtrlSrf && !isWingAsCtrlSrf) ? new Vector3(-1f, 1f, 1f) : Vector3.one;
             StaticWingGlobals.handlesRoot.SetActive(true);
             StaticWingGlobals.normalHandles.SetActive(!isCtrlSrf);
             StaticWingGlobals.ctrlSurfHandles.SetActive(isCtrlSrf);

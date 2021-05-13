@@ -25,6 +25,7 @@
 
 		CGPROGRAM
 
+		//change target to 3.0 to avoid "black wing" bug on MacOSX
 		// Unity5 firefly fix
 #pragma surface surf NormalizedBlinnPhong keepalpha
 #pragma target 5.0
