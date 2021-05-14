@@ -77,15 +77,19 @@ namespace WingProcedural
         {
             p.gameObject.AddComponent<CtrlSrfWingSynchronizer>().connectedCtrlSrfWings = connectedCtrlSrfWings;
         }
-        /*public static void FARAddSynchronizer(Part p, List<WingProcedural> connectedCtrlSrfWings)
+#if FAR
+        public static void FARAddSynchronizer(Part p, List<WingProcedural> connectedCtrlSrfWings)
         {
             p.gameObject.AddComponent<FARCtrlSrfWingSynchronizer>().connectedCtrlSrfWings = connectedCtrlSrfWings;
-        }*/
+        }
+#endif
     }
+
+#if FAR
     /// <summary>
     /// This is to make connected control surface wings deflects like one big wing
     /// </summary>
-    /*[DefaultExecutionOrder(25565)]
+    [DefaultExecutionOrder(25565)]
     public class FARCtrlSrfWingSynchronizer : MonoBehaviour
     {
         public List<WingProcedural> connectedCtrlSrfWings;
@@ -136,5 +140,6 @@ namespace WingProcedural
                 DeflectionAnimation.Invoke(farcs, null);
             }
         }
-    }*/
+    }
+#endif
 }
