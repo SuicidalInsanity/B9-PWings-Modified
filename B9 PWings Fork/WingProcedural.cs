@@ -143,7 +143,7 @@ namespace WingProcedural
         private static Vector2 sharedColorLimits = new Vector2(0f, 1f);
         private static Vector2 positiveinf = new Vector2(0.0f, float.PositiveInfinity);
         private static Vector2 nolimit = new Vector2(float.NegativeInfinity, float.PositiveInfinity);
-        private static Vector2 sharedArmorLimits = new Vector2(0f,1000f);
+        private static Vector2 sharedArmorLimits = new Vector2(0f, 1000f);
 
         private static readonly float sharedIncrementColor = 0.01f;
         private static readonly float sharedIncrementColorLarge = 0.10f;
@@ -1023,7 +1023,7 @@ namespace WingProcedural
                 {
                     if (sharedPropEdgePref == true)
                     {
-                        sharedEdgeWidthTrailingTip += sharedBaseWidthTip / 2 ;
+                        sharedEdgeWidthTrailingTip += sharedBaseWidthTip / 2;
 
                         sharedBaseWidthTip = 0f;
                         if (sharedEdgeWidthTrailingTip < 0)
@@ -1041,7 +1041,7 @@ namespace WingProcedural
                     //DebugLogWithID("Angle Calculation", "Backward override");
                 }
             }
-                
+
         }
         // Split Angle Calculations into two half, since no need to update the editing value
         public float CalcAngleFront()
@@ -1154,7 +1154,7 @@ namespace WingProcedural
         {
             if (isWingAsCtrlSrf)
             {
-                if (type == ConstructionEventType.PartCopied || type == ConstructionEventType.PartPicked|| type == ConstructionEventType.PartCreated || type == ConstructionEventType.PartDetached)
+                if (type == ConstructionEventType.PartCopied || type == ConstructionEventType.PartPicked || type == ConstructionEventType.PartCreated || type == ConstructionEventType.PartDetached)
                     if (p.name.StartsWith("B9.Aero.Wing.Procedural.TypeC"))
                     {
                         var wproc = FirstOfTypeOrDefault<WingProcedural>(p.Modules);
@@ -1230,10 +1230,14 @@ namespace WingProcedural
                 }
 
             if (connectedCtrlSrfWings.Count > 1)
-                /*if (assemblyFARUsed) CtrlSrfWingSynchronizer.FARAddSynchronizer(ctrlSrfWingRoot, connectedCtrlSrfWings);
-                else */CtrlSrfWingSynchronizer.AddSynchronizer(ctrlSrfWingRoot, connectedCtrlSrfWings);
+            {
+#if FAR
+                if (assemblyFARUsed) CtrlSrfWingSynchronizer.FARAddSynchronizer(ctrlSrfWingRoot, connectedCtrlSrfWings);
+                else
+#endif
+                    CtrlSrfWingSynchronizer.AddSynchronizer(ctrlSrfWingRoot, connectedCtrlSrfWings);
+            }
         }
-
         public void OnSceneSwitch(GameScenes scene)
         {
             isStarted = false; // fixes annoying nullrefs when switching scenes and things haven't been destroyed yet
@@ -1344,6 +1348,7 @@ namespace WingProcedural
                     meshFilterWingSection.mesh.vertices = vp;
                     meshFilterWingSection.mesh.uv = uv;
                     meshFilterWingSection.mesh.RecalculateBounds();
+
 
                     MeshCollider meshCollider = meshFilterWingSection.gameObject.GetComponent<MeshCollider>();
 
@@ -1476,8 +1481,12 @@ namespace WingProcedural
 
                 // Next, we fetch appropriate mesh reference and mesh filter for the edges and modify the meshes
                 // Geometry is split into groups through simple vertex normal filtering
+
+                // We must update the meshes for all of the trailing edge types, not just the active one
+                // Otherwise the module's size will over-report by the bounds of the largest mesh
                 for (int j = 0; j < meshTypeCountEdgeWing; j++)
                 {
+
                     if (meshFiltersWingEdgeTrailing[j] != null)
                     {
                         MeshReference meshReference = meshReferencesWingEdge[j];
@@ -1490,6 +1499,7 @@ namespace WingProcedural
                         Array.Copy(meshReference.uv, uv, length);
                         Color[] cl = new Color[length];
                         Vector2[] uv2 = new Vector2[length];
+
 
                         if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
                         {
@@ -1523,13 +1533,17 @@ namespace WingProcedural
                         meshFiltersWingEdgeTrailing[j].mesh.uv2 = uv2;
                         meshFiltersWingEdgeTrailing[j].mesh.colors = cl;
                         meshFiltersWingEdgeTrailing[j].mesh.RecalculateBounds();
-
-                        if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
-                        {
-                            DebugLogWithID("UpdateGeometry", "Wing edge trailing | Finished");
-                        }
                     }
                 }
+
+                if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
+
+                {
+                    DebugLogWithID("UpdateGeometry", "Wing edge trailing | Finished");
+                }
+
+                // We must update the meshes for all of the leading edge types, not just the active one
+                // Otherwise the module's size will over-report by the bounds of the largest mesh
                 for (int j = 0; j < meshTypeCountEdgeWing; j++)
                 {
                     if (meshFiltersWingEdgeLeading[j] != null)
@@ -1580,7 +1594,14 @@ namespace WingProcedural
                         if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
                         {
                             DebugLogWithID("UpdateGeometry", "Wing edge leading | Finished");
+
                         }
+
+                    }
+
+                    if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
+                    {
+                        DebugLogWithID("UpdateGeometry", "Wing edge leading | Finished");
                     }
                 }
             }
@@ -1721,6 +1742,8 @@ namespace WingProcedural
 
                 // Now we can modify geometry
                 // Copy-pasted frame deformation sequence at the moment, to be pruned later
+
+                // Geometry must be modified for all meshes regardless of whether they're active or not
                 for (int j = 0; j < meshTypeCountEdgeCtrl; j++)
                 {
                     if (meshFiltersCtrlEdge[j] != null)
@@ -2109,7 +2132,6 @@ namespace WingProcedural
                 {
                     DebugLogWithID("CheckMeshFilter", "Looking for object: " + name);
                 }
-
                 Transform parent = part.transform.GetChild(0).GetChild(0).GetChild(0).Find(name);
 
                 if (parent != null)
@@ -2179,7 +2201,9 @@ namespace WingProcedural
                     }
                 }
                 else
-                    Debug.LogError(String.Format("Part [{0}] named [{1}] is a Control Surface but a ModuleControlSurface wasn't found on its module list!", this.part.ClassName, this.part.partName));
+                {
+                    Debug.LogError(String.Format("[B9PW] Part [{0}] named [{1}] is a Control Surface but a ModuleControlSurface wasn't found on its module list!", this.part.ClassName, this.part.partName));
+                }
             }
         }
 
@@ -3371,7 +3395,7 @@ namespace WingProcedural
             sharedColorELHue = SetupFieldValue(sharedColorELHue, sharedColorLimits, GetDefault(sharedColorELHueDefaults));
             sharedColorELSaturation = SetupFieldValue(sharedColorELSaturation, sharedColorLimits, GetDefault(sharedColorELSaturationDefaults));
             sharedColorELBrightness = SetupFieldValue(sharedColorELBrightness, sharedColorLimits, GetDefault(sharedColorELBrightnessDefaults));
-            
+
             UpdateWindow();
             isSetToDefaultValues = true;
         }
@@ -3797,7 +3821,7 @@ namespace WingProcedural
 
         private void UpdateUI()
         {
-            
+
             if (uiEditModeTimeout && uiInstanceIDTarget == 0)
             {
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logPropertyWindow)
