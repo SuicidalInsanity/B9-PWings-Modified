@@ -4,6 +4,16 @@ namespace WingProcedural
 {
     public class WPDebug : GameParameters.CustomParameterNode
     {
+        public override string Title { get { return "Log Settings"; } }
+        public override GameParameters.GameMode GameMode { get { return GameParameters.GameMode.ANY; } }
+
+        //public override string DisplaySection => "Graphics";
+        public override string Section { get { return "B9 Procedural Wings"; } }
+        public override string DisplaySection { get { return "B9 Procedural Wings"; } }
+
+        public override int SectionOrder { get { return 1; } }
+
+
         [GameParameters.CustomParameterUI("Enable Aero Logging")]
         public bool logCAV = false;
 
@@ -40,16 +50,9 @@ namespace WingProcedural
         [GameParameters.CustomParameterUI("Enable Events Logging")]
         public bool logEvents = false;
 
-		public override string Title => "B9 Procedural Wings";
 
-		public override string Section => "Editor Settings";
 
-		public override int SectionOrder => 20;
+        public override bool HasPresets => false;
 
-		public override GameParameters.GameMode GameMode => GameParameters.GameMode.ANY;
-
-		public override bool HasPresets => false;
-
-		public override string DisplaySection => "Graphics";
-	}
+    }
 }

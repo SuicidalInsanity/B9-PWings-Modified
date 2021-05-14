@@ -18,3 +18,8 @@ ChangeLog
 		Renamed source directory to remove spaces
 		Reformatted .version file
 		Added BUILD to .version file
+
+0.43.0.1
+	Linuxgurugamer
+		Fixed settings page, updated title of settings page
+		Updated .version file
