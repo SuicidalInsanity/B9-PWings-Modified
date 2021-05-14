@@ -30,7 +30,7 @@
 # 1:GAMEDIR, VERSIONFILE [, GITHUBREPO ]
 1:B9_Aerospace_ProceduralWings, B9_Aerospace_ProceduralWings.version
 
-2c:-langversion:experimental 
+#2c:-langversion:experimental 
 
 # 2:PROJNAME, PROJFILE, VERSIONFILE, PLUGINSFOLDER
 2:B9_PWings_Fork,B9_PWings_Fork/B9_Aerospace_WingStuff-LGG.csproj,B9_Aerospace_ProceduralWings.version,GameData/B9_Aerospace_ProceduralWings/Plugins
