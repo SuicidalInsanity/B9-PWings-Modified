@@ -28,13 +28,13 @@
 # 0:1.3
 
 # 1:GAMEDIR, VERSIONFILE [, GITHUBREPO ]
-1:KerbalHotSeat, KerbalHotSeat.version
+1:B9_Aerospace_ProceduralWings, B9_Aerospace_ProceduralWings.version
 
 # 2:PROJNAME, PROJFILE, VERSIONFILE, PLUGINSFOLDER
-2:KerbalHotSeat,KerbalHotSeat/KerbalHotSeat.csproj,KerbalHotSeat.version,GameData/KerbalHotSeat/Plugins
+2:B9_PWings_Fork,B9_PWings_Fork/B9_Aerospace_WingStuff-LGG.csproj,B9_Aerospace_ProceduralWings.version,GameData/B9_Aerospace_ProceduralWings/Plugins
 
 # 3:SOURCEFILE, DESTDIR
-3:KerbalHotSeat.version,GameData/KerbalHotSeat
+3:B9_Aerospace_ProceduralWings.version,GameData/B9_Aerospace_ProceduralWings
 #3:LICENSE.md,GameData/KerbalHotSeat
 #3:README.md,GameData/KerbalHotSeat
 

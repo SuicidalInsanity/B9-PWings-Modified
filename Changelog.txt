@@ -1,0 +1,20 @@
+ChangeLog
+
+0.43.0
+	Forked repo from @tetraflon
+	Rafterman82
+		Merged in CarnationRED's changes
+	Linuxgurugamer
+		Merged in Rafterman82's merged changes
+		Created LGG csproj file
+		Added deploy.bat
+		Added buildRelease.bat
+		Added AssemblyVersion.tt
+		Added InstallChecker
+		Moved .version file into main directory
+		Reenabled FAR references
+		Added build flag to allow building without FAR
+		Added the Localization files into B9_Aerospace_ProceduralWings\Localization
+		Renamed source directory to remove spaces
+		Reformatted .version file
+		Added BUILD to .version file
