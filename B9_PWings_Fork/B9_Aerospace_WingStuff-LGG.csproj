@@ -46,7 +46,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="FerramAerospaceResearch">
-      <HintPath>R:\KSP_1.11.2_dev\GameData\FerramAerospaceResearch\Plugins\FerramAerospaceResearch.dll</HintPath>
+      <HintPath>$(KSPDIR)\GameData\FerramAerospaceResearch\Plugins\FerramAerospaceResearch.dll</HintPath>
     </Reference>
     <Reference Include="System" />
   </ItemGroup>
