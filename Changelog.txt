@@ -23,3 +23,10 @@ ChangeLog
 	Linuxgurugamer
 		Fixed settings page, updated title of settings page
 		Updated .version file
+
+0.43.0.2
+	Linuxgurugamer
+		Added new settings to control the activation
+		Added code to allow activation just by hovering
+		Added ability to lock wing layout
+		Added optional ClickThroughBlocker support (will use it if installed)

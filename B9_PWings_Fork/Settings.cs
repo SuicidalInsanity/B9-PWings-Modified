@@ -6,12 +6,10 @@ namespace WingProcedural
     {
         public override string Title { get { return "Log Settings"; } }
         public override GameParameters.GameMode GameMode { get { return GameParameters.GameMode.ANY; } }
-
-        //public override string DisplaySection => "Graphics";
         public override string Section { get { return "B9 Procedural Wings"; } }
         public override string DisplaySection { get { return "B9 Procedural Wings"; } }
-
-        public override int SectionOrder { get { return 1; } }
+        public override int SectionOrder { get { return 2; } }
+        public override bool HasPresets => false;
 
 
         [GameParameters.CustomParameterUI("Enable Aero Logging")]
@@ -50,9 +48,26 @@ namespace WingProcedural
         [GameParameters.CustomParameterUI("Enable Events Logging")]
         public bool logEvents = false;
 
+    }
 
+    public class WPActivation : GameParameters.CustomParameterNode
+    {
+        public override string Title { get { return "Activation"; } }
+        public override GameParameters.GameMode GameMode { get { return GameParameters.GameMode.ANY; } }
+        public override string Section { get { return "B9 Procedural Wings"; } }
+        public override string DisplaySection { get { return "B9 Procedural Wings"; } }
 
+        public override int SectionOrder { get { return 1; } }
         public override bool HasPresets => false;
+
+        [GameParameters.CustomParameterUI("Use old keycode to activate")]
+        public bool useKeycodeToActivate = false;
+        [GameParameters.CustomFloatParameterUI("Hover timeout",
+            minValue = 0.5f, maxValue = 5.0f, stepCount = 46, displayFormat = "F1",
+            toolTip = "Time to wait after moving mouse off part before disabling edit mode"
+            )]
+        public double hoverEditTimeout = 1.0f;
+
 
     }
 }

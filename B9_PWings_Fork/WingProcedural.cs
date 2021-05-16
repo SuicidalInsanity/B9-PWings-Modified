@@ -44,6 +44,36 @@ namespace WingProcedural
         [KSPField(isPersistant = true)]
         public bool isSetToDefaultValues = false;
 
+        #region WingLocking
+        [KSPField(isPersistant = true, guiActiveEditor = true, guiName = "Wing layout locked")]
+
+        public bool Wing_Layout_Locked = false;
+
+        [KSPEvent(guiActive = false, guiActiveEditor = true, guiName = "Lock Wing Layout", active = true)]
+        public void WingLocked()
+        {
+            Wing_Layout_Locked = !Wing_Layout_Locked;
+            UpdateWingLayoutToggle();
+        }
+
+        bool NoKeycodeNeeded
+        {
+            get
+            {
+                return (!HighLogic.CurrentGame.Parameters.CustomParams<WPActivation>().useKeycodeToActivate &&
+                    !Wing_Layout_Locked);
+            }
+        }
+        void UpdateWingLayoutToggle()
+        {
+            switch (Wing_Layout_Locked)
+            {
+                case true: Events["WingLocked"].guiName = "Unlock Wing Layout"; break;
+                case false: Events["WingLocked"].guiName = "Lock Wing Layout"; break;
+            }
+        }
+        #endregion
+
         #region Debug
 
         private struct DebugMessage
@@ -750,6 +780,8 @@ namespace WingProcedural
         public static bool assemblyFARUsed = false;
         public static bool assemblyRFUsed = false;
         public static bool assemblyMFTUsed = false;
+        public static bool clickThroughBlockerUsed = false;
+
         // if current part uses one of the Configurable Container modules
         public bool moduleCCUsed = false;
 
@@ -775,6 +807,11 @@ namespace WingProcedural
                     else if (test.assembly.GetName().Name.Equals("modularFuelTanks", StringComparison.InvariantCultureIgnoreCase))
                     {
                         assemblyMFTUsed = true;
+                    }
+                    else if (test.assembly.GetName().Name.Equals("ClickThroughBlocker", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        clickThroughBlockerUsed = true;
+                        Debug.Log("ClickThroughBlocker detected");
                     }
                 }
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
@@ -860,6 +897,8 @@ namespace WingProcedural
             {
                 UIUtility.ConfigureStyles();
             }
+            UpdateWingLayoutToggle();
+
             isStarted = true;
         }
 
@@ -2964,6 +3003,8 @@ namespace WingProcedural
         private readonly float uiEditModeTimeoutDuration = 0.25f;
         private float uiEditModeTimer = 0f;
 
+        private float uiEditSelectTimer = 0f;
+
         public Vector2 GetLimits(double value, double step, int i = 0)
         {
             if (value % step != 0 || ((int)(value / step) != i & (int)((value / step) - 1) != i))
@@ -3047,6 +3088,11 @@ namespace WingProcedural
             }
         }
 
+        Rect CBT_Window(int id, Rect screenRect, GUI.WindowFunction func, string text, GUIStyle style, params GUILayoutOption[] options)
+        {
+            return ClickThroughFix.ClickThruBlocker.GUILayoutWindow(id, screenRect, func, text, style, options);
+        }
+
         private void OnGUI()
         {
             if (!isStarted || !HighLogic.LoadedSceneIsEditor || !uiWindowActive)
@@ -3065,8 +3111,12 @@ namespace WingProcedural
                 {
                     UIUtility.ConfigureStyles();
                 }
-
-                UIUtility.uiRectWindowEditor = GUILayout.Window(GetInstanceID(), UIUtility.uiRectWindowEditor, OnWindow, GetWindowTitle(), UIUtility.uiStyleWindow, GUILayout.Height(uiAdjustWindow ? 0 : UIUtility.uiRectWindowEditor.height));
+                if (clickThroughBlockerUsed)
+                {
+                    UIUtility.uiRectWindowEditor = CBT_Window(GetInstanceID(), UIUtility.uiRectWindowEditor, OnWindow, GetWindowTitle(), UIUtility.uiStyleWindow, GUILayout.Height(uiAdjustWindow ? 0 : UIUtility.uiRectWindowEditor.height));
+                }
+                else
+                    UIUtility.uiRectWindowEditor = GUILayout.Window(GetInstanceID(), UIUtility.uiRectWindowEditor, OnWindow, GetWindowTitle(), UIUtility.uiStyleWindow, GUILayout.Height(uiAdjustWindow ? 0 : UIUtility.uiRectWindowEditor.height));
                 uiAdjustWindow = false;
 
                 // Thanks to ferram4
@@ -3092,10 +3142,24 @@ namespace WingProcedural
         public static Vector4 uiColorSliderColorsET = new Vector4(0.00f, 0.5f, 0.4f, 1f);
         public static Vector4 uiColorSliderColorsEL = new Vector4(0.95f, 0.5f, 0.4f, 1f);
 
+        public static bool MouseIsOverWindow(Rect rect)
+        {
+            Vector2 mousePos;
+            mousePos.x = Input.mousePosition.x;
+            mousePos.y = Screen.height - Input.mousePosition.y;
+            return rect.Contains(mousePos);
+        }
+
         private void OnWindow(int window)
         {
             if (uiEditMode)
             {
+                if (NoKeycodeNeeded
+                    /*!HighLogic.CurrentGame.Parameters.CustomParams<WPActivation>().useKeycodeToActivate */)
+                {
+                    if (MouseIsOverWindow(UIUtility.uiRectWindowEditor))
+                        uiEditSelectTimer = 0;
+                }
                 bool returnEarly = false;
                 GUILayout.BeginHorizontal();
                 GUILayout.BeginVertical();
@@ -3338,15 +3402,25 @@ namespace WingProcedural
                 }
                 else
                 {
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Label(Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000073"), UIUtility.uiStyleLabelHint);		// #autoLOC_B9_Aerospace_WingStuff_1000073 = Press J while pointing at a\nprocedural part to edit it
-                    if (GUILayout.Button(Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000155"), UIUtility.uiStyleButton, GUILayout.MaxWidth(50f)))		// #autoLOC_B9_Aerospace_WingStuff_1000155 = Close
+                    if (NoKeycodeNeeded
+                        /*!HighLogic.CurrentGame.Parameters.CustomParams<WPActivation>().useKeycodeToActivate */)
                     {
                         uiWindowActive = false;
                         uiAdjustWindow = true;
                         EditorLogic.fetch.Unlock("WingProceduralWindow");
                     }
-                    GUILayout.EndHorizontal();
+                    else
+                    {
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label(Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000073"), UIUtility.uiStyleLabelHint);       // #autoLOC_B9_Aerospace_WingStuff_1000073 = Press J while pointing at a\nprocedural part to edit it
+                        if (GUILayout.Button(Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000155"), UIUtility.uiStyleButton, GUILayout.MaxWidth(50f)))        // #autoLOC_B9_Aerospace_WingStuff_1000155 = Close
+                        {
+                            uiWindowActive = false;
+                            uiAdjustWindow = true;
+                            EditorLogic.fetch.Unlock("WingProceduralWindow");
+                        }
+                        GUILayout.EndHorizontal();
+                    }
                 }
             }
             GUI.DragWindow();
@@ -3694,7 +3768,9 @@ namespace WingProcedural
                     }
                 }
 
-                if (Input.GetKeyDown(uiKeyCodeEdit))
+                if (NoKeycodeNeeded
+                    /*!HighLogic.CurrentGame.Parameters.CustomParams<WPActivation>().useKeycodeToActivate */ ||
+                     (!Wing_Layout_Locked && Input.GetKeyDown(uiKeyCodeEdit)))
                 {
                     uiInstanceIDTarget = part.GetInstanceID();
                     uiEditMode = true;
@@ -3702,6 +3778,8 @@ namespace WingProcedural
                     uiAdjustWindow = true;
                     uiWindowActive = true;
                     InheritanceStatusUpdate();
+
+                    uiEditSelectTimer = 0;
                 }
             }
 
@@ -3837,6 +3915,18 @@ namespace WingProcedural
                 return;
             }
 
+            if (NoKeycodeNeeded
+                /*!HighLogic.CurrentGame.Parameters.CustomParams<WPActivation>().useKeycodeToActivate */)
+            {
+                uiEditSelectTimer += Time.deltaTime;
+                if (uiEditSelectTimer > HighLogic.CurrentGame.Parameters.CustomParams<WPActivation>().hoverEditTimeout)
+                {
+                    ExitEditMode();
+                    uiEditModeTimeout = false;
+                    uiWindowActive = false;
+                }
+            }
+
             if (uiEditModeTimeout)
             {
                 uiEditModeTimer += Time.deltaTime;
@@ -3847,7 +3937,8 @@ namespace WingProcedural
             }
             else if (uiEditMode)
             {
-                if (Input.GetKeyDown(uiKeyCodeEdit))
+                if (HighLogic.CurrentGame.Parameters.CustomParams<WPActivation>().useKeycodeToActivate &&
+                     Input.GetKeyDown(uiKeyCodeEdit))
                 {
                     ExitEditMode();
                 }
@@ -3869,6 +3960,7 @@ namespace WingProcedural
                     }
                 }
             }
+
         }
 
         private void CheckAllFieldValues(out bool geometryUpdate, out bool aeroUpdate)
@@ -3950,6 +4042,7 @@ namespace WingProcedural
             uiEditMode = false;
             uiEditModeTimeout = true;
             uiAdjustWindow = true;
+            uiEditSelectTimer = 0;
         }
 
         private string GetWindowTitle()
@@ -3991,7 +4084,13 @@ namespace WingProcedural
             }
 
             //Attach handles to current wing
-            if (handlesVisible && (!handlesEnabled || Input.GetKeyDown(uiKeyCodeEdit)) && part.GetInstanceID() == uiInstanceIDTarget) AttachHandles();
+            if (handlesVisible &&
+                (!handlesEnabled ||
+                 (NoKeycodeNeeded
+                 /* !HighLogic.CurrentGame.Parameters.CustomParams<WPActivation>().useKeycodeToActivate */ ||
+                   (!Wing_Layout_Locked && Input.GetKeyDown(uiKeyCodeEdit)))
+                ) && part.GetInstanceID() == uiInstanceIDTarget)
+                AttachHandles();
 
             #region Update positions
             if (!isCtrlSrf)
@@ -4022,6 +4121,8 @@ namespace WingProcedural
 
             if (EditorHandle.AnyHandleDragging)
             {
+                uiEditSelectTimer = 0;
+
                 EditorHandle draggingHandle = EditorHandle.draggingHandle;
 
                 var lastFieldID = 0;
