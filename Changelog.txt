@@ -30,3 +30,7 @@ ChangeLog
 		Added code to allow activation just by hovering
 		Added ability to lock wing layout
 		Added optional ClickThroughBlocker support (will use it if installed)
+		Added support for the Changelog mod
+	JRodrigv
+		Full TU support and metallic textures
+

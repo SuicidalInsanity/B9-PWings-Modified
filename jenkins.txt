@@ -37,7 +37,8 @@
 
 # 3:SOURCEFILE, DESTDIR
 3:B9_Aerospace_ProceduralWings.version,GameData/B9_Aerospace_ProceduralWings
-#3:LICENSE.md,GameData/KerbalHotSeat
+3:LICENSE,GameData/B9_Aerospace_ProceduralWings
+3:Changelog.cfg,GameData/B9_Aerospace_ProceduralWings
 #3:README.md,GameData/KerbalHotSeat
 
 # 4:SOURCDIR, DESTDIR
