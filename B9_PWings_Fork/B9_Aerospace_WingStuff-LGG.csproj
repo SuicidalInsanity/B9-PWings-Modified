@@ -49,7 +49,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="ClickThroughBlocker">
-      <HintPath>R:\KSP_1.11.2_dev\GameData\000_ClickThroughBlocker\Plugins\ClickThroughBlocker.dll</HintPath>
+      <HintPath>$(KSPDIR)\GameData\000_ClickThroughBlocker\Plugins\ClickThroughBlocker.dll</HintPath>
     </Reference>
     <Reference Include="FerramAerospaceResearch">
       <HintPath>$(KSPDIR)\GameData\FerramAerospaceResearch\Plugins\FerramAerospaceResearch.dll</HintPath>
