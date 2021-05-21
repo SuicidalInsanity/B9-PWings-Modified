@@ -1,24 +1,19 @@
 {
   "NAME": "B9 Aerospace Procedural Wings",
-  "URL": "https://raw.githubusercontent.com/B9-Procedural-Wings/B9-PWings-Modified/Rafterman82-CarnationRED/B9_Aerospace_ProceduralWings.version",
+  "URL": "http://ksp.spacetux.net/avc/B9_Aerospace_ProceduralWings",
   "DOWNLOAD": "https://github.com/B9-Procedural-Wings/B9-PWings-Modified/releases",
   "VERSION": {
     "MAJOR": 0,
     "MINOR": 43,
     "PATCH": 0,
-    "BUILD": 1
+    "BUILD": 2
   },
   "KSP_VERSION": {
     "MAJOR": 1,
     "MINOR": 11,
-    "PATCH": 0
+    "PATCH": 2
   },
   "KSP_VERSION_MIN": {
-    "MAJOR": 1,
-    "MINOR": 11,
-    "PATCH": 0
-  },
-  "KSP_VERSION_MAX": {
     "MAJOR": 1,
     "MINOR": 11,
     "PATCH": 2

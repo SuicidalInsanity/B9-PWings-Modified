@@ -34,3 +34,6 @@ ChangeLog
 	JRodrigv
 		Full TU support and metallic textures
 
+0.43.0.3
+	Update TU support to let the TURD patches be primary
+
