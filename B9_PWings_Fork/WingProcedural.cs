@@ -26,6 +26,10 @@ namespace WingProcedural
     }
     public class WingProcedural : PartModule, IPartCostModifier, IPartSizeModifier, IPartMassModifier
     {
+
+        [KSPField]
+        public bool isWing = false;
+
         // Some handy bools
         [KSPField]
         public bool isCtrlSrf = false;
@@ -60,8 +64,9 @@ namespace WingProcedural
         {
             get
             {
-                return (!HighLogic.CurrentGame.Parameters.CustomParams<WPActivation>().useKeycodeToActivate &&
-                    !Wing_Layout_Locked);
+                return (!HighLogic.CurrentGame.Parameters.CustomParams<WPActivation>().useKeycodeToActivate
+                    /* &&
+                    !Wing_Layout_Locked */ );
             }
         }
         void UpdateWingLayoutToggle()
@@ -100,7 +105,7 @@ namespace WingProcedural
         private void DebugLogWithID(string method, string message)
         {
             debugTime = DateTime.UtcNow;
-            string m = "WP | ID: " + part.gameObject.GetInstanceID() + " | " + method + " | " + message;
+            string m = "B9-PWing | ID: " + part.gameObject.GetInstanceID() + " | " + method + " | " + message;
             string i = (debugTime - debugTimeLast).TotalMilliseconds + " ms.";
             if (debugMessageList.Count <= 150)
             {
@@ -857,6 +862,8 @@ namespace WingProcedural
 
             base.OnStart(state);
             CheckAssemblies();
+
+            isWing = (!isCtrlSrf && !isWingAsCtrlSrf);
 
             if (!HighLogic.LoadedSceneIsFlight)
             {
@@ -2711,7 +2718,8 @@ namespace WingProcedural
                 float x_col = pseudotaper_ratio * sharedBaseOffsetTip;
                 float y_col = pseudotaper_ratio * sharedBaseLength;
 
-                if (!isCtrlSrf && !isWingAsCtrlSrf)
+                //if (!isCtrlSrf && !isWingAsCtrlSrf)
+                if (isWing)
                 {
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
                     {
@@ -3154,8 +3162,7 @@ namespace WingProcedural
         {
             if (uiEditMode)
             {
-                if (NoKeycodeNeeded
-                    /*!HighLogic.CurrentGame.Parameters.CustomParams<WPActivation>().useKeycodeToActivate */)
+                if (NoKeycodeNeeded)
                 {
                     if (MouseIsOverWindow(UIUtility.uiRectWindowEditor))
                         uiEditSelectTimer = 0;
@@ -3402,8 +3409,7 @@ namespace WingProcedural
                 }
                 else
                 {
-                    if (NoKeycodeNeeded
-                        /*!HighLogic.CurrentGame.Parameters.CustomParams<WPActivation>().useKeycodeToActivate */)
+                    if (NoKeycodeNeeded)
                     {
                         uiWindowActive = false;
                         uiAdjustWindow = true;
@@ -3768,9 +3774,8 @@ namespace WingProcedural
                     }
                 }
 
-                if (NoKeycodeNeeded
-                    /*!HighLogic.CurrentGame.Parameters.CustomParams<WPActivation>().useKeycodeToActivate */ ||
-                     (!Wing_Layout_Locked && Input.GetKeyDown(uiKeyCodeEdit)))
+                if (!Wing_Layout_Locked &&  ((!uiEditMode && NoKeycodeNeeded ) ||
+                    Input.GetKeyDown(uiKeyCodeEdit)))
                 {
                     uiInstanceIDTarget = part.GetInstanceID();
                     uiEditMode = true;
@@ -3783,16 +3788,16 @@ namespace WingProcedural
                 }
             }
 
-            if (state == 0)
+            if (!NoKeycodeNeeded && state == State.Nothing)
             {
                 lastMousePos = Input.mousePosition;
                 state =
                     Input.GetKeyDown(keyTranslation)
-                        ? 1
+                        ? State.Translate
                     : Input.GetKeyDown(keyTipWidth)
-                        ? 2
+                        ? State.TipScale
                     : Input.GetKeyDown(keyRootWidth)
-                        ? 3
+                        ? State.RootScale
                     : state
                 ;
             }
@@ -3800,11 +3805,13 @@ namespace WingProcedural
 
         private static readonly KeyCode keyTranslation = KeyCode.G, keyTipWidth = KeyCode.T, keyRootWidth = KeyCode.B, keyLeading = KeyCode.LeftAlt, keyTrailing = KeyCode.LeftControl;
         private Vector3 lastMousePos;
-        private int state = 0; // 0 == nothing, 1 == translate, 2 == tipScale, 3 == rootScale
+        enum State { Nothing = 0, Translate = 1, TipScale = 2, RootScale = 3};
+        // private int state = 0; // 0 == nothing, 1 == translate, 2 == tipScale, 3 == rootScale
+        private State state = State.Nothing;
         public static Camera editorCam;
         public void DeformWing()
         {
-            if (!isAttached || state == 0)
+            if (!isAttached || state == State.Nothing)
             {
                 return;
             }
@@ -3814,10 +3821,10 @@ namespace WingProcedural
             lastMousePos = Input.mousePosition;
             switch (state)
             {
-                case 1:
+                case State.Translate:
                     if (!Input.GetKey(keyTranslation))
                     {
-                        state = 0;
+                        state = State.Nothing;
                         return;
                     }
 
@@ -3834,10 +3841,10 @@ namespace WingProcedural
                     }
                     break;
 
-                case 2:
+                case State.TipScale:
                     if (!Input.GetKey(keyTipWidth))
                     {
-                        state = 0;
+                        state = State.Nothing;
                         return;
                     }
                     if (Input.GetKey(keyLeading) && !isCtrlSrf)
@@ -3868,10 +3875,10 @@ namespace WingProcedural
                     }
                     break;
 
-                case 3:
+                case State.RootScale:
                     if (!Input.GetKey(keyRootWidth))
                     {
-                        state = 0;
+                        state = State.Nothing;
                         return;
                     }
                     if (Input.GetKey(keyLeading) && !isCtrlSrf)
@@ -3915,13 +3922,12 @@ namespace WingProcedural
                 return;
             }
 
-            if (NoKeycodeNeeded
-                /*!HighLogic.CurrentGame.Parameters.CustomParams<WPActivation>().useKeycodeToActivate */)
+            if (NoKeycodeNeeded)
             {
                 uiEditSelectTimer += Time.deltaTime;
                 if (uiEditSelectTimer > HighLogic.CurrentGame.Parameters.CustomParams<WPActivation>().hoverEditTimeout)
                 {
-                    ExitEditMode();
+                    ExitEditMode(1);
                     uiEditModeTimeout = false;
                     uiWindowActive = false;
                 }
@@ -3937,16 +3943,19 @@ namespace WingProcedural
             }
             else if (uiEditMode)
             {
-                if (HighLogic.CurrentGame.Parameters.CustomParams<WPActivation>().useKeycodeToActivate &&
+                //if (HighLogic.CurrentGame.Parameters.CustomParams<WPActivation>().useKeycodeToActivate &&
+                if (!NoKeycodeNeeded && 
                      Input.GetKeyDown(uiKeyCodeEdit))
                 {
-                    ExitEditMode();
+                    ExitEditMode(2);
                 }
                 else
                 {
                     bool cursorInGUI = UIUtility.uiRectWindowEditor.Contains(UIUtility.GetMousePos());
                     if (!cursorInGUI && Input.GetKeyDown(KeyCode.Mouse0))
                     {
+                        DebugLogWithID("UpdateUI", "Input.GetKeyDown(Mouse0)");
+
                         if (Physics.Raycast(EditorLogic.fetch.editorCamera.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, 200, 1 << 2))
                         {
                             if (hit.collider.name.StartsWith("handle") || hit.collider.name.StartsWith("ctrlHandle"))
@@ -3956,7 +3965,7 @@ namespace WingProcedural
                             }
                         }
                         else
-                            ExitEditMode();
+                            ExitEditMode(3);
                     }
                 }
             }
@@ -4037,8 +4046,10 @@ namespace WingProcedural
             uiEditModeTimer = 0.0f;
         }
 
-        private void ExitEditMode()
+        private void ExitEditMode(int i)
         {
+            DebugLogWithID("ExitEditMode", "i: " + i);
+
             uiEditMode = false;
             uiEditModeTimeout = true;
             uiAdjustWindow = true;
@@ -4085,15 +4096,16 @@ namespace WingProcedural
 
             //Attach handles to current wing
             if (handlesVisible &&
-                (!handlesEnabled ||
-                 (NoKeycodeNeeded
-                 /* !HighLogic.CurrentGame.Parameters.CustomParams<WPActivation>().useKeycodeToActivate */ ||
+                (!handlesEnabled &&
+                 (NoKeycodeNeeded ||
+            //(true ||
                    (!Wing_Layout_Locked && Input.GetKeyDown(uiKeyCodeEdit)))
                 ) && part.GetInstanceID() == uiInstanceIDTarget)
                 AttachHandles();
 
             #region Update positions
-            if (!isCtrlSrf)
+                 DebugLogWithID("UpdateHandleGizmos", "isCtrlSrf: " + isCtrlSrf);
+           if (!isCtrlSrf)
             {
                 StaticWingGlobals.handleLength.transform.localPosition = new Vector3(sharedBaseLength, -sharedBaseOffsetTip, 0);
                 float halfTipWidth = sharedBaseWidthTip * .5f;
@@ -4137,15 +4149,30 @@ namespace WingProcedural
                 {
                     switch (draggingHandle.name)
                     {
-                        case "handleLength": sharedBaseLength = backupsharedBaseLength + draggingHandle.LockDeltaAxisX; sharedBaseOffsetTip = backupsharedBaseOffsetTip - draggingHandle.LockDeltaAxisY; break;
-                        case "handleLeadingRoot": sharedEdgeWidthLeadingRoot += draggingHandle.axisY; break;
-                        case "handleLeadingTip": sharedEdgeWidthLeadingTip += draggingHandle.axisY; break;
-                        case "handleTrailingRoot": sharedEdgeWidthTrailingRoot += draggingHandle.axisY; break;
-                        case "handleTrailingTip": sharedEdgeWidthTrailingTip += draggingHandle.axisY; break;
-                        case "handleWidthRootFront": sharedBaseWidthRoot -= draggingHandle.axisY; sharedBaseOffsetRoot -= draggingHandle.axisY * .5f; break;
-                        case "handleWidthRootBack": sharedBaseWidthRoot += draggingHandle.axisY; sharedBaseOffsetRoot -= draggingHandle.axisY * .5f; break;
-                        case "handleWidthTipFront": sharedBaseWidthTip += draggingHandle.axisY; sharedBaseOffsetTip -= draggingHandle.axisY * .5f; break;
-                        case "handleWidthTipBack": sharedBaseWidthTip -= draggingHandle.axisY; sharedBaseOffsetTip -= draggingHandle.axisY * .5f; break;
+                        case "handleLength":
+                            sharedBaseLength = backupsharedBaseLength + draggingHandle.LockDeltaAxisX;
+                            sharedBaseOffsetTip = backupsharedBaseOffsetTip - draggingHandle.LockDeltaAxisY;
+                            break;
+                        case "handleLeadingRoot": sharedEdgeWidthLeadingRoot += draggingHandle.axisY * 4; break;
+                        case "handleLeadingTip": sharedEdgeWidthLeadingTip += draggingHandle.axisY * 4; break;
+                        case "handleTrailingRoot": sharedEdgeWidthTrailingRoot += draggingHandle.axisY * 4; break;
+                        case "handleTrailingTip": sharedEdgeWidthTrailingTip += draggingHandle.axisY * 4; break;
+                        case "handleWidthRootFront":
+                            sharedBaseWidthRoot -= draggingHandle.axisY * 4;
+                            sharedBaseOffsetRoot -= draggingHandle.axisY * 4 * .5f;
+                            break;
+                        case "handleWidthRootBack":
+                            sharedBaseWidthRoot += draggingHandle.axisY * 4;
+                            sharedBaseOffsetRoot -= draggingHandle.axisY * 4 * .5f;
+                            break;
+                        case "handleWidthTipFront":
+                            sharedBaseWidthTip += draggingHandle.axisY * 4;
+                            sharedBaseOffsetTip -= draggingHandle.axisY * 4 * .5f;
+                            break;
+                        case "handleWidthTipBack":
+                            sharedBaseWidthTip -= draggingHandle.axisY * 4;
+                            sharedBaseOffsetTip -= draggingHandle.axisY * 4 * .5f;
+                            break;
                         default:
                             break;
                     }
@@ -4158,10 +4185,16 @@ namespace WingProcedural
                     {
                         case "ctrlHandleLength1": sharedBaseLength = backupsharedBaseLength - draggingHandle.LockDeltaAxisY; break;
                         case "ctrlHandleLength2": sharedBaseLength = backupsharedBaseLength + draggingHandle.LockDeltaAxisY; break;
-                        case "ctrlHandleRootWidthOffset": sharedBaseWidthRoot = backupsharedBaseWidthRoot - draggingHandle.LockDeltaAxisY; sharedBaseOffsetRoot = backupsharedBaseOffsetRoot + (!isMirrored && isCtrlSrf && !isWingAsCtrlSrf ? 1f : -1f) * draggingHandle.LockDeltaAxisX * .5F; break;
-                        case "ctrlHandleTipWidthOffset": sharedBaseWidthTip = backupsharedBaseWidthTip + draggingHandle.LockDeltaAxisY; sharedBaseOffsetTip = backupsharedBaseOffsetTip + (!isMirrored && isCtrlSrf && !isWingAsCtrlSrf ? -1f : 1f) * draggingHandle.LockDeltaAxisX * .5F; break;
-                        case "ctrlHandleTrailingRoot": sharedEdgeWidthTrailingRoot += draggingHandle.axisY; break;
-                        case "ctrlHandleTrailingTip": sharedEdgeWidthTrailingTip += draggingHandle.axisY; break;
+                        case "ctrlHandleRootWidthOffset":
+                            sharedBaseWidthRoot = backupsharedBaseWidthRoot - draggingHandle.LockDeltaAxisY;
+                            sharedBaseOffsetRoot = backupsharedBaseOffsetRoot + (!isMirrored && isCtrlSrf && !isWingAsCtrlSrf ? 1f : -1f) * draggingHandle.LockDeltaAxisX * .5F;
+                            break;
+                        case "ctrlHandleTipWidthOffset":
+                            sharedBaseWidthTip = backupsharedBaseWidthTip + draggingHandle.LockDeltaAxisY;
+                            sharedBaseOffsetTip = backupsharedBaseOffsetTip + (!isMirrored && isCtrlSrf && !isWingAsCtrlSrf ? -1f : 1f) * draggingHandle.LockDeltaAxisX * .5F;
+                            break;
+                        case "ctrlHandleTrailingRoot": sharedEdgeWidthTrailingRoot += draggingHandle.axisY * 4; break;
+                        case "ctrlHandleTrailingTip": sharedEdgeWidthTrailingTip += draggingHandle.axisY * 4; break;
                         default: break;
                     }
                 }
@@ -4174,25 +4207,49 @@ namespace WingProcedural
                 sharedBaseWidthTip = sharedBaseWidthTip > 0 ? sharedBaseWidthTip : 0;
 
                 if (prev_sharedBaseLength != sharedBaseLength)
-                { uiLastFieldName = Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000148"); lastFieldID = 0; }		// #autoLOC_B9_Aerospace_WingStuff_1000148 = Length
+                {
+                    uiLastFieldName = Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000148"); // #autoLOC_B9_Aerospace_WingStuff_1000148 = Length
+                    lastFieldID = 0;
+                }
                 else if (prev_sharedEdgeWidthLeadingRoot != sharedEdgeWidthLeadingRoot)
-                { uiLastFieldName = Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000149"); lastFieldID = 8; }		// #autoLOC_B9_Aerospace_WingStuff_1000149 = Leading Edge Root Width
+                {
+                    uiLastFieldName = Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000149"); // #autoLOC_B9_Aerospace_WingStuff_1000149 = Leading Edge Root Width
+                    lastFieldID = 8;
+                }
                 else if (prev_sharedEdgeWidthLeadingTip != sharedEdgeWidthLeadingTip)
-                { uiLastFieldName = Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000150"); lastFieldID = 9; }		// #autoLOC_B9_Aerospace_WingStuff_1000150 = Leading Edge Tip Width
+                {
+                    uiLastFieldName = Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000150"); // #autoLOC_B9_Aerospace_WingStuff_1000150 = Leading Edge Tip Width
+                    lastFieldID = 9;
+                }
                 else if (prev_sharedEdgeWidthTrailingRoot != sharedEdgeWidthTrailingRoot)
-                { uiLastFieldName = Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000151"); lastFieldID = 11; }		// #autoLOC_B9_Aerospace_WingStuff_1000151 = Trailing Leading Edge Root Width
+                {
+                    uiLastFieldName = Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000151"); // #autoLOC_B9_Aerospace_WingStuff_1000151 = Trailing Leading Edge Root Width
+                    lastFieldID = 11;
+                }
                 else if (prev_sharedEdgeWidthTrailingTip != sharedEdgeWidthTrailingTip)
-                { uiLastFieldName = Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000152"); lastFieldID = 12; }		// #autoLOC_B9_Aerospace_WingStuff_1000152 = Trailing Leading Edge Tip Width
+                {
+                    uiLastFieldName = Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000152"); // #autoLOC_B9_Aerospace_WingStuff_1000152 = Trailing Leading Edge Tip Width
+                    lastFieldID = 12;
+                }
                 else if (prev_sharedBaseWidthRoot != sharedBaseWidthRoot)
-                { uiLastFieldName = Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000153"); lastFieldID = 1; }		// #autoLOC_B9_Aerospace_WingStuff_1000153 = Root Width
+                {
+                    uiLastFieldName = Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000153"); // #autoLOC_B9_Aerospace_WingStuff_1000153 = Root Width
+                    lastFieldID = 1;
+                }
                 else if (prev_sharedBaseWidthTip != sharedBaseWidthTip)
-                { uiLastFieldName = Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000154"); lastFieldID = 2; }		// #autoLOC_B9_Aerospace_WingStuff_1000154 = Tip Width
+                {
+                    uiLastFieldName = Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000154"); // #autoLOC_B9_Aerospace_WingStuff_1000154 = Tip Width
+                    lastFieldID = 2;
+                }
                 uiLastFieldTooltip = UpdateTooltipText(lastFieldID);
 
                 // show/hide hinge position indicator
-                if (!isCtrlSrf && isWingAsCtrlSrf)
+                //if (!isCtrlSrf && isWingAsCtrlSrf)
+                //if (isWingAsCtrlSrf)
                 {
-                    StaticWingGlobals.hingeIndicator.SetActive(sharedBaseOffsetRoot != 0);
+#if true
+                    StaticWingGlobals.hingeIndicator.SetActive(isWingAsCtrlSrf && sharedBaseOffsetRoot != 0); //sharedBaseOffsetRoot != 0);
+#endif
                 }
             }
         }
@@ -4206,6 +4263,7 @@ namespace WingProcedural
             if (EditorHandle.AnyHandleDragging) EditorHandle.draggingHandle.dragging = false;
             DontDestroyOnLoad(StaticWingGlobals.handlesRoot);
         }
+
         private void AttachHandles()
         {
             StaticWingGlobals.handlesRoot.transform.SetParent(part.transform, false);
@@ -4213,14 +4271,16 @@ namespace WingProcedural
             StaticWingGlobals.handlesRoot.SetActive(true);
             StaticWingGlobals.normalHandles.SetActive(!isCtrlSrf);
             StaticWingGlobals.ctrlSurfHandles.SetActive(isCtrlSrf);
-            StaticWingGlobals.hingeIndicator.SetActive(!isCtrlSrf && isWingAsCtrlSrf && sharedBaseOffsetRoot != 0);
+#if true
+            StaticWingGlobals.hingeIndicator.SetActive( /* !isCtrlSrf && */ isWingAsCtrlSrf && sharedBaseOffsetRoot != 0);
+#endif
             handlesEnabled = true;
         }
-        #endregion
+#endregion
 
-        #endregion Alternative UI/input
+#endregion Alternative UI/input
 
-        #region Coloration
+#region Coloration
 
         // XYZ
         // HSB
@@ -4302,9 +4362,9 @@ namespace WingProcedural
             return new Color(Mathf.Clamp01(r), Mathf.Clamp01(g), Mathf.Clamp01(b), hsbColor.w);
         }
 
-        #endregion Coloration
+#endregion Coloration
 
-        #region Resources
+#region Resources
 
         // Original code by Snjo
         // Modified to remove config support and string parsing and to add support for arbitrary volumes
@@ -4497,12 +4557,13 @@ namespace WingProcedural
             }
         }
 
-        public bool CanBeFueled => !isCtrlSrf && !isWingAsCtrlSrf && !isPanel;
+        //public bool CanBeFueled => !isCtrlSrf && !isWingAsCtrlSrf && !isPanel;
+        public bool CanBeFueled => isWing && !isPanel;
         public bool UseStockFuel => !(assemblyRFUsed || assemblyMFTUsed || moduleCCUsed);
 
-        #endregion Resources
+#endregion Resources
 
-        #region Interfaces
+#region Interfaces
 
         public float GetModuleCost(float defaultCost, ModifierStagingSituation sit)
         {
@@ -4534,7 +4595,7 @@ namespace WingProcedural
             return ModifierChangeWhen.FIXED;
         }
 
-        #endregion Interfaces
+#endregion Interfaces
 
         public T FirstOfTypeOrDefault<T>(PartModuleList moduleList) where T : PartModule
         {
@@ -4547,7 +4608,7 @@ namespace WingProcedural
             }
             return default;
         }
-        #region Dump state
+#region Dump state
 
         public void DumpState()
         {
@@ -4583,6 +4644,6 @@ namespace WingProcedural
             }
             Debug.Log(report);
         }
-        #endregion
+#endregion
     }
 }

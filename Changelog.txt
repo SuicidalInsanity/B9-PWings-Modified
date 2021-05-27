@@ -37,3 +37,9 @@ ChangeLog
 0.43.0.3
 	Update TU support to let the TURD patches be primary
 
+0.43.0.4
+	Fixed dragging handles so that they closely follow the mouse movement
+	Changed "state" var from int to Enum for better readability
+	Restored missing localization entries
+	Fixed handles locking up when using hovering mode after 2nd part attachment
+	

@@ -36,11 +36,11 @@ namespace WingProcedural
         /// <summary>
         /// Delta values, but affected by axisLockState
         /// </summary>
-        public float LockDeltaAxisX => axisLockState == 1 ? 0 : deltaAxisX;
+        public float LockDeltaAxisX => axisLockState == 1 ? 0 : deltaAxisX * 4;
         /// <summary>
         /// Delta values, but affected by axisLockState
         /// </summary>
-        public float LockDeltaAxisY => axisLockState == 2 ? 0 : deltaAxisY;
+        public float LockDeltaAxisY => axisLockState == 2 ? 0 : deltaAxisY * 4;
 
         void OnGUI()
         {
