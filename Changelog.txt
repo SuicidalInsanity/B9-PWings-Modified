@@ -24,9 +24,34 @@ ChangeLog
 		Fixed settings page, updated title of settings page
 		Updated .version file
 
+0.43.0.2
+	Linuxgurugamer
+		Added new settings to control the activation
+		Added code to allow activation just by hovering
+		Added ability to lock wing layout
+		Added optional ClickThroughBlocker support (will use it if installed)
+		Added support for the Changelog mod
+		Full TU support and metallic textures
+
+0.43.0.3
+	Linuxgurugamer
+		Update TU support to let the TURD patches be primary
+
+0.43.0.4
+	Linuxgurugamer
+		Fixed dragging handles so that they closely follow the mouse movement
+		Changed "state" var from int to Enum for better readability
+		Restored missing localization entries
+		Fixed handles locking up when using hovering mode after 2nd part attachment
+
 0.43.0.5
-	Removed hover code
-	Removed dependency on ClickThroughBlocker
-	Adjusted initial location of window in the editor to not be on top of the parts list
-	Adjusted text and spacing for fuel tank configuration
-	Minor optimization for fuel tank display (eliminated a string assignment)
+	Linuxgurugamer
+		Removed hover code
+		Removed dependency on ClickThroughBlocker
+		Adjusted initial location of window in the editor to not be on top of the parts list
+		Adjusted text and spacing for fuel tank configuration
+		Minor optimization for fuel tank display (eliminated a string assignment)
+
+0.43.0.6
+	Remerged JRodriquiz's TU support
+	Restored Changelog support
