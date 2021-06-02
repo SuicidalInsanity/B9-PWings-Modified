@@ -1271,7 +1271,7 @@ namespace WingProcedural
         }
         private bool ApplyLegacyTextures()
         {
-            return part.GetComponent("KSPTextureSwitch") is null;
+            return part.GetComponent("KSPTextureSwitch") == null;
         }
 
         #endregion Unity stuff and Callbacks/events
