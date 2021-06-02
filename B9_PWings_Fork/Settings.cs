@@ -55,4 +55,26 @@ namespace WingProcedural
         public override bool HasPresets => false;
 
     }
+
+
+
+    public class WPSensitivity : GameParameters.CustomParameterNode
+    {
+        public override string Title { get { return "Controls"; } }
+        public override GameParameters.GameMode GameMode { get { return GameParameters.GameMode.ANY; } }
+        public override string Section { get { return "B9 Procedural Wings"; } }
+        public override string DisplaySection { get { return "B9 Procedural Wings"; } }
+
+        public override int SectionOrder { get { return 2; } }
+        public override bool HasPresets => false;
+
+
+        [GameParameters.CustomFloatParameterUI("Mouse Sensitivity",
+            minValue = 1, maxValue = 8.0f, stepCount = 79, displayFormat = "F1",
+            toolTip = "Adjusts how the handles move when being moved by the mouse"
+            )]
+        public double mouseSensitivity = 4.0f;
+
+
+    }
 }

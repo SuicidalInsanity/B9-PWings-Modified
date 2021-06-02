@@ -1,12 +1,12 @@
 {
   "NAME": "B9 Aerospace Procedural Wings",
-  "URL": "https://github.com/tetraflon/B9-PWings-Modified/raw/master/GameData/B9_Aerospace_ProceduralWings/Plugins/B9_Aerospace_WingStuff.version",
-  "DOWNLOAD": "https://github.com/tetraflon/B9-PWings-Modified/releases/download/0.42/B9-Pwings-Modified-0.42.zip",
+  "URL": "https://raw.githubusercontent.com/B9-Procedural-Wings/B9-PWings-Modified/Rafterman82-CarnationRED/B9_Aerospace_ProceduralWings.version",
+  "DOWNLOAD": "https://github.com/B9-Procedural-Wings/B9-PWings-Modified/releases",
   "VERSION": {
     "MAJOR": 0,
     "MINOR": 43,
     "PATCH": 0,
-    "BUILD": 0
+    "BUILD": 4
   },
   "KSP_VERSION": {
     "MAJOR": 1,

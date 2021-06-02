@@ -11,7 +11,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>B9_Aerospace_WingStuff</RootNamespace>
-    <AssemblyName>B9_Aerospace_WingStuff</AssemblyName>
+    <AssemblyName>B9-PWings-Fork</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />

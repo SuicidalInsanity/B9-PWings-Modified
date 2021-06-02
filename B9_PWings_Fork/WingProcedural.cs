@@ -3981,6 +3981,11 @@ namespace WingProcedural
             backupsharedBaseOffsetRoot = sharedBaseOffsetRoot;
             backupsharedBaseOffsetTip = sharedBaseOffsetTip;
         }
+        /// <summary>
+        /// How sensitive the mouse is
+        /// </summary>
+        float MouseSensitivity => (float)HighLogic.CurrentGame.Parameters.CustomParams<WPSensitivity>().mouseSensitivity;
+
         private void UpdateHandleGizmos()
         {
             if (!uiEditMode)
@@ -4036,20 +4041,33 @@ namespace WingProcedural
                 {
                     switch (draggingHandle.name)
                     {
-                        case "handleLength": sharedBaseLength = backupsharedBaseLength + draggingHandle.LockDeltaAxisX; sharedBaseOffsetTip = backupsharedBaseOffsetTip - draggingHandle.LockDeltaAxisY; break;
-                        case "handleLeadingRoot": sharedEdgeWidthLeadingRoot += draggingHandle.axisY; break;
-                        case "handleLeadingTip": sharedEdgeWidthLeadingTip += draggingHandle.axisY; break;
-                        case "handleTrailingRoot": sharedEdgeWidthTrailingRoot += draggingHandle.axisY; break;
-                        case "handleTrailingTip": sharedEdgeWidthTrailingTip += draggingHandle.axisY; break;
-                        case "handleWidthRootFront": sharedBaseWidthRoot -= draggingHandle.axisY; sharedBaseOffsetRoot -= draggingHandle.axisY * .5f; break;
-                        case "handleWidthRootBack": sharedBaseWidthRoot += draggingHandle.axisY; sharedBaseOffsetRoot -= draggingHandle.axisY * .5f; break;
-                        case "handleWidthTipFront": sharedBaseWidthTip += draggingHandle.axisY; sharedBaseOffsetTip -= draggingHandle.axisY * .5f; break;
-                        case "handleWidthTipBack": sharedBaseWidthTip -= draggingHandle.axisY; sharedBaseOffsetTip -= draggingHandle.axisY * .5f; break;
+                        case "handleLength":
+                            sharedBaseLength = backupsharedBaseLength + draggingHandle.LockDeltaAxisX;
+                            sharedBaseOffsetTip = backupsharedBaseOffsetTip - draggingHandle.LockDeltaAxisY;
+                            break;
+                        case "handleLeadingRoot": sharedEdgeWidthLeadingRoot += draggingHandle.axisY * MouseSensitivity; break;
+                        case "handleLeadingTip": sharedEdgeWidthLeadingTip += draggingHandle.axisY * MouseSensitivity; break;
+                        case "handleTrailingRoot": sharedEdgeWidthTrailingRoot += draggingHandle.axisY * MouseSensitivity; break;
+                        case "handleTrailingTip": sharedEdgeWidthTrailingTip += draggingHandle.axisY * MouseSensitivity; break;
+                        case "handleWidthRootFront":
+                            sharedBaseWidthRoot -= draggingHandle.axisY * MouseSensitivity;
+                            sharedBaseOffsetRoot -= draggingHandle.axisY * MouseSensitivity * .5f;
+                            break;
+                        case "handleWidthRootBack":
+                            sharedBaseWidthRoot += draggingHandle.axisY * MouseSensitivity;
+                            sharedBaseOffsetRoot -= draggingHandle.axisY * MouseSensitivity * .5f;
+                            break;
+                        case "handleWidthTipFront":
+                            sharedBaseWidthTip += draggingHandle.axisY * MouseSensitivity;
+                            sharedBaseOffsetTip -= draggingHandle.axisY * MouseSensitivity * .5f;
+                            break;
+                        case "handleWidthTipBack":
+                            sharedBaseWidthTip -= draggingHandle.axisY * MouseSensitivity;
+                            sharedBaseOffsetTip -= draggingHandle.axisY * MouseSensitivity * .5f;
+                            break;
                         default:
                             break;
                     }
-                    if (!isWingAsCtrlSrf)
-                        sharedBaseOffsetRoot = Mathf.Clamp(sharedBaseOffsetRoot, -0.5f * sharedBaseWidthRoot, 0.5f * sharedBaseWidthRoot);
                 }
                 else
                 {
@@ -4059,8 +4077,8 @@ namespace WingProcedural
                         case "ctrlHandleLength2": sharedBaseLength = backupsharedBaseLength + draggingHandle.LockDeltaAxisY; break;
                         case "ctrlHandleRootWidthOffset": sharedBaseWidthRoot = backupsharedBaseWidthRoot - draggingHandle.LockDeltaAxisY; sharedBaseOffsetRoot = backupsharedBaseOffsetRoot + (!isMirrored && isCtrlSrf && !isWingAsCtrlSrf ? 1f : -1f) * draggingHandle.LockDeltaAxisX * .5F; break;
                         case "ctrlHandleTipWidthOffset": sharedBaseWidthTip = backupsharedBaseWidthTip + draggingHandle.LockDeltaAxisY; sharedBaseOffsetTip = backupsharedBaseOffsetTip + (!isMirrored && isCtrlSrf && !isWingAsCtrlSrf ? -1f : 1f) * draggingHandle.LockDeltaAxisX * .5F; break;
-                        case "ctrlHandleTrailingRoot": sharedEdgeWidthTrailingRoot += draggingHandle.axisY; break;
-                        case "ctrlHandleTrailingTip": sharedEdgeWidthTrailingTip += draggingHandle.axisY; break;
+                        case "ctrlHandleTrailingRoot": sharedEdgeWidthTrailingRoot += draggingHandle.axisY * MouseSensitivity; break;
+                        case "ctrlHandleTrailingTip": sharedEdgeWidthTrailingTip += draggingHandle.axisY * MouseSensitivity; break;
                         default: break;
                     }
                 }
@@ -4383,16 +4401,17 @@ namespace WingProcedural
             }
             else
             {
-                string units = StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].GUIName + " (";
                 if (StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources.Count != 0)
                 {
+                    string units = StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].GUIName + " (";
                     foreach (KeyValuePair<string, WingTankResource> kvp in StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources)
                     {
-                        units += " " + (kvp.Value.unitsPerVolume * aeroStatVolume).ToString("G3") + " /";
+                        units += " " + (kvp.Value.unitsPerVolume * aeroStatVolume).ToString("G5") + " /";
                     }
-                    units = units.Substring(0, units.Length - 1);
+                    //units = units.Substring(0, units.Length - 1);
+                    return units.Substring(0, units.Length - 1) + ") ";
                 }
-                return units + ")";
+                return StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].GUIName + " ";
             }
         }
 

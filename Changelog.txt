@@ -23,3 +23,10 @@ ChangeLog
 	Linuxgurugamer
 		Fixed settings page, updated title of settings page
 		Updated .version file
+
+0.43.0.4
+	Removed hover code
+	Removed dependency on ClickThroughBlocker
+	Adjusted initial location of window in the editor to not be on top of the parts list
+	Adjusted text and spacing for fuel tank configuration
+	Minor optimization for fuel tank display (eliminated a string assignment)

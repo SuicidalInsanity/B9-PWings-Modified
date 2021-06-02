@@ -36,12 +36,16 @@ namespace WingProcedural
         /// <summary>
         /// Delta values, but affected by axisLockState
         /// </summary>
-        public float LockDeltaAxisX => axisLockState == 1 ? 0 : deltaAxisX;
+        public float LockDeltaAxisX => axisLockState == 1 ? 0 : deltaAxisX * MouseSensitivity;
         /// <summary>
         /// Delta values, but affected by axisLockState
         /// </summary>
-        public float LockDeltaAxisY => axisLockState == 2 ? 0 : deltaAxisY;
+        public float LockDeltaAxisY => axisLockState == 2 ? 0 : deltaAxisY * MouseSensitivity;
 
+        /// <summary>
+        /// How sensitive the mouse is
+        /// </summary>
+        float MouseSensitivity => (float)HighLogic.CurrentGame.Parameters.CustomParams<WPSensitivity>().mouseSensitivity;
         void OnGUI()
         {
             if (!dragging || !HighLogic.LoadedSceneIsEditor || !WingProcedural.uiWindowActive) return;
