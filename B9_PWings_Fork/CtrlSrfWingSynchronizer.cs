@@ -1,4 +1,6 @@
-﻿using ferram4;
+﻿#if FAR
+using ferram4;
+#endif
 using System;
 using System.Collections.Generic;
 using System.Linq;
