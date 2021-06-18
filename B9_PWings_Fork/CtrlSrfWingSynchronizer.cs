@@ -1,5 +1,5 @@
 ﻿#if FAR
-using ferram4;
+//using ferram4;
 #endif
 using System;
 using System.Collections.Generic;
@@ -38,6 +38,39 @@ namespace WingProcedural
             ctrlSrfs = connectedCtrlSrfWings.Select(wp => wp.part.FindModuleImplementing<ModuleControlSurface>()).ToList();
             ctrlSrfsNeutral = ctrlSrfs.Select(cs => (Quaternion)neutral.GetValue(cs)).ToList();
             ctrlSrfTrans = ctrlSrfs.Select(cs => (Transform)ctrlSurface.GetValue(cs)).ToList();
+        }
+
+        static internal Type FARType = null;
+        static public void InitFAR()
+        {
+            if (FARType != null) return;
+            Debug.Log("LGG InitFAR 1");
+            foreach (AssemblyLoader.LoadedAssembly test in AssemblyLoader.loadedAssemblies)
+            {
+                if (test.assembly.GetName().Name.Equals("FerramAerospaceResearch", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    // This seems to work
+                    FARType = test.assembly.GetType("ferram4.FARControllableSurface");
+                    Debug.Log("LGG InitFAR, type: " + FARType.ToString());
+#if false
+                    // This retuns null
+                    object asmInstance = Activator.CreateInstance(FARType);
+                    Debug.Log("InitFAR, asmInstance: " + asmInstance.ToString());
+
+                    // This also returns null
+                    FARControllableSurface fcs = new FARControllableSurface();
+                    Debug.Log("InitFAR, fcs: " + fcs.ToString());
+
+                    if (fcs == null)
+                        Debug.Log("InitFAR, fcs is null");
+                    else
+                        Debug.Log("InitFAR, fcs: " + fcs.ToString());
+#endif
+                    break;
+                }
+            }
+            
+
         }
 
         public void FixedUpdate()
@@ -95,18 +128,47 @@ namespace WingProcedural
     public class FARCtrlSrfWingSynchronizer : MonoBehaviour
     {
         public List<WingProcedural> connectedCtrlSrfWings;
+#if false
         public List<FARControllableSurface> farCtrlSrfs;
+#else
+        public List<object> farCtrlSrfs;
+#endif
         public double deflectionLastFrame;
 
         private static readonly FieldInfo AoAoffset;
         private static readonly MethodInfo DeflectionAnimation;
         static FARCtrlSrfWingSynchronizer()
         {
+#if false
             AoAoffset = typeof(FARControllableSurface).GetField("AoAoffset", (BindingFlags)0b1111111111111111111111111);
             DeflectionAnimation = typeof(FARControllableSurface).GetMethod("DeflectionAnimation", (BindingFlags)0b1111111111111111111111111);
+#else
+            AoAoffset = CtrlSrfWingSynchronizer.FARType.GetField("AoAoffset", (BindingFlags)0b1111111111111111111111111);
+            DeflectionAnimation = CtrlSrfWingSynchronizer.FARType.GetMethod("DeflectionAnimation", (BindingFlags)0b1111111111111111111111111);
+#endif
         }
-        public void Start() => farCtrlSrfs = connectedCtrlSrfWings.Select(wp => wp.part.FindModuleImplementing<FARControllableSurface>()).ToList();
 
+#if false
+        public void Start() => farCtrlSrfs = connectedCtrlSrfWings.Select(wp => wp.part.FindModuleImplementing<FARControllableSurface>()).ToList();
+#else
+        public void Start()
+        {
+            farCtrlSrfs = new List<object>();
+            foreach (var csw in connectedCtrlSrfWings)
+            {
+                foreach (var m in csw.part.Modules)
+                {
+                    if (m.moduleName == "FARControllableSurface")
+                    {
+                        farCtrlSrfs.Add((object)m);
+                    }
+                }
+            }
+        }
+            
+//            => farCtrlSrfs = connectedCtrlSrfWings.Select(wp => wp.part.FindModuleImplementing(FARType)()).ToList();
+
+#endif
         public void FixedUpdate()
         {
             var deflectionAngle = 0d;
@@ -144,4 +206,4 @@ namespace WingProcedural
         }
     }
 #endif
-}
+    }

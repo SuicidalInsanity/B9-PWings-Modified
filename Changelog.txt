@@ -58,3 +58,6 @@ ChangeLog
 
 0.43.0.7
 	Restored missing localization lines
+
+0.43.0.8
+	Replaced embedded FAR references with Reflection calls

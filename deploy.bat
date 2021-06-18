@@ -9,7 +9,7 @@ rem    but not always
 
 set H=%KSPDIR%
 
-set H=R:\KSP_1.11.2_Tetrix
+rem set H=R:\KSP_1.11.2_Tetrix
 
 set GAMEDIR=B9_Aerospace_ProceduralWings
 set GAMEDATA="GameData"

@@ -767,6 +767,7 @@ namespace WingProcedural
                     if (test.assembly.GetName().Name.Equals("FerramAerospaceResearch", StringComparison.InvariantCultureIgnoreCase))
                     {
                         assemblyFARUsed = true;
+                        CtrlSrfWingSynchronizer.InitFAR();
                     }
                     else if (test.assembly.GetName().Name.Equals("RealFuels", StringComparison.InvariantCultureIgnoreCase))
                     {
