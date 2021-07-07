@@ -65,3 +65,7 @@ ChangeLog
 0.43.0.9
 	Added missing "actuatorSpeed = 40 for both control surfaces
 
+0.43.0.10 (unreleased)
+	Deleted backup files
+	Deleted GameData-old
+	Updated .gitignore 
