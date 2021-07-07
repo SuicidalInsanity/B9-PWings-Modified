@@ -61,3 +61,7 @@ ChangeLog
 
 0.43.0.8
 	Replaced embedded FAR references with Reflection calls
+
+0.43.0.9
+	Added missing "actuatorSpeed = 40 for both control surfaces
+
