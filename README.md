@@ -48,3 +48,8 @@ Instructions
 - An alternate texture is provided. You can also overwrite the texture if you wish
 
 - A test aircraft is supplied with control surfaces setup including spoilers, levcons, canards, flaps etc. This aircraft functions in stock aero and with FAR use it as a guide or to test if the mod is functioning
+
+
+Optional Patch
+
+- An optional patch is included to increase the speed of the control surfaces.  It is configured to work with PatchManager
