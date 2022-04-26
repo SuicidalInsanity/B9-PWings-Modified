@@ -38,11 +38,17 @@ namespace WingProcedural
             }
         }
 
+		public static bool loadingAssets = false;
+		public static StaticWingGlobals Instance;
+
         private void Awake()
         {
             _bundlePath = KSPUtil.ApplicationRootPath + "GameData" +
                                                     Path.DirectorySeparatorChar +
                                                     "B9_Aerospace_ProceduralWings" + Path.DirectorySeparatorChar + "AssetBundles";
+
+			if (Instance != null) Destroy(Instance);
+			Instance = this;
         }
 
         public void Start()

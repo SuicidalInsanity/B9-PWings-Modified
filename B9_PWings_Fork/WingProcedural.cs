@@ -3989,6 +3989,13 @@ namespace WingProcedural
 
         private void UpdateHandleGizmos()
         {
+			// Undoing in the Editor destroys all the handle gizmos.
+			if (StaticWingGlobals.handlesRoot == null)
+			{
+				if (StaticWingGlobals.loadingAssets) return;
+				Debug.Log($"[B9_PWings_Fork.WingProcedural]: Reloading Bundle Assets");
+				StartCoroutine(StaticWingGlobals.Instance.LoadBundleAssets());
+			}
             if (!uiEditMode)
             {
                 if (handlesEnabled)
