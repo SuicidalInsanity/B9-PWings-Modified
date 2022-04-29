@@ -138,5 +138,22 @@ namespace WingProcedural
                 Debug.Log("[B9PW] Error: Found no asset bundle to load");
             }
         }
+
+		/// <summary>
+		/// Check that the handles are on the correct layer and correct them if necessary.
+		/// Sometimes KSP changes the layer that the handles are on (picking up a part through a handle triggers this).
+		/// </summary>
+		/// <returns>true if the layers needed fixing.</returns>
+		public static bool CheckHandleLayers()
+		{
+			bool changed = false;
+			if (handlesRoot && handlesRoot.layer != 2)
+			{
+				Debug.Log($"[B9PW] handlesRoot was on layer {handlesRoot.layer}, resetting to 2.");
+				handlesRoot.SetLayerRecursive(2); // Recursively set all the layers back to 2.
+				changed = true;
+			}
+			return changed;
+		}
     }
 }
