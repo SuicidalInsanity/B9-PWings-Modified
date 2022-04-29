@@ -38,8 +38,8 @@ namespace WingProcedural
             }
         }
 
-		public static bool loadingAssets = false;
-		public static StaticWingGlobals Instance;
+        public static bool loadingAssets = false;
+        public static StaticWingGlobals Instance;
 
         private void Awake()
         {
@@ -47,8 +47,8 @@ namespace WingProcedural
                                                     Path.DirectorySeparatorChar +
                                                     "B9_Aerospace_ProceduralWings" + Path.DirectorySeparatorChar + "AssetBundles";
 
-			if (Instance != null) Destroy(Instance);
-			Instance = this;
+            if (Instance != null) Destroy(Instance);
+            Instance = this;
         }
 
         public void Start()
@@ -105,7 +105,7 @@ namespace WingProcedural
                     foreach (Transform obj in normalHandles.transform)
                         obj.gameObject.AddComponent<EditorHandle>();
 
-                    foreach (Transform obj in ctrlSurfHandles.transform) 
+                    foreach (Transform obj in ctrlSurfHandles.transform)
                         obj.gameObject.AddComponent<EditorHandle>();
 
                     handleLength = normalHandles.transform.Find("handleLength").gameObject;
@@ -139,21 +139,21 @@ namespace WingProcedural
             }
         }
 
-		/// <summary>
-		/// Check that the handles are on the correct layer and correct them if necessary.
-		/// Sometimes KSP changes the layer that the handles are on (picking up a part through a handle triggers this).
-		/// </summary>
-		/// <returns>true if the layers needed fixing.</returns>
-		public static bool CheckHandleLayers()
-		{
-			bool changed = false;
-			if (handlesRoot && handlesRoot.layer != 2)
-			{
-				Debug.Log($"[B9PW] handlesRoot was on layer {handlesRoot.layer}, resetting to 2.");
-				handlesRoot.SetLayerRecursive(2); // Recursively set all the layers back to 2.
-				changed = true;
-			}
-			return changed;
-		}
+        /// <summary>
+        /// Check that the handles are on the correct layer and correct them if necessary.
+        /// Sometimes KSP changes the layer that the handles are on (picking up a part through a handle triggers this).
+        /// </summary>
+        /// <returns>true if the layers needed fixing.</returns>
+        public static bool CheckHandleLayers()
+        {
+            bool changed = false;
+            if (handlesRoot && handlesRoot.layer != 2)
+            {
+                Debug.Log($"[B9PW] handlesRoot was on layer {handlesRoot.layer}, resetting to 2.");
+                handlesRoot.SetLayerRecursive(2); // Recursively set all the layers back to 2.
+                changed = true;
+            }
+            return changed;
+        }
     }
 }
