@@ -72,6 +72,6 @@ ChangeLog
 	Added optional patch to increase control surface speed
 
 0.43.0.11
-	Thakns to github user @BrettRyland for this:
+	Thanks to github user @BrettRyland for this:
 		Reload bundle assets when ctrl-z destroys them (fixes issue #11). 
 		Fix when handles stop working due to layer changes.
