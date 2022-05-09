@@ -5,6 +5,9 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using KSP.Localization;
+using UnityEngine.Internal;
+using UnityEngine.Scripting;
+
 
 namespace WingProcedural
 {
@@ -3997,7 +4000,13 @@ namespace WingProcedural
             }
 
             //Attach handles to current wing
-            if (handlesVisible && (!handlesEnabled || Input.GetKeyDown(uiKeyCodeEdit)) && part.GetInstanceID() == uiInstanceIDTarget) AttachHandles();
+            if (handlesVisible && (!handlesEnabled || Input.GetKeyDown(uiKeyCodeEdit)) && part.GetInstanceID() == uiInstanceIDTarget)
+            {
+                if (StaticWingGlobals.handlesRoot.transform != null)
+                    AttachHandles();
+                else
+                    Debug.Log("WingProcedural, StaticWingGlobals.handlesRoot.transform is null");
+            }
 
             #region Update positions
             if (!isCtrlSrf)
