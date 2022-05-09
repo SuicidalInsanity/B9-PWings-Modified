@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -3860,6 +3860,7 @@ namespace WingProcedural
                     bool cursorInGUI = UIUtility.uiRectWindowEditor.Contains(UIUtility.GetMousePos());
                     if (!cursorInGUI && Input.GetKeyDown(KeyCode.Mouse0))
                     {
+                        StaticWingGlobals.CheckHandleLayers();
                         if (Physics.Raycast(EditorLogic.fetch.editorCamera.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, 200, 1 << 2))
                         {
                             if (hit.collider.name.StartsWith("handle") || hit.collider.name.StartsWith("ctrlHandle"))
@@ -3992,6 +3993,13 @@ namespace WingProcedural
 
         private void UpdateHandleGizmos()
         {
+            // Undoing in the Editor destroys all the handle gizmos.
+            if (StaticWingGlobals.handlesRoot == null)
+            {
+                if (StaticWingGlobals.loadingAssets) return;
+                Debug.Log($"[B9PW] Reloading Bundle Assets");
+                StartCoroutine(StaticWingGlobals.Instance.LoadBundleAssets());
+            }
             if (!uiEditMode)
             {
                 if (handlesEnabled)
