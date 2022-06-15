@@ -1,0 +1,77 @@
+ChangeLog
+
+0.43.0
+	Forked repo from @tetraflon
+	Rafterman82
+		Merged in CarnationRED's changes
+	Linuxgurugamer
+		Merged in Rafterman82's merged changes
+		Created LGG csproj file
+		Added deploy.bat
+		Added buildRelease.bat
+		Added AssemblyVersion.tt
+		Added InstallChecker
+		Moved .version file into main directory
+		Reenabled FAR references
+		Added build flag to allow building without FAR
+		Added the Localization files into B9_Aerospace_ProceduralWings\Localization
+		Renamed source directory to remove spaces
+		Reformatted .version file
+		Added BUILD to .version file
+
+0.43.0.1
+	Linuxgurugamer
+		Fixed settings page, updated title of settings page
+		Updated .version file
+
+0.43.0.2
+	Linuxgurugamer
+		Added new settings to control the activation
+		Added code to allow activation just by hovering
+		Added ability to lock wing layout
+		Added optional ClickThroughBlocker support (will use it if installed)
+		Added support for the Changelog mod
+		Full TU support and metallic textures
+
+0.43.0.3
+	Linuxgurugamer
+		Update TU support to let the TURD patches be primary
+
+0.43.0.4
+	Linuxgurugamer
+		Fixed dragging handles so that they closely follow the mouse movement
+		Changed "state" var from int to Enum for better readability
+		Restored missing localization entries
+		Fixed handles locking up when using hovering mode after 2nd part attachment
+
+0.43.0.5
+	Linuxgurugamer
+		Removed hover code
+		Removed dependency on ClickThroughBlocker
+		Adjusted initial location of window in the editor to not be on top of the parts list
+		Adjusted text and spacing for fuel tank configuration
+		Minor optimization for fuel tank display (eliminated a string assignment)
+
+0.43.0.6
+	Remerged JRodriquiz's TU support
+	Restored Changelog support
+
+0.43.0.7
+	Restored missing localization lines
+
+0.43.0.8
+	Replaced embedded FAR references with Reflection calls
+
+0.43.0.9
+	Added missing "actuatorSpeed = 40 for both control surfaces
+
+0.43.0.10 
+	Deleted backup files
+	Deleted GameData-old
+	Updated .gitignore 
+	Added optional patch to increase control surface speed
+
+0.43.0.11
+	Thanks to github user @BrettRyland for this:
+		Reload bundle assets when ctrl-z destroys them (fixes issue #11). 
+		Fix when handles stop working due to layer changes.
