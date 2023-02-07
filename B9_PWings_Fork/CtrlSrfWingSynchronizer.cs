@@ -1,4 +1,4 @@
-﻿#if FAR
+#if FAR
 //using ferram4;
 #endif
 using System;
@@ -76,6 +76,7 @@ namespace WingProcedural
         public void FixedUpdate()
         {
             var deflectionAngle = 0f;
+            float maxDelta = 0f;
             for (int i = 0; i < connectedCtrlSrfWings.Count; i++)
             {
                 var c = connectedCtrlSrfWings[i];
@@ -95,12 +96,14 @@ namespace WingProcedural
                 var d = (float)deflection.GetValue(cs);
                 if (Mathf.Abs(d) > deflectionAngle)
                     deflectionAngle = d;
+
+                maxDelta = Mathf.Max((Time.fixedDeltaTime * cs.actuatorSpeed), maxDelta);
             }
 
             //Fix a bug when the wing is near vessel's centerline
-            var delta = deflectionAngle - deflectionLastFrame;
-            if (Mathf.Abs(delta) > 1f)
-                deflectionAngle = deflectionLastFrame + Mathf.Sign(delta);
+            float delta = (float)(deflectionAngle - deflectionLastFrame);
+            if (Mathf.Abs(delta) > (maxDelta + 0.1f))
+                deflectionAngle = deflectionLastFrame + maxDelta * Mathf.Sign(delta);
             deflectionLastFrame = deflectionAngle;
 
             //apply deflection
@@ -172,6 +175,7 @@ namespace WingProcedural
         public void FixedUpdate()
         {
             var deflectionAngle = 0d;
+            float maxDelta = 0f;
             for (int i = 0; i < connectedCtrlSrfWings.Count; i++)
             {
                 var c = connectedCtrlSrfWings[i];
@@ -189,12 +193,15 @@ namespace WingProcedural
                 var d = (double)AoAoffset.GetValue(cs);
                 if (Math.Abs(d) > deflectionAngle)
                     deflectionAngle = d;
+
+                ModuleControlSurface mcs = (ModuleControlSurface)cs;
+                maxDelta = Mathf.Max((Time.fixedDeltaTime * mcs.actuatorSpeed), maxDelta);
             }
 
             //Fix a bug when the wing is near vessel's centerline
             float delta = (float)(deflectionAngle - deflectionLastFrame);
-            if (Mathf.Abs(delta) > 1f)
-                deflectionAngle = deflectionLastFrame + Mathf.Sign(delta);
+            if (Mathf.Abs(delta) > (maxDelta + 0.1f))
+                deflectionAngle = deflectionLastFrame + maxDelta * Mathf.Sign(delta);
             deflectionLastFrame = deflectionAngle;
 
             //apply deflection
