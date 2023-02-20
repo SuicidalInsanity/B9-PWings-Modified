@@ -75,3 +75,9 @@ ChangeLog
 	Thanks to github user @BrettRyland for this:
 		Reload bundle assets when ctrl-z destroys them (fixes issue #11). 
 		Fix when handles stop working due to layer changes.
+
+0.44.0
+	Thanks to github user @josuenos for this:
+		Add in option to set PWing Wing part to non-lifting in Stock Aero. Adds toggle to the Part UI, toggling between:  
+			"Surface Config: Lifting" and "Surface Config: Not Lifting"
+		Allows for use of PWings to make interesting geometries without the impact of bad lift vectors (i.e. F-117 replica).
