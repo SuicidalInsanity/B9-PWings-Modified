@@ -556,6 +556,24 @@ namespace WingProcedural
 
         #endregion Default values
 
+        #region Lift configuration switching
+
+        // Has to be situated here as this KSPEvent is not correctly added Part.Events otherwise
+        [KSPEvent(guiActive = false, guiActiveEditor = true, guiName = "#autoLOC_B9_Aerospace_WingStuff_1000163", active = true)]		// #autoLOC_B9_Aerospace_WingStuff_1000163 = Surface Config: Lifting
+        public void ToggleLiftConfiguration()
+        {
+
+            if (!CanBeFueled || assemblyFARUsed)
+            {
+                return;
+            }
+
+            aeroIsLiftingSurface = !aeroIsLiftingSurface;
+            LiftStructuralTypeChanged();
+        }
+
+        #endregion Lift configuration switching
+
         #region Fuel configuration switching
 
         // Has to be situated here as this KSPEvent is not correctly added Part.Events otherwise
@@ -1935,6 +1953,10 @@ namespace WingProcedural
             if (updateAerodynamics)
             {
                 CalculateAerodynamicValues();
+                if (aeroIsLiftingSurface)
+                    Events["ToggleLiftConfiguration"].guiName = Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000163");//Surface Config: Lifting
+                else
+                    Events["ToggleLiftConfiguration"].guiName = Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000164");//Surface Config: Not Lifting
             }
         }
 
@@ -2498,6 +2520,9 @@ namespace WingProcedural
         [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = true, guiName = "#autoLOC_B9_Aerospace_WingStuff_1000126")]		// #autoLOC_B9_Aerospace_WingStuff_1000126 = Stock lifting area
         public float stockLiftCoefficient;
 
+        [KSPField(isPersistant = true, guiActiveEditor = false, guiActive = false, guiName = "Is Lifting Surface", guiFormat = "S4")]
+        public bool aeroIsLiftingSurface = true;
+
         public double aeroStatCd;
         public double aeroStatCl;
         public double aeroStatClChildren;
@@ -2672,7 +2697,8 @@ namespace WingProcedural
             // Stock-only values
             if (!assemblyFARUsed)
             {
-                stockLiftCoefficient = (float)aeroStatSurfaceArea / 3.52f;
+                float stockLiftCoeff = (float)aeroStatSurfaceArea / 3.52f;
+                stockLiftCoefficient = aeroIsLiftingSurface ? stockLiftCoeff : 0f;
                 float x_col = pseudotaper_ratio * sharedBaseOffsetTip;
                 float y_col = pseudotaper_ratio * sharedBaseLength;
 
@@ -2684,7 +2710,7 @@ namespace WingProcedural
                     }
 
                     part.Modules.GetModule<ModuleLiftingSurface>().deflectionLiftCoeff = (float)Math.Round(stockLiftCoefficient, 2);
-                    aeroUIMass = stockLiftCoefficient * 0.1f;
+                    aeroUIMass = stockLiftCoeff * 0.1f;
                     part.CoLOffset = new Vector3(y_col, -x_col, 0.0f);
                 }
                 else
@@ -2697,7 +2723,7 @@ namespace WingProcedural
                     ModuleControlSurface mCtrlSrf = FirstOfTypeOrDefault<ModuleControlSurface>(part.Modules);
                     mCtrlSrf.deflectionLiftCoeff = (float)Math.Round(stockLiftCoefficient, 2);
                     mCtrlSrf.ctrlSurfaceArea = aeroConstControlSurfaceFraction;
-                    aeroUIMass = stockLiftCoefficient * (1 + mCtrlSrf.ctrlSurfaceArea) * 0.1f;
+                    aeroUIMass = stockLiftCoeff * (1 + mCtrlSrf.ctrlSurfaceArea) * 0.1f;
                     part.CoLOffset = isWingAsCtrlSrf
                         ? new Vector3(y_col, -x_col, 0.0f)
                         : new Vector3(y_col - 0.5f * sharedBaseLength, -0.25f * (sharedBaseWidthTip + sharedBaseWidthRoot), 0.0f);
@@ -4341,6 +4367,61 @@ namespace WingProcedural
             if (HighLogic.LoadedSceneIsEditor)
             {
                 GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
+            }
+        }
+
+        /// <summary>
+        /// lifting vs structural changed, re set configurations
+        /// </summary>
+        public void LiftStructuralTypeChanged()
+        {
+            if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
+            {
+                DebugLogWithID("UpdateGeometry", "Lifting Surface Type Change | Finished");
+            }
+
+            WingSetLiftingSurface();
+            foreach (Part p in part.symmetryCounterparts)
+            {
+                if (p == null) // fixes nullref caused by removing mirror sym while hovering over attach location
+                {
+                    continue;
+                }
+
+                WingProcedural wing = FirstOfTypeOrDefault<WingProcedural>(p.Modules);
+                if (wing != null)
+                {
+                    wing.aeroIsLiftingSurface = aeroIsLiftingSurface;
+                    wing.WingSetLiftingSurface();
+                }
+            }
+
+            UpdateWindow();
+            if (HighLogic.LoadedSceneIsEditor)
+            {
+                GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
+            }
+        }
+
+        /// <summary>
+        /// Updates wing lift settings
+        /// </summary>
+        public void WingSetLiftingSurface()
+        {
+            if (!(CanBeFueled && HighLogic.LoadedSceneIsEditor) || assemblyFARUsed)
+            {
+                return;
+            }
+
+            CalculateAerodynamicValues();
+
+            if (aeroIsLiftingSurface)
+            {
+                Events["ToggleLiftConfiguration"].guiName = Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000163");//Surface Config: Lifting
+            }
+            else
+            {
+                Events["ToggleLiftConfiguration"].guiName = Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000164");//Surface Config: Not Lifting
             }
         }
 
