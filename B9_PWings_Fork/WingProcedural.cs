@@ -37,6 +37,9 @@ namespace WingProcedural
         public bool isWingAsCtrlSrf = false;
 
         [KSPField]
+        public bool isAirbrake = false;
+
+        [KSPField]
         public bool isPanel = false;
 
         [KSPField(isPersistant = true)]
@@ -113,8 +116,8 @@ namespace WingProcedural
         public static MeshReference meshReferenceCtrlSurface;
         public static readonly List<MeshReference> meshReferencesCtrlEdge = new List<MeshReference>();
 
-        private static readonly int meshTypeCountEdgeWing = 4;
-        private static readonly int meshTypeCountEdgeCtrl = 3;
+        private static readonly int meshTypeCountEdgeWing = 14;
+        private static readonly int meshTypeCountEdgeCtrl = 6;
 
         #endregion Mesh properties
 
@@ -1323,6 +1326,8 @@ namespace WingProcedural
 
                 // First, wing cross section
                 // No need to filter vertices by normals
+                int wingEdgeTypeTrailingInt = Mathf.RoundToInt(sharedEdgeTypeTrailing - 1);
+                int wingEdgeTypeLeadingInt = Mathf.RoundToInt(sharedEdgeTypeLeading - 1);
 
                 if (meshFilterWingSection != null)
                 {
@@ -1382,7 +1387,39 @@ namespace WingProcedural
                     meshCollider.sharedMesh = null;
                     meshCollider.sharedMesh = meshFilterWingSection.mesh;
                     meshCollider.convex = true;
+                    try
+                    {
+                        if (wingEdgeTypeLeadingInt > 0)
+                        {
+                            MeshCollider meshLeadingCollider = meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].gameObject.GetComponent<MeshCollider>();
 
+                            if (meshLeadingCollider == null)
+                            {
+                                meshLeadingCollider = meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].gameObject.AddComponent<MeshCollider>();
+                            }
+
+                            meshLeadingCollider.sharedMesh = null;
+                            meshLeadingCollider.sharedMesh = meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh;
+                            meshLeadingCollider.convex = true;
+                        }
+                        if (wingEdgeTypeTrailingInt > 0)
+                        {
+                            MeshCollider meshTrailingCollider = meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].gameObject.GetComponent<MeshCollider>();
+
+                            if (meshTrailingCollider == null)
+                            {
+                                meshTrailingCollider = meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].gameObject.AddComponent<MeshCollider>();
+                            }
+
+                            meshTrailingCollider.sharedMesh = null;
+                            meshTrailingCollider.sharedMesh = meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh;
+                            meshTrailingCollider.convex = true;
+                        }
+                    }
+                    catch
+                    {
+                        Debug.LogError("[ProcWings]EdgeColliders did not initialize properly");
+                    }
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
                     {
                         DebugLogWithID("UpdateGeometry", "Wing section | Finished");
@@ -1469,12 +1506,28 @@ namespace WingProcedural
                 // Before modifying geometry, we have to show the correct objects for the current selection
                 // As UI only works with floats, we have to cast selections into ints too
 
-                int wingEdgeTypeTrailingInt = Mathf.RoundToInt(sharedEdgeTypeTrailing - 1);
-                int wingEdgeTypeLeadingInt = Mathf.RoundToInt(sharedEdgeTypeLeading - 1);
-
+                //correction for asymetric edges to get them to mirror properly - 7 -> 8, 8- > 7, 9- > 10, and 10- > 9 for the bevel and half-round edges
+                int edgeMeshLeadingInt = wingEdgeTypeLeadingInt;
+                int edgeMeshTrailingInt = wingEdgeTypeTrailingInt;
+                if ((wingEdgeTypeLeadingInt == 8 || wingEdgeTypeLeadingInt == 10 || wingEdgeTypeLeadingInt == 12) && isMirrored)
+                {
+                    edgeMeshLeadingInt += 1;
+                }
+                else if ((wingEdgeTypeLeadingInt == 9 || wingEdgeTypeLeadingInt == 11 || wingEdgeTypeLeadingInt == 13) && isMirrored)
+                {
+                    edgeMeshLeadingInt -= 1;
+                }
+                if ((wingEdgeTypeTrailingInt == 8 || wingEdgeTypeTrailingInt == 10 || wingEdgeTypeTrailingInt == 12) && isMirrored)
+                {
+                    edgeMeshTrailingInt += 1;
+                }
+                else if ((wingEdgeTypeTrailingInt == 9 || wingEdgeTypeTrailingInt == 11 || wingEdgeTypeTrailingInt == 13) && isMirrored)
+                {
+                    edgeMeshTrailingInt -= 1;
+                }
                 for (int i = 0; i < meshTypeCountEdgeWing; ++i)
                 {
-                    if (i != wingEdgeTypeTrailingInt)
+                    if (i != edgeMeshTrailingInt)
                     {
                         meshFiltersWingEdgeTrailing[i].gameObject.SetActive(false);
                     }
@@ -1482,8 +1535,7 @@ namespace WingProcedural
                     {
                         meshFiltersWingEdgeTrailing[i].gameObject.SetActive(true);
                     }
-
-                    if (i != wingEdgeTypeLeadingInt)
+                    if (i != edgeMeshLeadingInt)
                     {
                         meshFiltersWingEdgeLeading[i].gameObject.SetActive(false);
                     }
@@ -1649,6 +1701,9 @@ namespace WingProcedural
                 // float edgeLengthTrailing = Mathf.Sqrt (Mathf.Pow (sharedBaseLength, 2) + Mathf.Pow (widthDifference, 2));
                 // float sweepTrailing = 90f - Mathf.Atan (sharedBaseLength / widthDifference) * Mathf.Rad2Deg;
 
+                // As UI only works with floats, we have to cast selections into ints too
+                int ctrlEdgeTypeInt = Mathf.RoundToInt(sharedEdgeTypeTrailing - 1);
+
                 if (meshFilterCtrlFrame != null)
                 {
                     int length = meshReferenceCtrlFrame.vp.Length;
@@ -1746,6 +1801,24 @@ namespace WingProcedural
                     meshCollider.sharedMesh = null;
                     meshCollider.sharedMesh = meshFilterCtrlFrame.mesh;
                     meshCollider.convex = true;
+
+                    try
+                    {
+                        MeshCollider meshTrailingCollider = meshFiltersCtrlEdge[ctrlEdgeTypeInt].gameObject.GetComponent<MeshCollider>();
+
+                        if (meshTrailingCollider == null)
+                        {
+                            meshTrailingCollider = meshFiltersCtrlEdge[ctrlEdgeTypeInt].gameObject.AddComponent<MeshCollider>();
+                        }
+
+                        meshTrailingCollider.sharedMesh = null;
+                        meshTrailingCollider.sharedMesh = meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh;
+                        meshTrailingCollider.convex = true;
+                    }
+                    catch
+                    {
+                        Debug.Log("[B9ProcWing] CtrlSrf edge colliders did not initialize properly");
+                    }
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
                     {
                         DebugLogWithID("UpdateGeometry", "Control surface frame | Finished");
@@ -1754,9 +1827,7 @@ namespace WingProcedural
 
                 // Next, time for edge types
                 // Before modifying geometry, we have to show the correct objects for the current selection
-                // As UI only works with floats, we have to cast selections into ints too
 
-                int ctrlEdgeTypeInt = Mathf.RoundToInt(sharedEdgeTypeTrailing - 1);
                 for (int i = 0; i < meshTypeCountEdgeCtrl; ++i)
                 {
                     meshFiltersCtrlEdge[i].gameObject.SetActive(i == ctrlEdgeTypeInt);
@@ -2713,20 +2784,29 @@ namespace WingProcedural
                     aeroUIMass = stockLiftCoeff * 0.1f;
                     part.CoLOffset = new Vector3(y_col, -x_col, 0.0f);
                 }
-                else
+                else 
                 {
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
                     {
                         DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR is inactive, calculating stock control surface module values");
                     }
-
-                    ModuleControlSurface mCtrlSrf = FirstOfTypeOrDefault<ModuleControlSurface>(part.Modules);
-                    mCtrlSrf.deflectionLiftCoeff = (float)Math.Round(stockLiftCoefficient, 2);
-                    mCtrlSrf.ctrlSurfaceArea = aeroConstControlSurfaceFraction;
-                    aeroUIMass = stockLiftCoeff * (1 + mCtrlSrf.ctrlSurfaceArea) * 0.1f;
-                    part.CoLOffset = isWingAsCtrlSrf
-                        ? new Vector3(y_col, -x_col, 0.0f)
-                        : new Vector3(y_col - 0.5f * sharedBaseLength, -0.25f * (sharedBaseWidthTip + sharedBaseWidthRoot), 0.0f);
+                    if (!isAirbrake)
+                    {
+                        ModuleControlSurface mCtrlSrf = FirstOfTypeOrDefault<ModuleControlSurface>(part.Modules);
+                        mCtrlSrf.deflectionLiftCoeff = (float)Math.Round(stockLiftCoefficient, 2);
+                        mCtrlSrf.ctrlSurfaceArea = aeroConstControlSurfaceFraction;
+                        aeroUIMass = stockLiftCoeff * (1 + mCtrlSrf.ctrlSurfaceArea) * 0.1f;
+                        part.CoLOffset = isWingAsCtrlSrf
+                            ? new Vector3(y_col, -x_col, 0.0f)
+                            : new Vector3(y_col - 0.5f * sharedBaseLength, -0.25f * (sharedBaseWidthTip + sharedBaseWidthRoot), 0.0f);
+                    }
+                    else
+                    {
+                        ModuleControlSurface mBrake = FirstOfTypeOrDefault<ModuleAeroSurface>(part.Modules);
+                        mBrake.deflectionLiftCoeff = (float)Math.Round(stockLiftCoefficient, 2);
+                        aeroUIMass = stockLiftCoeff * (1 + mBrake.ctrlSurfaceArea) * 0.12f;
+                        part.CoLOffset = new Vector3(y_col - 0.5f * sharedBaseLength, -0.25f * (sharedBaseWidthTip + sharedBaseWidthRoot), 0.0f);
+                    }
                 }
 
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
@@ -3243,7 +3323,7 @@ namespace WingProcedural
                     DrawFieldGroupHeader(ref sharedFieldGroupEdgeLeadingStatic, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000029"));		// #autoLOC_B9_Aerospace_WingStuff_1000029 = Edge (leading)
                     if (sharedFieldGroupEdgeLeadingStatic)
                     {
-                        DrawInt(ref sharedEdgeTypeLeading, sharedIncrementInt, 1, 4, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000030"), uiColorSliderEdgeL, 7, 2);		// #autoLOC_B9_Aerospace_WingStuff_1000030 = Shape
+                        DrawInt(ref sharedEdgeTypeLeading, sharedIncrementInt, 1, meshTypeCountEdgeWing, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000030"), uiColorSliderEdgeL, 7, 2);		// #autoLOC_B9_Aerospace_WingStuff_1000030 = Shape
                         DrawField(ref sharedEdgeWidthLeadingRoot, sharedIncrementSmall, GetStep(sharedEdgeWidthLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000031"), uiColorSliderEdgeL, 8, 0, ref sharedEdgeWidthLRInt);		// #autoLOC_B9_Aerospace_WingStuff_1000031 = Width (root)
                         DrawField(ref sharedEdgeWidthLeadingTip, sharedIncrementSmall, GetStep(sharedEdgeWidthLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000032"), uiColorSliderEdgeL, 9, 0, ref sharedEdgeWidthLTInt);		// #autoLOC_B9_Aerospace_WingStuff_1000032 = Width (tip)
                     }
@@ -3253,7 +3333,7 @@ namespace WingProcedural
                 DrawFieldGroupHeader(ref sharedFieldGroupEdgeTrailingStatic, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000033"));		// #autoLOC_B9_Aerospace_WingStuff_1000033 = Edge (trailing)
                 if (sharedFieldGroupEdgeTrailingStatic)
                 {
-                    DrawInt(ref sharedEdgeTypeTrailing, sharedIncrementInt, 1, 4, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000034"), uiColorSliderEdgeT, 10, isCtrlSrf ? 3 : 2);		// #autoLOC_B9_Aerospace_WingStuff_1000034 = Shape
+                    DrawInt(ref sharedEdgeTypeTrailing, sharedIncrementInt, 1, (!isCtrlSrf? meshTypeCountEdgeWing : meshTypeCountEdgeCtrl), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000034"), uiColorSliderEdgeT, 10, isCtrlSrf ? 3 : 2);		// #autoLOC_B9_Aerospace_WingStuff_1000034 = Shape
                     DrawField(ref sharedEdgeWidthTrailingRoot, sharedIncrementSmall, GetStep(sharedEdgeWidthLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000035"), uiColorSliderEdgeT, 11, 0, ref sharedEdgeWidthTRInt);		// #autoLOC_B9_Aerospace_WingStuff_1000035 = Width (root)
                     DrawField(ref sharedEdgeWidthTrailingTip, sharedIncrementSmall, GetStep(sharedEdgeWidthLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000036"), uiColorSliderEdgeT, 12, 0, ref sharedEdgeWidthTTInt);		// #autoLOC_B9_Aerospace_WingStuff_1000036 = Width (tip)
                 }

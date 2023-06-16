@@ -549,8 +549,8 @@ namespace WingProcedural
                     else
                         value = Mathf.Round((float)value01 * range) + min;
                 }
-                value = Mathf.Clamp(value, min, max);
             }
+            value = Mathf.Clamp(value, min, max);
             changed = valueOld != value01;
             GUILayout.EndHorizontal();
             return value;
@@ -632,14 +632,27 @@ namespace WingProcedural
                 if (value == 1f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000139");		// #autoLOC_B9_Aerospace_WingStuff_1000139 = No edge
                 else if (value == 2f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000140");		// #autoLOC_B9_Aerospace_WingStuff_1000140 = Rounded
                 else if (value == 3f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000141");		// #autoLOC_B9_Aerospace_WingStuff_1000141 = Biconvex
-                else if (value == 4f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000142");		// #autoLOC_B9_Aerospace_WingStuff_1000142 = Triangular
-                else return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000143");		// #autoLOC_B9_Aerospace_WingStuff_1000143 = Unknown
+                else if (value == 4f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000142");       // #autoLOC_B9_Aerospace_WingStuff_1000142 = Vee
+                else if (value == 5f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000143");		// #autoLOC_B9_Aerospace_WingStuff_1000143 = Triangular
+                else if (value == 6f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000144");       // #autoLOC_B9_Aerospace_WingStuff_1000144 =  Rounded Biconcave
+                else if (value == 7f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000144b");       // #autoLOC_B9_Aerospace_WingStuff_1000144 = Biconcave
+                else if (value == 8f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000134");       // #autoLOC_B9_Aerospace_WingStuff_1000134 = Standard
+                else if (value == 9f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000145");       // #autoLOC_B9_Aerospace_WingStuff_1000145 = Bevel
+                else if (value == 10f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000145");		// #autoLOC_B9_Aerospace_WingStuff_1000145 = Bevel
+                else if (value == 11f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000146");      // #autoLOC_B9_Aerospace_WingStuff_1000146 = Half round
+                else if (value == 12f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000146");      // #autoLOC_B9_Aerospace_WingStuff_1000146 = Half round
+                else if (value == 13f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000146b");      // #autoLOC_B9_Aerospace_WingStuff_1000146 = Concave
+                else if (value == 14f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000146b");	    // #autoLOC_B9_Aerospace_WingStuff_1000146 = Concave
+                else return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000147");		// #autoLOC_B9_Aerospace_WingStuff_1000143 = Unknown
             }
             else if (type == 3)
             {
-                if (value == 1f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000144");		// #autoLOC_B9_Aerospace_WingStuff_1000144 = Rounded
-                else if (value == 2f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000145");		// #autoLOC_B9_Aerospace_WingStuff_1000145 = Biconvex
-                else if (value == 3f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000146");		// #autoLOC_B9_Aerospace_WingStuff_1000146 = Triangular
+                if (value == 1f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000140");		// #autoLOC_B9_Aerospace_WingStuff_1000144 = Rounded
+                else if (value == 2f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000141");		// #autoLOC_B9_Aerospace_WingStuff_1000141 = Biconvex
+                else if (value == 3f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000142");       // #autoLOC_B9_Aerospace_WingStuff_1000142 = Vee
+                else if (value == 4f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000143");		// #autoLOC_B9_Aerospace_WingStuff_1000143 = Triangular
+                else if (value == 5f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000144");       // #autoLOC_B9_Aerospace_WingStuff_1000144 = Biconcave
+                else if (value == 6f) return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000134");       // #autoLOC_B9_Aerospace_WingStuff_1000134 = Standard
                 else return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000147");		// #autoLOC_B9_Aerospace_WingStuff_1000147 = Unknown
             }
             else return value.ToString("F3");
