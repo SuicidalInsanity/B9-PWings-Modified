@@ -116,8 +116,8 @@ namespace WingProcedural
         public static MeshReference meshReferenceCtrlSurface;
         public static readonly List<MeshReference> meshReferencesCtrlEdge = new List<MeshReference>();
 
-        private static readonly int meshTypeCountEdgeWing = 14;
-        private static readonly int meshTypeCountEdgeCtrl = 6;
+        private static readonly int meshTypeCountEdgeWing = 15;
+        private static readonly int meshTypeCountEdgeCtrl = 7;
 
         #endregion Mesh properties
 
@@ -143,7 +143,7 @@ namespace WingProcedural
         private static Vector4 sharedBaseWidthRootLimits = new Vector4(0.0f, 40f, 0.05f, 2f);
         private static Vector4 sharedBaseWidthTipLimits = new Vector4(0.0f, 40f, 0.05f, 2f);
         private static Vector4 sharedBaseOffsetLimits = new Vector4(-10f, 10f, -1.5f, 1.5f);
-        private static Vector4 sharedEdgeTypeLimits = new Vector4(1f, 4f, 1f, 3f);
+        private static Vector4 sharedEdgeTypeLimits = new Vector4(1f, 15f, 1f, 3f);
         private static Vector4 sharedEdgeWidthLimits = new Vector4(0f, 6f, 0f, 6f);
         private static Vector2 sharedMaterialLimits = new Vector2(0f, 4f);
         private static Vector2 sharedColorLimits = new Vector2(0f, 1f);
@@ -718,7 +718,7 @@ namespace WingProcedural
             sharedEdgeWidthLeadingTip = Mathf.Clamp(sharedEdgeWidthLeadingRoot + ((parent.sharedEdgeWidthLeadingTip - parent.sharedEdgeWidthLeadingRoot) / parent.sharedBaseLength) * sharedBaseLength, sharedEdgeWidthLimits.x, sharedEdgeWidthLimits.y);
 
             sharedEdgeTypeTrailing = parent.sharedEdgeTypeTrailing;
-            sharedEdgeWidthTrailingRoot = parent.sharedEdgeWidthTrailingTip;
+            sharedEdgeWidthTrailingRoot = parent.sharedEdgeWidthTrailingTip; 
             sharedEdgeWidthTrailingTip = Mathf.Clamp(sharedEdgeWidthTrailingRoot + ((parent.sharedEdgeWidthTrailingTip - parent.sharedEdgeWidthTrailingRoot) / parent.sharedBaseLength) * sharedBaseLength, sharedEdgeWidthLimits.x, sharedEdgeWidthLimits.y);
         }
 
@@ -1388,8 +1388,8 @@ namespace WingProcedural
                     meshCollider.sharedMesh = meshFilterWingSection.mesh;
                     meshCollider.convex = true;
                     try
-                    {
-                        if (wingEdgeTypeLeadingInt > 0)
+                    {                        
+                        if (wingEdgeTypeLeadingInt > 0 && (sharedEdgeWidthTrailingRoot + sharedEdgeWidthTrailingTip > 0.05f))
                         {
                             MeshCollider meshLeadingCollider = meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].gameObject.GetComponent<MeshCollider>();
 
@@ -1402,7 +1402,7 @@ namespace WingProcedural
                             meshLeadingCollider.sharedMesh = meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh;
                             meshLeadingCollider.convex = true;
                         }
-                        if (wingEdgeTypeTrailingInt > 0)
+                        if (wingEdgeTypeTrailingInt > 0 && (sharedEdgeWidthLeadingRoot + sharedEdgeWidthLeadingTip > 0.05f))
                         {
                             MeshCollider meshTrailingCollider = meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].gameObject.GetComponent<MeshCollider>();
 
@@ -1509,19 +1509,19 @@ namespace WingProcedural
                 //correction for asymetric edges to get them to mirror properly - 7 -> 8, 8- > 7, 9- > 10, and 10- > 9 for the bevel and half-round edges
                 int edgeMeshLeadingInt = wingEdgeTypeLeadingInt;
                 int edgeMeshTrailingInt = wingEdgeTypeTrailingInt;
-                if ((wingEdgeTypeLeadingInt == 8 || wingEdgeTypeLeadingInt == 10 || wingEdgeTypeLeadingInt == 12) && isMirrored)
+                if ((wingEdgeTypeLeadingInt == 9 || wingEdgeTypeLeadingInt == 11 || wingEdgeTypeLeadingInt == 13) && isMirrored)
                 {
                     edgeMeshLeadingInt += 1;
                 }
-                else if ((wingEdgeTypeLeadingInt == 9 || wingEdgeTypeLeadingInt == 11 || wingEdgeTypeLeadingInt == 13) && isMirrored)
+                else if ((wingEdgeTypeLeadingInt == 10 || wingEdgeTypeLeadingInt == 112 || wingEdgeTypeLeadingInt == 14) && isMirrored)
                 {
                     edgeMeshLeadingInt -= 1;
                 }
-                if ((wingEdgeTypeTrailingInt == 8 || wingEdgeTypeTrailingInt == 10 || wingEdgeTypeTrailingInt == 12) && isMirrored)
+                if ((wingEdgeTypeTrailingInt == 9 || wingEdgeTypeTrailingInt == 11 || wingEdgeTypeTrailingInt == 13) && isMirrored)
                 {
                     edgeMeshTrailingInt += 1;
                 }
-                else if ((wingEdgeTypeTrailingInt == 9 || wingEdgeTypeTrailingInt == 11 || wingEdgeTypeTrailingInt == 13) && isMirrored)
+                else if ((wingEdgeTypeTrailingInt == 10 || wingEdgeTypeTrailingInt == 12 || wingEdgeTypeTrailingInt == 14) && isMirrored)
                 {
                     edgeMeshTrailingInt -= 1;
                 }
@@ -1804,16 +1804,19 @@ namespace WingProcedural
 
                     try
                     {
-                        MeshCollider meshTrailingCollider = meshFiltersCtrlEdge[ctrlEdgeTypeInt].gameObject.GetComponent<MeshCollider>();
-
-                        if (meshTrailingCollider == null)
+                        if (sharedEdgeWidthTrailingTip + sharedEdgeWidthTrailingRoot > 0.05f)
                         {
-                            meshTrailingCollider = meshFiltersCtrlEdge[ctrlEdgeTypeInt].gameObject.AddComponent<MeshCollider>();
-                        }
+                            MeshCollider meshTrailingCollider = meshFiltersCtrlEdge[ctrlEdgeTypeInt].gameObject.GetComponent<MeshCollider>();
 
-                        meshTrailingCollider.sharedMesh = null;
-                        meshTrailingCollider.sharedMesh = meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh;
-                        meshTrailingCollider.convex = true;
+                            if (meshTrailingCollider == null)
+                            {
+                                meshTrailingCollider = meshFiltersCtrlEdge[ctrlEdgeTypeInt].gameObject.AddComponent<MeshCollider>();
+                            }
+
+                            meshTrailingCollider.sharedMesh = null;
+                            meshTrailingCollider.sharedMesh = meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh;
+                            meshTrailingCollider.convex = true;
+                        }
                     }
                     catch
                     {
