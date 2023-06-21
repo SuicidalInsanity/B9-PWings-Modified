@@ -1513,7 +1513,7 @@ namespace WingProcedural
                 {
                     edgeMeshLeadingInt += 1;
                 }
-                else if ((wingEdgeTypeLeadingInt == 10 || wingEdgeTypeLeadingInt == 112 || wingEdgeTypeLeadingInt == 14) && isMirrored)
+                else if ((wingEdgeTypeLeadingInt == 10 || wingEdgeTypeLeadingInt == 12 || wingEdgeTypeLeadingInt == 14) && isMirrored)
                 {
                     edgeMeshLeadingInt -= 1;
                 }
