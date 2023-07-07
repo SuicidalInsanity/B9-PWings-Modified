@@ -1388,32 +1388,48 @@ namespace WingProcedural
                     meshCollider.sharedMesh = meshFilterWingSection.mesh;
                     meshCollider.convex = true;
                     try
-                    {                        
-                        if (wingEdgeTypeLeadingInt > 0 && (sharedEdgeWidthTrailingRoot + sharedEdgeWidthTrailingTip > 0.05f))
+                    {
+                        MeshCollider meshLeadingCollider = meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].gameObject.GetComponent<MeshCollider>();
+                        if (wingEdgeTypeLeadingInt > 0 && (sharedEdgeWidthLeadingRoot + sharedEdgeWidthLeadingTip > 0.05f))
                         {
-                            MeshCollider meshLeadingCollider = meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].gameObject.GetComponent<MeshCollider>();
-
                             if (meshLeadingCollider == null)
                             {
                                 meshLeadingCollider = meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].gameObject.AddComponent<MeshCollider>();
                             }
-
+                            meshLeadingCollider.enabled = true;
                             meshLeadingCollider.sharedMesh = null;
                             meshLeadingCollider.sharedMesh = meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh;
                             meshLeadingCollider.convex = true;
                         }
-                        if (wingEdgeTypeTrailingInt > 0 && (sharedEdgeWidthLeadingRoot + sharedEdgeWidthLeadingTip > 0.05f))
+                        else
                         {
-                            MeshCollider meshTrailingCollider = meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].gameObject.GetComponent<MeshCollider>();
-
+                            if (meshLeadingCollider != null)
+                            {
+                                meshLeadingCollider.sharedMesh = null;
+                                meshLeadingCollider.convex = false;
+                                meshLeadingCollider.enabled = false;
+                            }
+                        }
+                        MeshCollider meshTrailingCollider = meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].gameObject.GetComponent<MeshCollider>();
+                        if (wingEdgeTypeTrailingInt > 0 && (sharedEdgeWidthTrailingRoot + sharedEdgeWidthTrailingTip > 0.05f))
+                        {
                             if (meshTrailingCollider == null)
                             {
                                 meshTrailingCollider = meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].gameObject.AddComponent<MeshCollider>();
                             }
-
+                            meshTrailingCollider.enabled = true;
                             meshTrailingCollider.sharedMesh = null;
                             meshTrailingCollider.sharedMesh = meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh;
                             meshTrailingCollider.convex = true;
+                        }
+                        else
+                        {
+                            if (meshTrailingCollider != null)
+                            {
+                                meshTrailingCollider.sharedMesh = null;
+                                meshTrailingCollider.convex = false;
+                                meshTrailingCollider.enabled = false;
+                            }
                         }
                     }
                     catch
