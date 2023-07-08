@@ -885,6 +885,10 @@ namespace WingProcedural
             {
                 UIUtility.ConfigureStyles();
             }
+            if (!CanBeFueled || assemblyFARUsed)
+            {
+                Events["ToggleLiftConfiguration"].guiActiveEditor = false;
+            }
             isStarted = true;
         }
 
