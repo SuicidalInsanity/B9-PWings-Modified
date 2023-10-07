@@ -1,10 +1,13 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using KSP.Localization;
+using UnityEngine.Internal;
+using UnityEngine.Scripting;
+
 
 namespace WingProcedural
 {
@@ -143,7 +146,7 @@ namespace WingProcedural
         private static Vector2 sharedColorLimits = new Vector2(0f, 1f);
         private static Vector2 positiveinf = new Vector2(0.0f, float.PositiveInfinity);
         private static Vector2 nolimit = new Vector2(float.NegativeInfinity, float.PositiveInfinity);
-        private static Vector2 sharedArmorLimits = new Vector2(0f,1000f);
+        private static Vector2 sharedArmorLimits = new Vector2(0f, 1000f);
 
         private static readonly float sharedIncrementColor = 0.01f;
         private static readonly float sharedIncrementColorLarge = 0.10f;
@@ -553,6 +556,24 @@ namespace WingProcedural
 
         #endregion Default values
 
+        #region Lift configuration switching
+
+        // Has to be situated here as this KSPEvent is not correctly added Part.Events otherwise
+        [KSPEvent(guiActive = false, guiActiveEditor = true, guiName = "#autoLOC_B9_Aerospace_WingStuff_1000163", active = true)]		// #autoLOC_B9_Aerospace_WingStuff_1000163 = Surface Config: Lifting
+        public void ToggleLiftConfiguration()
+        {
+
+            if (!CanBeFueled || assemblyFARUsed)
+            {
+                return;
+            }
+
+            aeroIsLiftingSurface = !aeroIsLiftingSurface;
+            LiftStructuralTypeChanged();
+        }
+
+        #endregion Lift configuration switching
+
         #region Fuel configuration switching
 
         // Has to be situated here as this KSPEvent is not correctly added Part.Events otherwise
@@ -767,6 +788,7 @@ namespace WingProcedural
                     if (test.assembly.GetName().Name.Equals("FerramAerospaceResearch", StringComparison.InvariantCultureIgnoreCase))
                     {
                         assemblyFARUsed = true;
+                        CtrlSrfWingSynchronizer.InitFAR();
                     }
                     else if (test.assembly.GetName().Name.Equals("RealFuels", StringComparison.InvariantCultureIgnoreCase))
                     {
@@ -1023,7 +1045,7 @@ namespace WingProcedural
                 {
                     if (sharedPropEdgePref == true)
                     {
-                        sharedEdgeWidthTrailingTip += sharedBaseWidthTip / 2 ;
+                        sharedEdgeWidthTrailingTip += sharedBaseWidthTip / 2;
 
                         sharedBaseWidthTip = 0f;
                         if (sharedEdgeWidthTrailingTip < 0)
@@ -1041,7 +1063,7 @@ namespace WingProcedural
                     //DebugLogWithID("Angle Calculation", "Backward override");
                 }
             }
-                
+
         }
         // Split Angle Calculations into two half, since no need to update the editing value
         public float CalcAngleFront()
@@ -1154,7 +1176,7 @@ namespace WingProcedural
         {
             if (isWingAsCtrlSrf)
             {
-                if (type == ConstructionEventType.PartCopied || type == ConstructionEventType.PartPicked|| type == ConstructionEventType.PartCreated || type == ConstructionEventType.PartDetached)
+                if (type == ConstructionEventType.PartCopied || type == ConstructionEventType.PartPicked || type == ConstructionEventType.PartCreated || type == ConstructionEventType.PartDetached)
                     if (p.name.StartsWith("B9.Aero.Wing.Procedural.TypeC"))
                     {
                         var wproc = FirstOfTypeOrDefault<WingProcedural>(p.Modules);
@@ -1230,10 +1252,14 @@ namespace WingProcedural
                 }
 
             if (connectedCtrlSrfWings.Count > 1)
-                /*if (assemblyFARUsed) CtrlSrfWingSynchronizer.FARAddSynchronizer(ctrlSrfWingRoot, connectedCtrlSrfWings);
-                else */CtrlSrfWingSynchronizer.AddSynchronizer(ctrlSrfWingRoot, connectedCtrlSrfWings);
+            {
+#if FAR
+                if (assemblyFARUsed) CtrlSrfWingSynchronizer.FARAddSynchronizer(ctrlSrfWingRoot, connectedCtrlSrfWings);
+                else
+#endif
+                    CtrlSrfWingSynchronizer.AddSynchronizer(ctrlSrfWingRoot, connectedCtrlSrfWings);
+            }
         }
-
         public void OnSceneSwitch(GameScenes scene)
         {
             isStarted = false; // fixes annoying nullrefs when switching scenes and things haven't been destroyed yet
@@ -1267,7 +1293,7 @@ namespace WingProcedural
         }
         private bool ApplyLegacyTextures()
         {
-            return part.GetComponent("KSPTextureSwitch") is null;
+            return part.GetComponent("KSPTextureSwitch") == null;
         }
 
         #endregion Unity stuff and Callbacks/events
@@ -1344,6 +1370,7 @@ namespace WingProcedural
                     meshFilterWingSection.mesh.vertices = vp;
                     meshFilterWingSection.mesh.uv = uv;
                     meshFilterWingSection.mesh.RecalculateBounds();
+
 
                     MeshCollider meshCollider = meshFilterWingSection.gameObject.GetComponent<MeshCollider>();
 
@@ -1476,8 +1503,12 @@ namespace WingProcedural
 
                 // Next, we fetch appropriate mesh reference and mesh filter for the edges and modify the meshes
                 // Geometry is split into groups through simple vertex normal filtering
+
+                // We must update the meshes for all of the trailing edge types, not just the active one
+                // Otherwise the module's size will over-report by the bounds of the largest mesh
                 for (int j = 0; j < meshTypeCountEdgeWing; j++)
                 {
+
                     if (meshFiltersWingEdgeTrailing[j] != null)
                     {
                         MeshReference meshReference = meshReferencesWingEdge[j];
@@ -1490,6 +1521,7 @@ namespace WingProcedural
                         Array.Copy(meshReference.uv, uv, length);
                         Color[] cl = new Color[length];
                         Vector2[] uv2 = new Vector2[length];
+
 
                         if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
                         {
@@ -1523,13 +1555,17 @@ namespace WingProcedural
                         meshFiltersWingEdgeTrailing[j].mesh.uv2 = uv2;
                         meshFiltersWingEdgeTrailing[j].mesh.colors = cl;
                         meshFiltersWingEdgeTrailing[j].mesh.RecalculateBounds();
-
-                        if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
-                        {
-                            DebugLogWithID("UpdateGeometry", "Wing edge trailing | Finished");
-                        }
                     }
                 }
+
+                if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
+
+                {
+                    DebugLogWithID("UpdateGeometry", "Wing edge trailing | Finished");
+                }
+
+                // We must update the meshes for all of the leading edge types, not just the active one
+                // Otherwise the module's size will over-report by the bounds of the largest mesh
                 for (int j = 0; j < meshTypeCountEdgeWing; j++)
                 {
                     if (meshFiltersWingEdgeLeading[j] != null)
@@ -1580,7 +1616,14 @@ namespace WingProcedural
                         if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
                         {
                             DebugLogWithID("UpdateGeometry", "Wing edge leading | Finished");
+
                         }
+
+                    }
+
+                    if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
+                    {
+                        DebugLogWithID("UpdateGeometry", "Wing edge leading | Finished");
                     }
                 }
             }
@@ -1721,6 +1764,8 @@ namespace WingProcedural
 
                 // Now we can modify geometry
                 // Copy-pasted frame deformation sequence at the moment, to be pruned later
+
+                // Geometry must be modified for all meshes regardless of whether they're active or not
                 for (int j = 0; j < meshTypeCountEdgeCtrl; j++)
                 {
                     if (meshFiltersCtrlEdge[j] != null)
@@ -1908,6 +1953,10 @@ namespace WingProcedural
             if (updateAerodynamics)
             {
                 CalculateAerodynamicValues();
+                if (aeroIsLiftingSurface)
+                    Events["ToggleLiftConfiguration"].guiName = Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000163");//Surface Config: Lifting
+                else
+                    Events["ToggleLiftConfiguration"].guiName = Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000164");//Surface Config: Not Lifting
             }
         }
 
@@ -2109,7 +2158,6 @@ namespace WingProcedural
                 {
                     DebugLogWithID("CheckMeshFilter", "Looking for object: " + name);
                 }
-
                 Transform parent = part.transform.GetChild(0).GetChild(0).GetChild(0).Find(name);
 
                 if (parent != null)
@@ -2179,7 +2227,9 @@ namespace WingProcedural
                     }
                 }
                 else
-                    Debug.LogError(String.Format("Part [{0}] named [{1}] is a Control Surface but a ModuleControlSurface wasn't found on its module list!", this.part.ClassName, this.part.partName));
+                {
+                    Debug.LogError(String.Format("[B9PW] Part [{0}] named [{1}] is a Control Surface but a ModuleControlSurface wasn't found on its module list!", this.part.ClassName, this.part.partName));
+                }
             }
         }
 
@@ -2470,6 +2520,9 @@ namespace WingProcedural
         [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = true, guiName = "#autoLOC_B9_Aerospace_WingStuff_1000126")]		// #autoLOC_B9_Aerospace_WingStuff_1000126 = Stock lifting area
         public float stockLiftCoefficient;
 
+        [KSPField(isPersistant = true, guiActiveEditor = false, guiActive = false, guiName = "Is Lifting Surface", guiFormat = "S4")]
+        public bool aeroIsLiftingSurface = true;
+
         public double aeroStatCd;
         public double aeroStatCl;
         public double aeroStatClChildren;
@@ -2644,7 +2697,8 @@ namespace WingProcedural
             // Stock-only values
             if (!assemblyFARUsed)
             {
-                stockLiftCoefficient = (float)aeroStatSurfaceArea / 3.52f;
+                float stockLiftCoeff = (float)aeroStatSurfaceArea / 3.52f;
+                stockLiftCoefficient = aeroIsLiftingSurface ? stockLiftCoeff : 0f;
                 float x_col = pseudotaper_ratio * sharedBaseOffsetTip;
                 float y_col = pseudotaper_ratio * sharedBaseLength;
 
@@ -2656,7 +2710,7 @@ namespace WingProcedural
                     }
 
                     part.Modules.GetModule<ModuleLiftingSurface>().deflectionLiftCoeff = (float)Math.Round(stockLiftCoefficient, 2);
-                    aeroUIMass = stockLiftCoefficient * 0.1f;
+                    aeroUIMass = stockLiftCoeff * 0.1f;
                     part.CoLOffset = new Vector3(y_col, -x_col, 0.0f);
                 }
                 else
@@ -2669,7 +2723,7 @@ namespace WingProcedural
                     ModuleControlSurface mCtrlSrf = FirstOfTypeOrDefault<ModuleControlSurface>(part.Modules);
                     mCtrlSrf.deflectionLiftCoeff = (float)Math.Round(stockLiftCoefficient, 2);
                     mCtrlSrf.ctrlSurfaceArea = aeroConstControlSurfaceFraction;
-                    aeroUIMass = stockLiftCoefficient * (1 + mCtrlSrf.ctrlSurfaceArea) * 0.1f;
+                    aeroUIMass = stockLiftCoeff * (1 + mCtrlSrf.ctrlSurfaceArea) * 0.1f;
                     part.CoLOffset = isWingAsCtrlSrf
                         ? new Vector3(y_col, -x_col, 0.0f)
                         : new Vector3(y_col - 0.5f * sharedBaseLength, -0.25f * (sharedBaseWidthTip + sharedBaseWidthRoot), 0.0f);
@@ -3371,7 +3425,7 @@ namespace WingProcedural
             sharedColorELHue = SetupFieldValue(sharedColorELHue, sharedColorLimits, GetDefault(sharedColorELHueDefaults));
             sharedColorELSaturation = SetupFieldValue(sharedColorELSaturation, sharedColorLimits, GetDefault(sharedColorELSaturationDefaults));
             sharedColorELBrightness = SetupFieldValue(sharedColorELBrightness, sharedColorLimits, GetDefault(sharedColorELBrightnessDefaults));
-            
+
             UpdateWindow();
             isSetToDefaultValues = true;
         }
@@ -3797,7 +3851,7 @@ namespace WingProcedural
 
         private void UpdateUI()
         {
-            
+
             if (uiEditModeTimeout && uiInstanceIDTarget == 0)
             {
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logPropertyWindow)
@@ -3832,6 +3886,7 @@ namespace WingProcedural
                     bool cursorInGUI = UIUtility.uiRectWindowEditor.Contains(UIUtility.GetMousePos());
                     if (!cursorInGUI && Input.GetKeyDown(KeyCode.Mouse0))
                     {
+                        StaticWingGlobals.CheckHandleLayers();
                         if (Physics.Raycast(EditorLogic.fetch.editorCamera.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, 200, 1 << 2))
                         {
                             if (hit.collider.name.StartsWith("handle") || hit.collider.name.StartsWith("ctrlHandle"))
@@ -3957,8 +4012,20 @@ namespace WingProcedural
             backupsharedBaseOffsetRoot = sharedBaseOffsetRoot;
             backupsharedBaseOffsetTip = sharedBaseOffsetTip;
         }
+        /// <summary>
+        /// How sensitive the mouse is
+        /// </summary>
+        float MouseSensitivity => (float)HighLogic.CurrentGame.Parameters.CustomParams<WPSensitivity>().mouseSensitivity;
+
         private void UpdateHandleGizmos()
         {
+            // Undoing in the Editor destroys all the handle gizmos.
+            if (StaticWingGlobals.handlesRoot == null)
+            {
+                if (StaticWingGlobals.loadingAssets) return;
+                Debug.Log($"[B9PW] Reloading Bundle Assets");
+                StartCoroutine(StaticWingGlobals.Instance.LoadBundleAssets());
+            }
             if (!uiEditMode)
             {
                 if (handlesEnabled)
@@ -3967,7 +4034,13 @@ namespace WingProcedural
             }
 
             //Attach handles to current wing
-            if (handlesVisible && (!handlesEnabled || Input.GetKeyDown(uiKeyCodeEdit)) && part.GetInstanceID() == uiInstanceIDTarget) AttachHandles();
+            if (handlesVisible && (!handlesEnabled || Input.GetKeyDown(uiKeyCodeEdit)) && part.GetInstanceID() == uiInstanceIDTarget)
+            {
+                if (StaticWingGlobals.handlesRoot.transform != null)
+                    AttachHandles();
+                else
+                    Debug.Log("WingProcedural, StaticWingGlobals.handlesRoot.transform is null");
+            }
 
             #region Update positions
             if (!isCtrlSrf)
@@ -4012,20 +4085,33 @@ namespace WingProcedural
                 {
                     switch (draggingHandle.name)
                     {
-                        case "handleLength": sharedBaseLength = backupsharedBaseLength + draggingHandle.LockDeltaAxisX; sharedBaseOffsetTip = backupsharedBaseOffsetTip - draggingHandle.LockDeltaAxisY; break;
-                        case "handleLeadingRoot": sharedEdgeWidthLeadingRoot += draggingHandle.axisY; break;
-                        case "handleLeadingTip": sharedEdgeWidthLeadingTip += draggingHandle.axisY; break;
-                        case "handleTrailingRoot": sharedEdgeWidthTrailingRoot += draggingHandle.axisY; break;
-                        case "handleTrailingTip": sharedEdgeWidthTrailingTip += draggingHandle.axisY; break;
-                        case "handleWidthRootFront": sharedBaseWidthRoot -= draggingHandle.axisY; sharedBaseOffsetRoot -= draggingHandle.axisY * .5f; break;
-                        case "handleWidthRootBack": sharedBaseWidthRoot += draggingHandle.axisY; sharedBaseOffsetRoot -= draggingHandle.axisY * .5f; break;
-                        case "handleWidthTipFront": sharedBaseWidthTip += draggingHandle.axisY; sharedBaseOffsetTip -= draggingHandle.axisY * .5f; break;
-                        case "handleWidthTipBack": sharedBaseWidthTip -= draggingHandle.axisY; sharedBaseOffsetTip -= draggingHandle.axisY * .5f; break;
+                        case "handleLength":
+                            sharedBaseLength = backupsharedBaseLength + draggingHandle.LockDeltaAxisX;
+                            sharedBaseOffsetTip = backupsharedBaseOffsetTip - draggingHandle.LockDeltaAxisY;
+                            break;
+                        case "handleLeadingRoot": sharedEdgeWidthLeadingRoot += draggingHandle.axisY * MouseSensitivity; break;
+                        case "handleLeadingTip": sharedEdgeWidthLeadingTip += draggingHandle.axisY * MouseSensitivity; break;
+                        case "handleTrailingRoot": sharedEdgeWidthTrailingRoot += draggingHandle.axisY * MouseSensitivity; break;
+                        case "handleTrailingTip": sharedEdgeWidthTrailingTip += draggingHandle.axisY * MouseSensitivity; break;
+                        case "handleWidthRootFront":
+                            sharedBaseWidthRoot -= draggingHandle.axisY * MouseSensitivity;
+                            sharedBaseOffsetRoot -= draggingHandle.axisY * MouseSensitivity * .5f;
+                            break;
+                        case "handleWidthRootBack":
+                            sharedBaseWidthRoot += draggingHandle.axisY * MouseSensitivity;
+                            sharedBaseOffsetRoot -= draggingHandle.axisY * MouseSensitivity * .5f;
+                            break;
+                        case "handleWidthTipFront":
+                            sharedBaseWidthTip += draggingHandle.axisY * MouseSensitivity;
+                            sharedBaseOffsetTip -= draggingHandle.axisY * MouseSensitivity * .5f;
+                            break;
+                        case "handleWidthTipBack":
+                            sharedBaseWidthTip -= draggingHandle.axisY * MouseSensitivity;
+                            sharedBaseOffsetTip -= draggingHandle.axisY * MouseSensitivity * .5f;
+                            break;
                         default:
                             break;
                     }
-                    if (!isWingAsCtrlSrf)
-                        sharedBaseOffsetRoot = Mathf.Clamp(sharedBaseOffsetRoot, -0.5f * sharedBaseWidthRoot, 0.5f * sharedBaseWidthRoot);
                 }
                 else
                 {
@@ -4035,8 +4121,8 @@ namespace WingProcedural
                         case "ctrlHandleLength2": sharedBaseLength = backupsharedBaseLength + draggingHandle.LockDeltaAxisY; break;
                         case "ctrlHandleRootWidthOffset": sharedBaseWidthRoot = backupsharedBaseWidthRoot - draggingHandle.LockDeltaAxisY; sharedBaseOffsetRoot = backupsharedBaseOffsetRoot + (!isMirrored && isCtrlSrf && !isWingAsCtrlSrf ? 1f : -1f) * draggingHandle.LockDeltaAxisX * .5F; break;
                         case "ctrlHandleTipWidthOffset": sharedBaseWidthTip = backupsharedBaseWidthTip + draggingHandle.LockDeltaAxisY; sharedBaseOffsetTip = backupsharedBaseOffsetTip + (!isMirrored && isCtrlSrf && !isWingAsCtrlSrf ? -1f : 1f) * draggingHandle.LockDeltaAxisX * .5F; break;
-                        case "ctrlHandleTrailingRoot": sharedEdgeWidthTrailingRoot += draggingHandle.axisY; break;
-                        case "ctrlHandleTrailingTip": sharedEdgeWidthTrailingTip += draggingHandle.axisY; break;
+                        case "ctrlHandleTrailingRoot": sharedEdgeWidthTrailingRoot += draggingHandle.axisY * MouseSensitivity; break;
+                        case "ctrlHandleTrailingTip": sharedEdgeWidthTrailingTip += draggingHandle.axisY * MouseSensitivity; break;
                         default: break;
                     }
                 }
@@ -4285,6 +4371,61 @@ namespace WingProcedural
         }
 
         /// <summary>
+        /// lifting vs structural changed, re set configurations
+        /// </summary>
+        public void LiftStructuralTypeChanged()
+        {
+            if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
+            {
+                DebugLogWithID("UpdateGeometry", "Lifting Surface Type Change | Finished");
+            }
+
+            WingSetLiftingSurface();
+            foreach (Part p in part.symmetryCounterparts)
+            {
+                if (p == null) // fixes nullref caused by removing mirror sym while hovering over attach location
+                {
+                    continue;
+                }
+
+                WingProcedural wing = FirstOfTypeOrDefault<WingProcedural>(p.Modules);
+                if (wing != null)
+                {
+                    wing.aeroIsLiftingSurface = aeroIsLiftingSurface;
+                    wing.WingSetLiftingSurface();
+                }
+            }
+
+            UpdateWindow();
+            if (HighLogic.LoadedSceneIsEditor)
+            {
+                GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
+            }
+        }
+
+        /// <summary>
+        /// Updates wing lift settings
+        /// </summary>
+        public void WingSetLiftingSurface()
+        {
+            if (!(CanBeFueled && HighLogic.LoadedSceneIsEditor) || assemblyFARUsed)
+            {
+                return;
+            }
+
+            CalculateAerodynamicValues();
+
+            if (aeroIsLiftingSurface)
+            {
+                Events["ToggleLiftConfiguration"].guiName = Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000163");//Surface Config: Lifting
+            }
+            else
+            {
+                Events["ToggleLiftConfiguration"].guiName = Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000164");//Surface Config: Not Lifting
+            }
+        }
+
+        /// <summary>
         /// Updates part.Resources to match the changes or notify MFT/RF if applicable
         /// </summary>
         public void FuelSetResources()
@@ -4359,16 +4500,17 @@ namespace WingProcedural
             }
             else
             {
-                string units = StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].GUIName + " (";
                 if (StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources.Count != 0)
                 {
+                    string units = StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].GUIName + " (";
                     foreach (KeyValuePair<string, WingTankResource> kvp in StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources)
                     {
-                        units += " " + (kvp.Value.unitsPerVolume * aeroStatVolume).ToString("G3") + " /";
+                        units += " " + (kvp.Value.unitsPerVolume * aeroStatVolume).ToString("G5") + " /";
                     }
-                    units = units.Substring(0, units.Length - 1);
+                    //units = units.Substring(0, units.Length - 1);
+                    return units.Substring(0, units.Length - 1) + ") ";
                 }
-                return units + ")";
+                return StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].GUIName + " ";
             }
         }
 

@@ -6,7 +6,7 @@ namespace WingProcedural
 {
     public static class UIUtility
     {
-        public static Rect uiRectWindowEditor = new Rect();
+        public static Rect uiRectWindowEditor = new Rect(305, 95, 300, 67);
 
         public static GUIStyle uiStyleWindow = new GUIStyle();
         public static GUIStyle uiStyleLabelMedium = new GUIStyle();
