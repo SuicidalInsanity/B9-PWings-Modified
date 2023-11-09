@@ -23,6 +23,7 @@ There is a large number of people who contributed, either directly or indirectly
 	xEvilReeperx
 	snjo
 	Crzyrndm
+	Lisias
 	01010101lzy
 	NathanKell
 	CarnationRED
