@@ -194,8 +194,9 @@ namespace WingProcedural
                 if (Math.Abs(d) > deflectionAngle)
                     deflectionAngle = d;
 
-                ModuleControlSurface mcs = (ModuleControlSurface)cs;
-                maxDelta = Mathf.Max((Time.fixedDeltaTime * mcs.actuatorSpeed), maxDelta);
+                //ModuleControlSurface mcs = (ModuleControlSurface)cs;// the hell? ModuleControlSurface is *removed* at start by FAR - this is trying to cast an invalid null value and will NRE spam
+
+                maxDelta = Mathf.Max((Time.fixedDeltaTime * 40), maxDelta);
             }
 
             //Fix a bug when the wing is near vessel's centerline

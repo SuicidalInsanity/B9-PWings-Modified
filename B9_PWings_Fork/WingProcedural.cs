@@ -566,15 +566,25 @@ namespace WingProcedural
         public void ToggleLiftConfiguration()
         {
 
-            if (!CanBeFueled || assemblyFARUsed)
+            if (!CanBeFueled || assemblyFARUsed || isPanel)
             {
+                if (isPanel) aeroIsLiftingSurface = false;
                 return;
             }
 
             aeroIsLiftingSurface = !aeroIsLiftingSurface;
             LiftStructuralTypeChanged();
         }
-
+        [KSPEvent(guiActive = false, guiActiveEditor = true, guiName = "Show Shaping menu", active = true)]		// #autoLOC_B9_Aerospace_WingStuff_1000163 = Surface Config: Lifting
+        public void ToggleEditConfiguration()
+        {
+            uiInstanceIDTarget = part.GetInstanceID();
+            uiEditMode = true;
+            uiEditModeTimeout = true;
+            uiAdjustWindow = true;
+            uiWindowActive = true;
+            InheritanceStatusUpdate();
+        }
         #endregion Lift configuration switching
 
         #region Fuel configuration switching
@@ -851,7 +861,6 @@ namespace WingProcedural
                 return;
             }
 
-            DebugLogWithID("OnStart", "Setup started");
             StartCoroutine(SetupReorderedForFlight()); // does all setup neccesary for flight
             isStarted = true;
             GameEvents.onGameSceneLoadRequested.Add(OnSceneSwitch);
@@ -876,7 +885,6 @@ namespace WingProcedural
             GameEvents.onEditorPartEvent.Add(OnEditorPartEvent);
 
             uiInstanceIDLocal = uiInstanceIDTarget = 0;
-
             Setup();
             part.OnEditorAttach += new Callback(UpdateOnEditorAttach);
             part.OnEditorDetach += new Callback(UpdateOnEditorDetach);
@@ -885,9 +893,10 @@ namespace WingProcedural
             {
                 UIUtility.ConfigureStyles();
             }
-            if (!CanBeFueled || assemblyFARUsed)
+            if (!CanBeFueled || assemblyFARUsed || isPanel)
             {
                 Events["ToggleLiftConfiguration"].guiActiveEditor = false;
+                if (isPanel) aeroIsLiftingSurface = false;
             }
             isStarted = true;
         }
@@ -1121,10 +1130,8 @@ namespace WingProcedural
 
             DebugTimerUpdate();
             UpdateUI();
-
             DeformWing();
             CheckAllFieldValues(out bool updateGeo, out bool updateAero);
-
             if (part.GetInstanceID() == uiInstanceIDTarget)
                 UpdateHandleGizmos();
 
@@ -1291,10 +1298,10 @@ namespace WingProcedural
             SetupMeshFilters();
             SetupMeshReferences();
             ReportOnMeshReferences();
-            if (ApplyLegacyTextures())
-            {
-                UpdateMaterials();
-            }
+			if (ApplyLegacyTextures())
+			{
+				UpdateMaterials();
+			}
             UpdateGeometry(true);
             UpdateWindow();
         }
@@ -2252,7 +2259,8 @@ namespace WingProcedural
                 {
                     DebugLogWithID("CheckMeshFilter", "Looking for object: " + name);
                 }
-                Transform parent = part.transform.GetChild(0).GetChild(0).GetChild(0).Find(name);
+                //Transform parent = part.transform.GetChild(0).GetChild(0).GetChild(0).Find(name); ...why?
+                Transform parent = part.FindModelTransform(name);
 
                 if (parent != null)
                 {
@@ -2792,7 +2800,7 @@ namespace WingProcedural
             if (!assemblyFARUsed)
             {
                 float stockLiftCoeff = (float)aeroStatSurfaceArea / 3.52f;
-                stockLiftCoefficient = aeroIsLiftingSurface ? stockLiftCoeff : 0f;
+                stockLiftCoefficient = (aeroIsLiftingSurface && !isPanel) ? stockLiftCoeff : 0f;
                 float x_col = pseudotaper_ratio * sharedBaseOffsetTip;
                 float y_col = pseudotaper_ratio * sharedBaseLength;
 
@@ -3186,12 +3194,10 @@ namespace WingProcedural
             {
                 return;
             }
-
             if (uiInstanceIDLocal == 0)
             {
                 uiInstanceIDLocal = part.GetInstanceID();
             }
-
             if (uiInstanceIDTarget == uiInstanceIDLocal || uiInstanceIDTarget == 0)
             {
                 if (!UIUtility.uiStyleConfigured)
@@ -3201,7 +3207,6 @@ namespace WingProcedural
 
                 UIUtility.uiRectWindowEditor = GUILayout.Window(GetInstanceID(), UIUtility.uiRectWindowEditor, OnWindow, GetWindowTitle(), UIUtility.uiStyleWindow, GUILayout.Height(uiAdjustWindow ? 0 : UIUtility.uiRectWindowEditor.height));
                 uiAdjustWindow = false;
-
                 // Thanks to ferram4
                 // Following section lock the editor, preventing window clickthrough
                 if (UIUtility.uiRectWindowEditor.Contains(UIUtility.GetMousePos()))
@@ -3815,7 +3820,6 @@ namespace WingProcedural
             {
                 return;
             }
-
             if (part.parent != null && isAttached && !uiEditModeTimeout)
             {
                 if (uiEditMode)
@@ -3826,7 +3830,6 @@ namespace WingProcedural
                         uiEditModeTimeout = true;
                     }
                 }
-
                 if (Input.GetKeyDown(uiKeyCodeEdit))
                 {
                     uiInstanceIDTarget = part.GetInstanceID();
@@ -3837,7 +3840,6 @@ namespace WingProcedural
                     InheritanceStatusUpdate();
                 }
             }
-
             if (state == 0)
             {
                 lastMousePos = Input.mousePosition;
@@ -4617,7 +4619,7 @@ namespace WingProcedural
             }
         }
 
-        public bool CanBeFueled => !isCtrlSrf && !isWingAsCtrlSrf && !isPanel;
+        public bool CanBeFueled => !isCtrlSrf && !isWingAsCtrlSrf;
         public bool UseStockFuel => !(assemblyRFUsed || assemblyMFTUsed || moduleCCUsed);
 
         #endregion Resources
