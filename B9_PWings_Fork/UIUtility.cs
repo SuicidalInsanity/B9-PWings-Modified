@@ -535,6 +535,7 @@ namespace WingProcedural
             if (!numericInput)
             {
                 value = Mathf.Round((float)value01 * range) + min;
+                value = Mathf.Clamp(value, min, max);
                 GUI.Label(rectLabelValue, GetValueTranslation(value, valueType), UIUtility.uiStyleLabelHint); // slider value
             }
             else

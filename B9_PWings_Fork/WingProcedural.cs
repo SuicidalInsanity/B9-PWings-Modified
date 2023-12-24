@@ -3240,7 +3240,8 @@ namespace WingProcedural
                     DrawFieldGroupHeader(ref sharedFieldGroupEdgeLeadingStatic, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000029"));		// #autoLOC_B9_Aerospace_WingStuff_1000029 = Edge (leading)
                     if (sharedFieldGroupEdgeLeadingStatic)
                     {
-                        DrawInt(ref sharedEdgeTypeLeading, sharedIncrementInt, 1, 4, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000030"), uiColorSliderEdgeL, 7, 2);		// #autoLOC_B9_Aerospace_WingStuff_1000030 = Shape
+                        Vector2 edgeLimits = GetLimitsFromType(sharedEdgeTypeLimits);
+                        DrawInt(ref sharedEdgeTypeLeading, sharedIncrementInt, (int)edgeLimits.x, (int)edgeLimits.y, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000030"), uiColorSliderEdgeL, 7, 2);		// #autoLOC_B9_Aerospace_WingStuff_1000030 = Shape
                         DrawField(ref sharedEdgeWidthLeadingRoot, sharedIncrementSmall, GetStep(sharedEdgeWidthLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000031"), uiColorSliderEdgeL, 8, 0, ref sharedEdgeWidthLRInt);		// #autoLOC_B9_Aerospace_WingStuff_1000031 = Width (root)
                         DrawField(ref sharedEdgeWidthLeadingTip, sharedIncrementSmall, GetStep(sharedEdgeWidthLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000032"), uiColorSliderEdgeL, 9, 0, ref sharedEdgeWidthLTInt);		// #autoLOC_B9_Aerospace_WingStuff_1000032 = Width (tip)
                     }
@@ -3250,7 +3251,8 @@ namespace WingProcedural
                 DrawFieldGroupHeader(ref sharedFieldGroupEdgeTrailingStatic, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000033"));		// #autoLOC_B9_Aerospace_WingStuff_1000033 = Edge (trailing)
                 if (sharedFieldGroupEdgeTrailingStatic)
                 {
-                    DrawInt(ref sharedEdgeTypeTrailing, sharedIncrementInt, 1, 4, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000034"), uiColorSliderEdgeT, 10, isCtrlSrf ? 3 : 2);		// #autoLOC_B9_Aerospace_WingStuff_1000034 = Shape
+                    Vector2 edgeLimits = GetLimitsFromType(sharedEdgeTypeLimits);
+                    DrawInt(ref sharedEdgeTypeTrailing, sharedIncrementInt, (int)edgeLimits.x, (int)edgeLimits.y, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000034"), uiColorSliderEdgeT, 10, isCtrlSrf ? 3 : 2);		// #autoLOC_B9_Aerospace_WingStuff_1000034 = Shape
                     DrawField(ref sharedEdgeWidthTrailingRoot, sharedIncrementSmall, GetStep(sharedEdgeWidthLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000035"), uiColorSliderEdgeT, 11, 0, ref sharedEdgeWidthTRInt);		// #autoLOC_B9_Aerospace_WingStuff_1000035 = Width (root)
                     DrawField(ref sharedEdgeWidthTrailingTip, sharedIncrementSmall, GetStep(sharedEdgeWidthLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000036"), uiColorSliderEdgeT, 12, 0, ref sharedEdgeWidthTTInt);		// #autoLOC_B9_Aerospace_WingStuff_1000036 = Width (tip)
                 }
@@ -3391,11 +3393,11 @@ namespace WingProcedural
             sharedBaseOffsetRoot = SetupFieldValue(sharedBaseOffsetRoot, nolimit, GetDefault(sharedBaseOffsetRootDefaults));
             sharedBaseOffsetTip = SetupFieldValue(sharedBaseOffsetTip, nolimit, GetDefault(sharedBaseOffsetTipDefaults));
 
-            sharedEdgeTypeTrailing = SetupFieldValue(sharedEdgeTypeTrailing, sharedEdgeTypeLimits, GetDefault(sharedEdgeTypeTrailingDefaults));
+            sharedEdgeTypeTrailing = SetupFieldValue(sharedEdgeTypeTrailing, GetLimitsFromType(sharedEdgeTypeLimits), GetDefault(sharedEdgeTypeTrailingDefaults));
             sharedEdgeWidthTrailingRoot = SetupFieldValue(sharedEdgeWidthTrailingRoot, positiveinf, GetDefault(sharedEdgeWidthTrailingRootDefaults));
             sharedEdgeWidthTrailingTip = SetupFieldValue(sharedEdgeWidthTrailingTip, positiveinf, GetDefault(sharedEdgeWidthTrailingTipDefaults));
 
-            sharedEdgeTypeLeading = SetupFieldValue(sharedEdgeTypeLeading, sharedEdgeTypeLimits, GetDefault(sharedEdgeTypeLeadingDefaults));
+            sharedEdgeTypeLeading = SetupFieldValue(sharedEdgeTypeLeading, GetLimitsFromType(sharedEdgeTypeLimits), GetDefault(sharedEdgeTypeLeadingDefaults));
             sharedEdgeWidthLeadingRoot = SetupFieldValue(sharedEdgeWidthLeadingRoot, positiveinf, GetDefault(sharedEdgeWidthLeadingRootDefaults));
             sharedEdgeWidthLeadingTip = SetupFieldValue(sharedEdgeWidthLeadingTip, positiveinf, GetDefault(sharedEdgeWidthLeadingTipDefaults));
 
