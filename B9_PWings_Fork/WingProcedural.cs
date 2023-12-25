@@ -165,41 +165,48 @@ namespace WingProcedural
         public float sharedBaseLength = 4f;
 
         public float sharedBaseLengthCached = 4f;
-        public static Vector4 sharedBaseLengthDefaults = new Vector4(4f, 1f, 4f, 1f);
+        [KSPField]
+        public Vector4 sharedBaseLengthDefaults = new Vector4(4f, 1f, 4f, 1f);
         public int sharedBaseLengthInt = 0;
         [KSPField(isPersistant = true, guiActiveEditor = false, guiActive = false, guiName = "Width (root)", guiFormat = "S4")]
         public float sharedBaseWidthRoot = 4f;
 
         public float sharedBaseWidthRootCached = 4f;
-        public static Vector4 sharedBaseWidthRootDefaults = new Vector4(4f, 0.5f, 4f, 0.5f);
+        [KSPField]
+        public Vector4 sharedBaseWidthRootDefaults = new Vector4(4f, 0.5f, 4f, 0.5f);
         [KSPField(isPersistant = true, guiActiveEditor = false, guiActive = false, guiName = "Width (tip)", guiFormat = "S4")]
         public float sharedBaseWidthTip = 4f;
 
         public float sharedBaseWidthTipCached = 4f;
-        public static Vector4 sharedBaseWidthTipDefaults = new Vector4(4f, 0.5f, 4f, 0.5f);
+        [KSPField]
+        public Vector4 sharedBaseWidthTipDefaults = new Vector4(4f, 0.5f, 4f, 0.5f);
         public int sharedBaseWidthTInt = 0;
         [KSPField(isPersistant = true, guiActiveEditor = false, guiActive = false, guiName = "Offset (root)", guiFormat = "S4")]
         public float sharedBaseOffsetRoot = 0f;
 
         public float sharedBaseOffsetRootCached = 0f;
-        public static Vector4 sharedBaseOffsetRootDefaults = new Vector4(0f, 0f, 0f, 0f);
+        [KSPField]
+        public Vector4 sharedBaseOffsetRootDefaults = new Vector4(0f, 0f, 0f, 0f);
         public int sharedBaseOffsetRInt = 0;
         [KSPField(isPersistant = true, guiActiveEditor = false, guiActive = false, guiName = "Offset (tip)", guiFormat = "S4")]
         public float sharedBaseOffsetTip = 0f;
 
         public float sharedBaseOffsetTipCached = 0f;
-        public static Vector4 sharedBaseOffsetTipDefaults = new Vector4(0f, 0f, 0f, 0f);
+        [KSPField]
+        public Vector4 sharedBaseOffsetTipDefaults = new Vector4(0f, 0f, 0f, 0f);
         public int sharedBaseOffsetTInt = 0;
         [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Thickness (root)", guiFormat = "F3")]
         public float sharedBaseThicknessRoot = 0.24f;
 
         public float sharedBaseThicknessRootCached = 0.24f;
-        public static Vector4 sharedBaseThicknessRootDefaults = new Vector4(0.24f, 0.24f, 0.24f, 0.24f);
+        [KSPField]
+        public Vector4 sharedBaseThicknessRootDefaults = new Vector4(0.24f, 0.24f, 0.24f, 0.24f);
         [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Thickness (tip)", guiFormat = "F3")]
         public float sharedBaseThicknessTip = 0.24f;
 
         public float sharedBaseThicknessTipCached = 0.24f;
-        public static Vector4 sharedBaseThicknessTipDefaults = new Vector4(0.24f, 0.24f, 0.24f, 0.24f);
+        [KSPField]
+        public Vector4 sharedBaseThicknessTipDefaults = new Vector4(0.24f, 0.24f, 0.24f, 0.24f);
         #endregion Shared properties / Base
 
         #region Shared properties / Edge / Leading
@@ -213,19 +220,22 @@ namespace WingProcedural
         public float sharedEdgeTypeLeading = 2f;
 
         public float sharedEdgeTypeLeadingCached = 2f;
-        public static Vector4 sharedEdgeTypeLeadingDefaults = new Vector4(2f, 1f, 2f, 1f);
+        [KSPField]
+        public Vector4 sharedEdgeTypeLeadingDefaults = new Vector4(2f, 1f, 2f, 1f);
 
         [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Width (root)", guiFormat = "F3")]
         public float sharedEdgeWidthLeadingRoot = 0.24f;
 
         public float sharedEdgeWidthLeadingRootCached = 0.24f;
-        public static Vector4 sharedEdgeWidthLeadingRootDefaults = new Vector4(0.24f, 0.24f, 0.24f, 0.24f);
+        [KSPField]
+        public Vector4 sharedEdgeWidthLeadingRootDefaults = new Vector4(0.24f, 0.24f, 0.24f, 0.24f);
         public int sharedEdgeWidthLRInt = 0;
         [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Width (tip)", guiFormat = "F3")]
         public float sharedEdgeWidthLeadingTip = 0.24f;
 
         public float sharedEdgeWidthLeadingTipCached = 0.24f;
-        public static Vector4 sharedEdgeWidthLeadingTipDefaults = new Vector4(0.24f, 0.24f, 0.24f, 0.24f);
+        [KSPField]
+        public Vector4 sharedEdgeWidthLeadingTipDefaults = new Vector4(0.24f, 0.24f, 0.24f, 0.24f);
         public int sharedEdgeWidthLTInt = 0;
 
         #endregion Shared properties / Edge / Leading
@@ -241,19 +251,22 @@ namespace WingProcedural
         public float sharedEdgeTypeTrailing = 3f;
 
         public float sharedEdgeTypeTrailingCached = 3f;
-        public static Vector4 sharedEdgeTypeTrailingDefaults = new Vector4(3f, 2f, 3f, 2f);
+        [KSPField]
+        public Vector4 sharedEdgeTypeTrailingDefaults = new Vector4(3f, 2f, 3f, 2f);
 
         [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Width (root)", guiFormat = "F3")]
         public float sharedEdgeWidthTrailingRoot = 0.48f;
 
         public float sharedEdgeWidthTrailingRootCached = 0.48f;
-        public static Vector4 sharedEdgeWidthTrailingRootDefaults = new Vector4(0.48f, 0.48f, 0.48f, 0.48f);
+        [KSPField]
+        public Vector4 sharedEdgeWidthTrailingRootDefaults = new Vector4(0.48f, 0.48f, 0.48f, 0.48f);
         public int sharedEdgeWidthTRInt = 0;
         [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Width (tip)", guiFormat = "F3")]
         public float sharedEdgeWidthTrailingTip = 0.48f;
 
         public float sharedEdgeWidthTrailingTipCached = 0.48f;
-        public static Vector4 sharedEdgeWidthTrailingTipDefaults = new Vector4(0.48f, 0.48f, 0.48f, 0.48f);
+        [KSPField]
+        public Vector4 sharedEdgeWidthTrailingTipDefaults = new Vector4(0.48f, 0.48f, 0.48f, 0.48f);
         public int sharedEdgeWidthTTInt = 0;
         #endregion Shared properties / Edge / Trailing
 
