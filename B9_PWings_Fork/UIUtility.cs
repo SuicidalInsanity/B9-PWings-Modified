@@ -442,7 +442,7 @@ namespace WingProcedural
             GUI.Label(rectSlider, $"  {name}", UIUtility.uiStyleLabelHint); // slider name
             if (!numericInput)
             {
-                value = Mathf.Clamp((float)(value01 * range + limits.x), Mathf.Min((float)(limits.x * 0.5), limits.x), limits.y); // lower limit is halved so the fine control can reduce it further but the normal tweak still snaps. Min makes -ve values work
+                value = Mathf.Clamp((float)(value01 * range + limits.x), limits.x, limits.y);
 
                 GUI.Label(rectLabelValue, GetValueTranslation(value, valueType), UIUtility.uiStyleLabelHint); // slider value
             }
@@ -456,7 +456,7 @@ namespace WingProcedural
                         value01 = (value - limits.x) / range;
                     }
                     else
-                        value = Mathf.Clamp((float)(value01 * range + limits.x), Mathf.Min((float)(limits.x * 0.5), limits.x), limits.y); // lower limit is halved so the fine control can reduce it further but the normal tweak still snaps. Min makes -ve values work
+                        value = Mathf.Clamp((float)(value01 * range + limits.x), limits.x, limits.y);
                 }
                 value = Mathf.Clamp(value, limits.x, limits.y);
             }
@@ -535,6 +535,7 @@ namespace WingProcedural
             if (!numericInput)
             {
                 value = Mathf.Round((float)value01 * range) + min;
+                value = Mathf.Clamp(value, min, max);
                 GUI.Label(rectLabelValue, GetValueTranslation(value, valueType), UIUtility.uiStyleLabelHint); // slider value
             }
             else
