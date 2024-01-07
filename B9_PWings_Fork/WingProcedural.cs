@@ -9,6 +9,7 @@ using UnityEngine.Internal;
 using UnityEngine.Scripting;
 
 
+
 namespace WingProcedural
 {
     public struct MathD // as we only need the clamp function so MathD.cs can be discard.
@@ -446,6 +447,7 @@ namespace WingProcedural
         public static bool sharedPropEdgePref = false;
         public static bool sharedPropEThickPref = false;
         public static bool sharedArmorPref = false;
+        public static bool sharedColorEditPref = false;
         private static readonly float sharedIncrementAngle = 1f;
         private static readonly float sharedIncrementAngleLarge = 5f;
 
@@ -740,7 +742,7 @@ namespace WingProcedural
             sharedColorSTSaturation = parent.sharedColorSTSaturation;
             sharedColorSTBrightness = parent.sharedColorSTBrightness;
 
-            sharedMaterialSB = parent.sharedMaterialSB;
+            sharedMaterialSB = parent.sharedMaterialSB; 
             sharedColorSBOpacity = parent.sharedColorSBOpacity;
             sharedColorSBHue = parent.sharedColorSBHue;
             sharedColorSBSaturation = parent.sharedColorSBSaturation;
@@ -774,6 +776,19 @@ namespace WingProcedural
                 sharedBaseOffsetRoot = trueoffset;
                 sharedBaseOffsetTip = trueoffset;
             }
+        }
+
+        private void PropagatePaintValues()
+        {
+            using (List<Part>.Enumerator parts = EditorLogic.fetch.ship.Parts.GetEnumerator())
+                while (parts.MoveNext())
+                {
+                    if (!parts.Current.Modules.Contains<WingProcedural>()) continue;
+                    if (parts.Current == this.part) continue;
+                    WingProcedural procWing = FirstOfTypeOrDefault<WingProcedural>(parts.Current.Modules);
+                    if (procWing == null) continue;
+                    procWing.InheritColours(this);
+                }
         }
 
         #endregion Inheritance
@@ -3291,7 +3306,8 @@ namespace WingProcedural
                     DrawCheck(ref sharedPropAnglePref, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000007"), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000008"), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000009"), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000156"), 101);		// #autoLOC_B9_Aerospace_WingStuff_1000007 = Use angles to define the wing		// #autoLOC_B9_Aerospace_WingStuff_1000008 = No		// #autoLOC_B9_Aerospace_WingStuff_1000009 = Yes		// #autoLOC_B9_Aerospace_WingStuff_1000156 = AngleDefine
                     DrawCheck(ref sharedPropEThickPref, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000010"), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000011"), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000012"), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000157"), 103);		// #autoLOC_B9_Aerospace_WingStuff_1000010 = Scale edges to thickness 		// #autoLOC_B9_Aerospace_WingStuff_1000011 = No		// #autoLOC_B9_Aerospace_WingStuff_1000012 = Yes		// #autoLOC_B9_Aerospace_WingStuff_1000157 = ThickScale
                     //DrawCheck(ref sharedArmorPref, "Make wings more durable!!!", "UnArmored", "Armored", "Armored Wings",104);
-                    DrawCheck(ref sharedPropEdgePref, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000158"), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000159"), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000160"), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000161"), 102);		// #autoLOC_B9_Aerospace_WingStuff_1000158 = Include edges in definitions		// #autoLOC_B9_Aerospace_WingStuff_1000159 = No		// #autoLOC_B9_Aerospace_WingStuff_1000160 = Yes		// #autoLOC_B9_Aerospace_WingStuff_1000161 = EdgeIncluded
+                    DrawCheck(ref sharedPropEdgePref, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000158"), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000159"), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000160"), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000161"), 102);     // #autoLOC_B9_Aerospace_WingStuff_1000158 = Include edges in definitions		// #autoLOC_B9_Aerospace_WingStuff_1000159 = No		// #autoLOC_B9_Aerospace_WingStuff_1000160 = Yes		// #autoLOC_B9_Aerospace_WingStuff_1000161 = EdgeIncluded
+                    DrawCheck(ref sharedColorEditPref, "Top/Bottom/Edges painted simultaneously", "No", "Yes", "Simple Paint",104);
                     if (sharedPropAnglePref)
                     {
                         DrawCheck(ref sharedPropLockPref, "Lock Tip width instead of base width", "No", "Yes", "Lock Tip", 105);
@@ -3377,37 +3393,38 @@ namespace WingProcedural
                         DrawLimited(ref sharedColorSTSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000041"), uiColorSliderColorsST, 16, 0, true);		// #autoLOC_B9_Aerospace_WingStuff_1000041 = Saturation
                         DrawLimited(ref sharedColorSTBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000042"), uiColorSliderColorsST, 17, 0, true);		// #autoLOC_B9_Aerospace_WingStuff_1000042 = Brightness
                     }
-
-                    DrawFieldGroupHeader(ref sharedFieldGroupColorSBStatic, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000043"));		// #autoLOC_B9_Aerospace_WingStuff_1000043 = Surface (bottom)
-                    if (sharedFieldGroupColorSBStatic)
+                    if (!sharedColorEditPref)
                     {
-                        DrawInt(ref sharedMaterialSB, sharedIncrementInt, 0, 4, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000044"), uiColorSliderColorsSB, 13, 1);		// #autoLOC_B9_Aerospace_WingStuff_1000044 = Material
-                        DrawLimited(ref sharedColorSBOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000045"), uiColorSliderColorsSB, 14, 0, true);		// #autoLOC_B9_Aerospace_WingStuff_1000045 = Opacity
-                        DrawLimited(ref sharedColorSBHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000046"), uiColorSliderColorsSB, 15, 0, true);		// #autoLOC_B9_Aerospace_WingStuff_1000046 = Hue
-                        DrawLimited(ref sharedColorSBSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000047"), uiColorSliderColorsSB, 16, 0, true);		// #autoLOC_B9_Aerospace_WingStuff_1000047 = Saturation
-                        DrawLimited(ref sharedColorSBBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000048"), uiColorSliderColorsSB, 17, 0, true);		// #autoLOC_B9_Aerospace_WingStuff_1000048 = Brightness
-                    }
-
-                    DrawFieldGroupHeader(ref sharedFieldGroupColorETStatic, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000049"));		// #autoLOC_B9_Aerospace_WingStuff_1000049 = Surface (trailing edge)
-                    if (sharedFieldGroupColorETStatic)
-                    {
-                        DrawInt(ref sharedMaterialET, sharedIncrementInt, 0, 4, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000050"), uiColorSliderColorsET, 13, 1);		// #autoLOC_B9_Aerospace_WingStuff_1000050 = Material
-                        DrawLimited(ref sharedColorETOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000051"), uiColorSliderColorsET, 14, 0, true);		// #autoLOC_B9_Aerospace_WingStuff_1000051 = Opacity
-                        DrawLimited(ref sharedColorETHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000052"), uiColorSliderColorsET, 15, 0, true);		// #autoLOC_B9_Aerospace_WingStuff_1000052 = Hue
-                        DrawLimited(ref sharedColorETSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000053"), uiColorSliderColorsET, 16, 0, true);		// #autoLOC_B9_Aerospace_WingStuff_1000053 = Saturation
-                        DrawLimited(ref sharedColorETBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000054"), uiColorSliderColorsET, 17, 0, true);		// #autoLOC_B9_Aerospace_WingStuff_1000054 = Brightness
-                    }
-
-                    if (!isCtrlSrf)
-                    {
-                        DrawFieldGroupHeader(ref sharedFieldGroupColorELStatic, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000055"));		// #autoLOC_B9_Aerospace_WingStuff_1000055 = Surface (leading edge)
-                        if (sharedFieldGroupColorELStatic)
+                        DrawFieldGroupHeader(ref sharedFieldGroupColorSBStatic, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000043"));       // #autoLOC_B9_Aerospace_WingStuff_1000043 = Surface (bottom)
+                        if (sharedFieldGroupColorSBStatic)
                         {
-                            DrawInt(ref sharedMaterialEL, sharedIncrementInt, 0, 4, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000056"), uiColorSliderColorsEL, 13, 1);		// #autoLOC_B9_Aerospace_WingStuff_1000056 = Material
-                            DrawLimited(ref sharedColorELOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000057"), uiColorSliderColorsEL, 14, 0, true);		// #autoLOC_B9_Aerospace_WingStuff_1000057 = Opacity
-                            DrawLimited(ref sharedColorELHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000058"), uiColorSliderColorsEL, 15, 0, true);		// #autoLOC_B9_Aerospace_WingStuff_1000058 = Hue
-                            DrawLimited(ref sharedColorELSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000059"), uiColorSliderColorsEL, 16, 0, true);		// #autoLOC_B9_Aerospace_WingStuff_1000059 = Saturation
-                            DrawLimited(ref sharedColorELBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000060"), uiColorSliderColorsEL, 17, 0, true);		// #autoLOC_B9_Aerospace_WingStuff_1000060 = Brightness
+                            DrawInt(ref sharedMaterialSB, sharedIncrementInt, 0, 4, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000044"), uiColorSliderColorsSB, 13, 1);     // #autoLOC_B9_Aerospace_WingStuff_1000044 = Material
+                            DrawLimited(ref sharedColorSBOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000045"), uiColorSliderColorsSB, 14, 0, true);     // #autoLOC_B9_Aerospace_WingStuff_1000045 = Opacity
+                            DrawLimited(ref sharedColorSBHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000046"), uiColorSliderColorsSB, 15, 0, true);     // #autoLOC_B9_Aerospace_WingStuff_1000046 = Hue
+                            DrawLimited(ref sharedColorSBSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000047"), uiColorSliderColorsSB, 16, 0, true);      // #autoLOC_B9_Aerospace_WingStuff_1000047 = Saturation
+                            DrawLimited(ref sharedColorSBBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000048"), uiColorSliderColorsSB, 17, 0, true);      // #autoLOC_B9_Aerospace_WingStuff_1000048 = Brightness
+                        }
+
+                        DrawFieldGroupHeader(ref sharedFieldGroupColorETStatic, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000049"));       // #autoLOC_B9_Aerospace_WingStuff_1000049 = Surface (trailing edge)
+                        if (sharedFieldGroupColorETStatic)
+                        {
+                            DrawInt(ref sharedMaterialET, sharedIncrementInt, 0, 4, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000050"), uiColorSliderColorsET, 13, 1);     // #autoLOC_B9_Aerospace_WingStuff_1000050 = Material
+                            DrawLimited(ref sharedColorETOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000051"), uiColorSliderColorsET, 14, 0, true);     // #autoLOC_B9_Aerospace_WingStuff_1000051 = Opacity
+                            DrawLimited(ref sharedColorETHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000052"), uiColorSliderColorsET, 15, 0, true);     // #autoLOC_B9_Aerospace_WingStuff_1000052 = Hue
+                            DrawLimited(ref sharedColorETSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000053"), uiColorSliderColorsET, 16, 0, true);      // #autoLOC_B9_Aerospace_WingStuff_1000053 = Saturation
+                            DrawLimited(ref sharedColorETBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000054"), uiColorSliderColorsET, 17, 0, true);      // #autoLOC_B9_Aerospace_WingStuff_1000054 = Brightness
+                        }
+                        if (!isCtrlSrf)
+                        {
+                            DrawFieldGroupHeader(ref sharedFieldGroupColorELStatic, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000055"));       // #autoLOC_B9_Aerospace_WingStuff_1000055 = Surface (leading edge)
+                            if (sharedFieldGroupColorELStatic)
+                            {
+                                DrawInt(ref sharedMaterialEL, sharedIncrementInt, 0, 4, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000056"), uiColorSliderColorsEL, 13, 1);     // #autoLOC_B9_Aerospace_WingStuff_1000056 = Material
+                                DrawLimited(ref sharedColorELOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000057"), uiColorSliderColorsEL, 14, 0, true);     // #autoLOC_B9_Aerospace_WingStuff_1000057 = Opacity
+                                DrawLimited(ref sharedColorELHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000058"), uiColorSliderColorsEL, 15, 0, true);     // #autoLOC_B9_Aerospace_WingStuff_1000058 = Hue
+                                DrawLimited(ref sharedColorELSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000059"), uiColorSliderColorsEL, 16, 0, true);      // #autoLOC_B9_Aerospace_WingStuff_1000059 = Saturation
+                                DrawLimited(ref sharedColorELBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000060"), uiColorSliderColorsEL, 17, 0, true);      // #autoLOC_B9_Aerospace_WingStuff_1000060 = Brightness
+                            }
                         }
                     }
                 }
@@ -3466,6 +3483,10 @@ namespace WingProcedural
                         if (GUILayout.Button(Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000071"), UIUtility.uiStyleButton)) InheritParentValues(4, false);		// #autoLOC_B9_Aerospace_WingStuff_1000071 = Align with fore edges
                         GUILayout.EndHorizontal();
                     }
+                }
+                if (GUILayout.Button(Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1001069"), UIUtility.uiStyleButton))       // #autoLOC_B9_Aerospace_WingStuff_1001069 = Color All
+                {
+                    PropagatePaintValues();
                 }
             }
             else
@@ -3794,7 +3815,7 @@ namespace WingProcedural
             else if (fieldID == 103)
                 return Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000111");		// #autoLOC_B9_Aerospace_WingStuff_1000111 = Scale edge lengths when changing thickness.
             else if (fieldID == 104)
-                return "not yet implemented";
+                return "Paint everything with a single color/material instead of per-section painting.";
             else if (fieldID == 105)
                 return "Change wing root width \ninstead of wing tip for angle define ";
             else if (fieldID == 106)
@@ -4294,6 +4315,7 @@ namespace WingProcedural
 
         private Color GetVertexColor(int side)
         {
+            if (sharedColorEditPref) side = 0;
             return ColorHSBToRGB(
                 side == 0
                     ? new Vector4(sharedColorSTHue, sharedColorSTSaturation, sharedColorSTBrightness, sharedColorSTOpacity)
@@ -4307,6 +4329,7 @@ namespace WingProcedural
 
         private Vector2 GetVertexUV2(float selectedLayer)
         {
+            if (sharedColorEditPref) selectedLayer = sharedMaterialST;
             return selectedLayer == 0 ? new Vector2(0f, 1f) : new Vector2((selectedLayer - 1f) / 3f, 0f);
         }
 
