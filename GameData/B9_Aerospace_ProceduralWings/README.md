@@ -23,11 +23,15 @@ There is a large number of people who contributed, either directly or indirectly
 	xEvilReeperx
 	snjo
 	Crzyrndm
+	Lisias
 	01010101lzy
 	NathanKell
 	CarnationRED
 	Rafterman82
 	Taniwha
+	SuicidalInsanity
+	BrettRyland
+	Josue
 
 Previous threads are (roughly in order)
 

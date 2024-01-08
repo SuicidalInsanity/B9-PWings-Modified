@@ -1,18 +1,3 @@
-0.46 SI
-	-Added Simple Paint preference option to color top/bottom/edges simultaneously from a single set of sliders.
-	-Added 'Color All' button to have every pwing on a craft inherit the selected wing's color settings.
-0.45 SI
-	-Fixed Structural panels breaking when used with BDA
-	-Added Procedural Swing Wingroot[Experimental]
-0.44	
-	-Forked Repo.
-	-Added support for procAirbrakes.
-	-Added new Wing_procedural_typeD proc airbrake.
-	-Added 11 new edge types to pWing boards.
-	-Added 3 new edge types to pCtrl Surfaces.
-	-pWing edges now have colliders.
-	-Fixed sliders potentially going over min/max limits.
-
 ChangeLog
 
 0.43.0
@@ -90,3 +75,25 @@ ChangeLog
 	Thanks to github user @BrettRyland for this:
 		Reload bundle assets when ctrl-z destroys them (fixes issue #11). 
 		Fix when handles stop working due to layer changes.
+0.44.0
+	Thanks to github user @josuenos for this:
+		Add in option to set PWing Wing part to non-lifting in Stock Aero. Adds toggle to the Part UI, toggling between:  
+			"Surface Config: Lifting" and "Surface Config: Not Lifting"
+		Allows for use of PWings to make interesting geometries without the impact of bad lift vectors (i.e. F-117 replica).
+0.45
+	Thanks to forum and github user @siimav for these fixes:
+		Allow per-part default shape to be configured
+		Enforce limits on thickness, root width and edge types
+		Adds Lisias as contributor to the project.
+0.46 SI
+	-Forked Repo.
+	-Added support for procAirbrakes.
+	-Added new Wing_procedural_typeD proc airbrake.
+	-Added 11 new edge types to pWing boards.
+	-Added 3 new edge types to pCtrl Surfaces.
+	-pWing edges now have colliders.
+	-Fixed sliders potentially going over min/max limits.
+	-Fixed Structural panels breaking when used with BDA
+	-Added Procedural Swing Wingroot[Experimental]
+	-Added Simple Paint preference option to color top/bottom/edges simultaneously from a single set of sliders.
+	-Added 'Color All' button to have every pwing on a craft inherit the selected wing's color settings.
