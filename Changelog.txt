@@ -1,6 +1,9 @@
-0.45 SI
+0.46 SI
 	-Added Simple Paint preference option to color top/bottom/edges simultaneously from a single set of sliders.
 	-Added 'Color All' button to have every pwing on a craft inherit the selected wing's color settings.
+0.45 SI
+	-Fixed Structural panels breaking when used with BDA
+	-Added Procedural Swing Wingroot[Experimental]
 0.44	
 	-Forked Repo.
 	-Added support for procAirbrakes.
