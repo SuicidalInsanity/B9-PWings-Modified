@@ -9,7 +9,6 @@ using UnityEngine.Internal;
 using UnityEngine.Scripting;
 
 
-
 namespace WingProcedural
 {
     public struct MathD // as we only need the clamp function so MathD.cs can be discard.
@@ -575,16 +574,6 @@ namespace WingProcedural
 
             aeroIsLiftingSurface = !aeroIsLiftingSurface;
             LiftStructuralTypeChanged();
-        }
-        [KSPEvent(guiActive = false, guiActiveEditor = true, guiName = "Show Shaping menu", active = true)]		// #autoLOC_B9_Aerospace_WingStuff_1000163 = Surface Config: Lifting
-        public void ToggleEditConfiguration()
-        {
-            uiInstanceIDTarget = part.GetInstanceID();
-            uiEditMode = true;
-            uiEditModeTimeout = true;
-            uiAdjustWindow = true;
-            uiWindowActive = true;
-            InheritanceStatusUpdate();
         }
         #endregion Lift configuration switching
 
@@ -2273,6 +2262,7 @@ namespace WingProcedural
                 {
                     DebugLogWithID("CheckMeshFilter", "Looking for object: " + name);
                 }
+
                 //Transform parent = part.transform.GetChild(0).GetChild(0).GetChild(0).Find(name); ...why?
                 Transform parent = part.FindModelTransform(name);
 
@@ -2814,7 +2804,7 @@ namespace WingProcedural
             if (!assemblyFARUsed)
             {
                 float stockLiftCoeff = (float)aeroStatSurfaceArea / 3.52f;
-                stockLiftCoefficient = (aeroIsLiftingSurface && !isPanel) ? stockLiftCoeff : 0f;
+                stockLiftCoefficient = (aeroIsLiftingSurface && !isPanel) ? stockLiftCoeff : 0f; //leaving isPanel refs for backwards compatibility
                 float x_col = pseudotaper_ratio * sharedBaseOffsetTip;
                 float y_col = pseudotaper_ratio * sharedBaseLength;
 
