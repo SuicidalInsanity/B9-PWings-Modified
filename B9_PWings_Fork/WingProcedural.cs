@@ -3333,11 +3333,10 @@ namespace WingProcedural
                         {
                             DrawLimited(ref sharedBaseWidthRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetStep(sharedBaseWidthRootLimits), GetLimitsFromType(sharedBaseWidthRootLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000015"), uiColorSliderBase, 1, 0);      // #autoLOC_B9_Aerospace_WingStuff_1000015 = Width (root)                        }
                         }
-
+                    }
                         DrawLimited(ref sharedBaseThicknessRoot, sharedIncrementSmall, GetStep2(sharedBaseThicknessLimits), sharedBaseThicknessLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000020"), uiColorSliderBase, 5, 0);       // #autoLOC_B9_Aerospace_WingStuff_1000020 = Thickness (root)
                         DrawLimited(ref sharedBaseThicknessTip, sharedIncrementSmall, GetStep2(sharedBaseThicknessLimits), sharedBaseThicknessLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000021"), uiColorSliderBase, 6, 0);        // #autoLOC_B9_Aerospace_WingStuff_1000021 = Thickness (tip)                                                                                                                                                                                                        
                         //Debug.Log("B9PW: base complete");
-                    }
                 }
                 else if (sharedFieldGroupBaseStatic & isCtrlSrf)
                 {
