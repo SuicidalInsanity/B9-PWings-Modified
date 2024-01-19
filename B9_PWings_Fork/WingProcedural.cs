@@ -4212,13 +4212,24 @@ namespace WingProcedural
                         case "handleLeadingTip": sharedEdgeWidthLeadingTip += draggingHandle.axisY * MouseSensitivity; break;
                         case "handleTrailingRoot": sharedEdgeWidthTrailingRoot += draggingHandle.axisY * MouseSensitivity; break;
                         case "handleTrailingTip": sharedEdgeWidthTrailingTip += draggingHandle.axisY * MouseSensitivity; break;
+
                         case "handleWidthRootFront":
-                            sharedBaseWidthRoot -= draggingHandle.axisY * MouseSensitivity;
-                            sharedBaseOffsetRoot -= draggingHandle.axisY * MouseSensitivity * .5f;
+                            if (isWingAsCtrlSrf)
+                            {
+                                sharedBaseWidthRoot -= draggingHandle.axisY * MouseSensitivity;
+                                sharedBaseOffsetRoot -= draggingHandle.axisY * MouseSensitivity * .5f;
+                            }
+                            else
+                                sharedBaseWidthRoot = backupsharedBaseWidthRoot - draggingHandle.LockDeltaAxisY; 
                             break;
                         case "handleWidthRootBack":
-                            sharedBaseWidthRoot += draggingHandle.axisY * MouseSensitivity;
-                            sharedBaseOffsetRoot -= draggingHandle.axisY * MouseSensitivity * .5f;
+                            if (isWingAsCtrlSrf)
+                            {
+                                sharedBaseWidthRoot += draggingHandle.axisY * MouseSensitivity;
+                                sharedBaseOffsetRoot -= draggingHandle.axisY * MouseSensitivity * .5f;
+                            }
+                            else
+                                sharedBaseWidthRoot = backupsharedBaseWidthRoot + draggingHandle.LockDeltaAxisY; 
                             break;
                         case "handleWidthTipFront":
                             sharedBaseWidthTip += draggingHandle.axisY * MouseSensitivity;
