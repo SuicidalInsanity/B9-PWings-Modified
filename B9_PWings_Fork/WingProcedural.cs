@@ -787,6 +787,7 @@ namespace WingProcedural
         public static bool assemblyFARUsed = false;
         public static bool assemblyRFUsed = false;
         public static bool assemblyMFTUsed = false;
+        public static string Version { get; private set; } = "Unknown";
         // if current part uses one of the Configurable Container modules
         public bool moduleCCUsed = false;
 
@@ -813,6 +814,10 @@ namespace WingProcedural
                     else if (test.assembly.GetName().Name.Equals("modularFuelTanks", StringComparison.InvariantCultureIgnoreCase))
                     {
                         assemblyMFTUsed = true;
+                    }
+                    else if (test.assembly.FullName.Contains("B9") && test.assembly.FullName.Contains("PWings")) // Not finding 'if (assy.assembly.FullName.StartsWith("B9-PWings-Fork"))'?
+                    {
+                        Version = test.assembly.GetName().Version.ToString();
                     }
                 }
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
@@ -3417,6 +3422,26 @@ namespace WingProcedural
                             }
                         }
                     }
+                    else
+                    {
+                        sharedMaterialSB = sharedMaterialST;
+                        sharedMaterialEL = sharedMaterialST;
+                        sharedMaterialET = sharedMaterialST;
+
+                        sharedColorSBOpacity = sharedColorSTOpacity;
+                        sharedColorETOpacity = sharedColorSTOpacity;
+                        sharedColorELOpacity = sharedColorSTOpacity;
+
+                        sharedColorSBHue = sharedColorSTHue;
+                        sharedColorETHue = sharedColorSTHue;
+                        sharedColorELHue = sharedColorSTHue;
+                        sharedColorSBSaturation = sharedColorSTSaturation;
+                        sharedColorETSaturation = sharedColorSTSaturation;
+                        sharedColorELSaturation = sharedColorSTSaturation;
+                        sharedColorSBBrightness = sharedColorSTBrightness;
+                        sharedColorETBrightness = sharedColorSTBrightness;
+                        sharedColorELBrightness = sharedColorSTBrightness;
+                    }
                 }
 
                 GUILayout.Label(Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000061"), UIUtility.uiStyleLabelHint);		// #autoLOC_B9_Aerospace_WingStuff_1000061 = _________________________\n\nPress J to exit edit mode\nOptions below allow you to change default values
@@ -4104,14 +4129,16 @@ namespace WingProcedural
 
         private string GetWindowTitle()
         {
-            return
-                !uiEditMode
-                    ? Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000115")		// #autoLOC_B9_Aerospace_WingStuff_1000115 = Inactive
-                : isCtrlSrf
-                    ? Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000116")		// #autoLOC_B9_Aerospace_WingStuff_1000116 = Control surface
-                : isWingAsCtrlSrf
-                    ? Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000117")		// #autoLOC_B9_Aerospace_WingStuff_1000117 = All-moving control surface
-                : Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000118");		// #autoLOC_B9_Aerospace_WingStuff_1000118 = Wing
+            string title =
+            !uiEditMode
+                ? Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000115")       // #autoLOC_B9_Aerospace_WingStuff_1000115 = Inactive
+            : isCtrlSrf
+                ? Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000116")       // #autoLOC_B9_Aerospace_WingStuff_1000116 = Control surface
+            : isWingAsCtrlSrf
+                ? Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000117")       // #autoLOC_B9_Aerospace_WingStuff_1000117 = All-moving control surface
+            : Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000118");		// #autoLOC_B9_Aerospace_WingStuff_1000118 = Wing
+            title += $"     Ver:{Version}";
+            return title;
         }
 
         #region Handle Gizmos by CarnationRED

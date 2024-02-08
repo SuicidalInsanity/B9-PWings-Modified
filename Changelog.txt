@@ -97,4 +97,5 @@ ChangeLog
 	-Added Procedural Swing Wingroot[Experimental]
 	-Added Simple Paint preference option to color top/bottom/edges simultaneously from a single set of sliders.
 	-Added 'Color All' button to have every pwing on a craft inherit the selected wing's color settings.
-
+0.46.1
+	-Have leading/trailing wingroot width syncronized with the other to fix CoL offset exploit
