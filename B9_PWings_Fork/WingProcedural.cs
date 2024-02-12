@@ -138,7 +138,7 @@ namespace WingProcedural
             return isCtrlSrf ? incrementCtrl : incrementWing;
         }
 
-                private static Vector4 sharedBaseLengthLimits = new Vector4(0.0f, 40f, 0.0f, 20f);
+        private static Vector4 sharedBaseLengthLimits = new Vector4(0.0f, 40f, 0.0f, 20f);
         private static Vector2 sharedBaseThicknessLimits = new Vector2(0.01f, 4f);
         private static Vector4 sharedBaseWidthRootLimits = new Vector4(0.01f, 40f, 0.01f, 2f);
         private static Vector4 sharedBaseWidthTipLimits = new Vector4(0.0f, 40f, 0.0f, 2f);
@@ -196,13 +196,13 @@ namespace WingProcedural
         public int sharedBaseOffsetTInt = 0;
         [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Thickness (root)", guiFormat = "F3")]
         public float sharedBaseThicknessRoot = 0.24f;
-
+        public int sharedBaseThicknessRInt = 0;
         public float sharedBaseThicknessRootCached = 0.24f;
         public static Vector4 sharedBaseThicknessRootDefaults = new Vector4(0.24f, 0.24f, 0.24f, 0.24f);
 
         [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Thickness (tip)", guiFormat = "F3")]
         public float sharedBaseThicknessTip = 0.24f;
-
+        public int sharedBaseThicknessTInt = 0;
         public float sharedBaseThicknessTipCached = 0.24f;
         public static Vector4 sharedBaseThicknessTipDefaults = new Vector4(0.24f, 0.24f, 0.24f, 0.24f);
         #endregion Shared properties / Base
@@ -3340,8 +3340,10 @@ namespace WingProcedural
                             DrawLimited(ref sharedBaseWidthRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetStep(sharedBaseWidthRootLimits), GetLimitsFromType(sharedBaseWidthRootLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000015"), uiColorSliderBase, 1, 0);      // #autoLOC_B9_Aerospace_WingStuff_1000015 = Width (root)                        }
                         }
                     }
-                        DrawLimited(ref sharedBaseThicknessRoot, sharedIncrementSmall, GetStep2(sharedBaseThicknessLimits), sharedBaseThicknessLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000020"), uiColorSliderBase, 5, 0);       // #autoLOC_B9_Aerospace_WingStuff_1000020 = Thickness (root)
-                        DrawLimited(ref sharedBaseThicknessTip, sharedIncrementSmall, GetStep2(sharedBaseThicknessLimits), sharedBaseThicknessLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000021"), uiColorSliderBase, 6, 0);        // #autoLOC_B9_Aerospace_WingStuff_1000021 = Thickness (tip)                                                                                                                                                                                                        
+                    DrawField(ref sharedBaseThicknessRoot, sharedIncrementSmall, GetStep2(sharedBaseThicknessLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000027"), uiColorSliderBase, 5, 0, ref sharedBaseThicknessRInt);
+                    //DrawLimited(ref sharedBaseThicknessRoot, sharedIncrementSmall, GetStep2(sharedBaseThicknessLimits), sharedBaseThicknessLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000020"), uiColorSliderBase, 5, 0);       // #autoLOC_B9_Aerospace_WingStuff_1000020 = Thickness (root)
+                    DrawField(ref sharedBaseThicknessTip, sharedIncrementSmall, GetStep2(sharedBaseThicknessLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000028"), uiColorSliderBase, 6, 0, ref sharedBaseThicknessTInt);
+                    //DrawLimited(ref sharedBaseThicknessTip, sharedIncrementSmall, GetStep2(sharedBaseThicknessLimits), sharedBaseThicknessLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000021"), uiColorSliderBase, 6, 0);        // #autoLOC_B9_Aerospace_WingStuff_1000021 = Thickness (tip)                                                                                                                                                                                                        
                         //Debug.Log("B9PW: base complete");
                 }
                 else if (sharedFieldGroupBaseStatic & isCtrlSrf)
