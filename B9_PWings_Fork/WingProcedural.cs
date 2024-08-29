@@ -2817,7 +2817,7 @@ namespace WingProcedural
             {
                 aeroUICost = (float)aeroStatMass * (1f + (float)aeroStatAspectRatioSweepScale / 4f) * aeroConstCostDensity;
                 aeroUICost = Mathf.Round(aeroUICost / 5f) * 5f;
-                part.CoMOffset = part.CoLOffset = part.CoPOffset = new Vector3(sharedBaseLength * pseudotaper_ratio, -sharedBaseOffsetTip * pseudotaper_ratio, 0f);
+                part.CoMOffset = part.CoLOffset = part.CoPOffset = new Vector3(sharedBaseLength * pseudotaper_ratio, (-sharedBaseOffsetTip + (sharedEdgeWidthLeadingTip - sharedEdgeWidthTrailingTip))  + (-sharedBaseOffsetRoot + (sharedEdgeWidthLeadingRoot - sharedEdgeWidthTrailingRoot)) * pseudotaper_ratio, 0f);
             }
             else
             {
