@@ -13,6 +13,11 @@ namespace WingProcedural
 
         public override int SectionOrder { get { return 1; } }
 
+        [GameParameters.CustomParameterUI("Syncronize Root Width")]
+        public bool syncRootWidth = false;
+
+        [GameParameters.CustomParameterUI("Clamp Wing Max Dimensions")]
+        public bool clampDimensions = false;
 
         [GameParameters.CustomParameterUI("Enable Aero Logging")]
         public bool logCAV = false;

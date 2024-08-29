@@ -99,3 +99,10 @@ ChangeLog
 	-Added 'Color All' button to have every pwing on a craft inherit the selected wing's color settings.
 0.46.1
 	-Have leading/trailing wingroot width syncronized with the other to fix CoL offset exploit
+0.46.2
+	-Update sharedEdgeTypeLimit for control surfaces
+0.46.3
+	-Change color slider to use Hue 0-255 instead of 0-1
+0.46.4
+	-Add clampDimensions and SyncRootWidth toggles to the B9PWing Difficulty Setting game options.
+	-Wing CoL now takes edge width into account

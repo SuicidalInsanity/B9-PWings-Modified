@@ -359,7 +359,7 @@ namespace WingProcedural
             return value;
         }
 
-        public static float LimitedSlider(float value, float increment, float incrementLarge, Vector2 limits, string name, out bool changed, Color backgroundColor, int valueType, bool allowFine = true)
+        public static float LimitedSlider(float value, float increment, float incrementLarge, Vector2 limits, string name, out bool changed, Color backgroundColor, int valueType, bool allowFine = true, bool hueField = false)
         {
             if (!UIUtility.uiStyleConfigured)
             {
@@ -443,12 +443,13 @@ namespace WingProcedural
             if (!numericInput)
             {
                 value = Mathf.Clamp((float)(value01 * range + limits.x), limits.x, limits.y);
-                GUI.Label(rectLabelValue, GetValueTranslation(value, valueType), UIUtility.uiStyleLabelHint); // slider value
+                GUI.Label(rectLabelValue, GetValueTranslation(value * (hueField ? 360 : 1), valueType), UIUtility.uiStyleLabelHint); // slider value
             }
             else
             {
                 if (float.TryParse(GUI.TextField(rectLabelValue, value.ToString("F3"), UIUtility.uiStyleInputField), out var temp)) // Add optional numeric input
                 {
+                    if (hueField) value /= 360;
                     if (!buttonAdjust)
                     {
                         value = temp;

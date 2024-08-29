@@ -36,6 +36,8 @@ namespace WingProcedural
         [KSPField]
         public bool isWingAsCtrlSrf = false;
 
+        public bool isSwingWing = false;
+
         [KSPField]
         public bool isAirbrake = false;
 
@@ -143,7 +145,7 @@ namespace WingProcedural
         private static Vector4 sharedBaseWidthRootLimits = new Vector4(0.01f, 40f, 0.01f, 2f);
         private static Vector4 sharedBaseWidthTipLimits = new Vector4(0.0f, 40f, 0.0f, 2f);
         private static Vector4 sharedBaseOffsetLimits = new Vector4(-10f, 10f, -1.5f, 1.5f);
-        private static Vector4 sharedEdgeTypeLimits = new Vector4(1f, 15f, 1f, 3f);
+        private static Vector4 sharedEdgeTypeLimits = new Vector4(1f, 15f, 1f, 7f);
         private static Vector4 sharedEdgeWidthLimits = new Vector4(0f, 6f, 0f, 6f);
         private static Vector2 sharedMaterialLimits = new Vector2(0f, 4f);
         private static Vector2 sharedColorLimits = new Vector2(0f, 1f);
@@ -175,7 +177,7 @@ namespace WingProcedural
 
         public float sharedBaseWidthRootCached = 4f;
         public static Vector4 sharedBaseWidthRootDefaults = new Vector4(4f, 0.5f, 4f, 0.5f);
-
+        public int sharedBaseWidthRInt = 0;
         [KSPField(isPersistant = true, guiActiveEditor = false, guiActive = false, guiName = "Width (tip)", guiFormat = "S4")]
         public float sharedBaseWidthTip = 4f;
 
@@ -1165,6 +1167,18 @@ namespace WingProcedural
             ;
 
             isAttached = true;
+            if (part.Modules.Contains("ModuleNodeRotate"))
+            {
+                using (List<AttachNode>.Enumerator node = part.attachNodes.GetEnumerator())
+                    while (node.MoveNext())
+                    {
+                        if (node.Current.nodeType == AttachNode.NodeType.Surface)
+                        {
+                            node.Current.size = 4;
+                        }
+                    }
+                isSwingWing = true;
+            }
             UpdateGeometry(true);
             SetupMirroredCntrlSrf();
 
@@ -1296,6 +1310,21 @@ namespace WingProcedural
             SetupFields();
             FuelStart(); // shifted from Setup() to fix NRE caused by reattaching a single part that wasn't originally mirrored. Shifted back now Setup is called from Start
             RefreshGeometry();
+            if (HighLogic.LoadedSceneIsFlight)
+            {                
+                if (part.Modules.Contains("ModuleNodeRotate"))
+                {
+                    using (List<AttachNode>.Enumerator node = part.attachNodes.GetEnumerator())
+                        while (node.MoveNext())
+                        {
+                            if (node.Current.nodeType == AttachNode.NodeType.Surface)
+                            {
+                                node.Current.size = 4;
+                            }
+                        }
+                    isSwingWing = true;
+                }
+            }
         }
 
         /// <summary>
@@ -2722,12 +2751,14 @@ namespace WingProcedural
             // 2 * (base + x * (tip - base)) * x + x * (base + tip) - tip - base - x * (tip - base) = 0
             // x^2 * 2 * (tip - base) + x * (2 * base + base + tip - (tip - base)) - tip - base = 0
             // x^2 * 2 * (tip - base) + x * 4 * base - tip - base = 0
-            float a_tp = 2.0f * (sharedBaseWidthTip - sharedBaseWidthRoot);
+            //float a_tp = 2.0f * (sharedBaseWidthTip - sharedBaseWidthRoot);
+            float a_tp = 2.0f * (sharedWidthTipSum - sharedWidthRootSum);
             float pseudotaper_ratio;
             if (a_tp != 0.0f)
             {
-                float b_tp = 4.0f * sharedBaseWidthRoot;
-                float c_tp = -sharedBaseWidthTip - sharedBaseWidthRoot;
+                float b_tp = 4.0f * sharedWidthRootSum; // sharedBaseWidthRoot;
+                //float c_tp = -sharedBaseWidthTip - sharedBaseWidthRoot;
+                float c_tp = -sharedWidthTipSum - sharedWidthRootSum;
                 float D_tp = b_tp * b_tp - 4.0f * a_tp * c_tp;
                 float x1 = (-b_tp + Mathf.Sqrt(D_tp)) / 2.0f / a_tp;
                 float x2 = (-b_tp - Mathf.Sqrt(D_tp)) / 2.0f / a_tp;
@@ -3316,11 +3347,22 @@ namespace WingProcedural
                     {
                         DrawLimited(ref sharedArmorRatio, 10, 100, sharedArmorLimits, "ReinforceRatio", uiColorSliderBase, 301, 0, true);
                     }
-                    DrawField(ref sharedBaseLength, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetStep(sharedBaseLengthLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000014"), uiColorSliderBase, 0, 0, ref sharedBaseLengthInt);		// #autoLOC_B9_Aerospace_WingStuff_1000014 = Length
+                    if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().clampDimensions)
+                        DrawLimited(ref sharedBaseLength, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetStep(sharedBaseLengthLimits), GetLimitsFromType(sharedBaseLengthLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000014"), uiColorSliderBase, 0, 0);      // #autoLOC_B9_Aerospace_WingStuff_1000015 = Width (root)
+                    else
+                        DrawField(ref sharedBaseLength, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetStep(sharedBaseLengthLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000014"), uiColorSliderBase, 0, 0, ref sharedBaseLengthInt);		// #autoLOC_B9_Aerospace_WingStuff_1000014 = Length
                     if (!sharedPropAnglePref)
                     {
-                        DrawLimited(ref sharedBaseWidthRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetStep(sharedBaseWidthRootLimits), GetLimitsFromType(sharedBaseWidthRootLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000015"), uiColorSliderBase, 1, 0);		// #autoLOC_B9_Aerospace_WingStuff_1000015 = Width (root)
-                        DrawField(ref sharedBaseWidthTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetStep(sharedBaseWidthTipLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000016"), uiColorSliderBase, 2, 0, ref sharedBaseWidthTInt, true);		// #autoLOC_B9_Aerospace_WingStuff_1000016 = Width (tip)
+                        if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().clampDimensions)
+                        {
+                            DrawLimited(ref sharedBaseWidthRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetStep(sharedBaseWidthRootLimits), GetLimitsFromType(sharedBaseWidthRootLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000015"), uiColorSliderBase, 1, 0);      // #autoLOC_B9_Aerospace_WingStuff_1000015 = Width (root)
+                            DrawLimited(ref sharedBaseWidthTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetStep(sharedBaseWidthTipLimits), GetLimitsFromType(sharedBaseWidthTipLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000016"), uiColorSliderBase, 2, 0);		// #autoLOC_B9_Aerospace_WingStuff_1000016 = Width (tip)
+                        }
+                        else
+                        {
+                            DrawField(ref sharedBaseWidthRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetStep(sharedBaseWidthRootLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000015"), uiColorSliderBase, 1, 0, ref sharedBaseWidthRInt, true);       // #autoLOC_B9_Aerospace_WingStuff_1000015 = Width (root)
+                            DrawField(ref sharedBaseWidthTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetStep(sharedBaseWidthTipLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000016"), uiColorSliderBase, 2, 0, ref sharedBaseWidthTInt, true);		// #autoLOC_B9_Aerospace_WingStuff_1000016 = Width (tip)
+                        }
                         DrawOffset(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetStep(sharedBaseOffsetLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000017"), uiColorSliderBase, 4, 0, ref sharedBaseOffsetTInt, true);		// #autoLOC_B9_Aerospace_WingStuff_1000017 = Offset (tip)
                     }
                     else
@@ -3337,19 +3379,29 @@ namespace WingProcedural
                         }
                         else if (!sharedPropLockPref)
                         {
-                            DrawLimited(ref sharedBaseWidthRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetStep(sharedBaseWidthRootLimits), GetLimitsFromType(sharedBaseWidthRootLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000015"), uiColorSliderBase, 1, 0);      // #autoLOC_B9_Aerospace_WingStuff_1000015 = Width (root)                        }
+                            if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().clampDimensions)
+                                DrawLimited(ref sharedBaseWidthRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetStep(sharedBaseWidthRootLimits), GetLimitsFromType(sharedBaseWidthRootLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000015"), uiColorSliderBase, 1, 0);      // #autoLOC_B9_Aerospace_WingStuff_1000015 = Width (root)                        }
+                            else
+                                DrawField(ref sharedBaseWidthRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetStep(sharedBaseWidthRootLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000015"), uiColorSliderBase, 1, 0, ref sharedBaseWidthRInt, true);		// #autoLOC_B9_Aerospace_WingStuff_1000015 = Width (root)
                         }
                     }
-                    DrawField(ref sharedBaseThicknessRoot, sharedIncrementSmall, GetStep2(sharedBaseThicknessLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000027"), uiColorSliderBase, 5, 0, ref sharedBaseThicknessRInt);
-                    //DrawLimited(ref sharedBaseThicknessRoot, sharedIncrementSmall, GetStep2(sharedBaseThicknessLimits), sharedBaseThicknessLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000020"), uiColorSliderBase, 5, 0);       // #autoLOC_B9_Aerospace_WingStuff_1000020 = Thickness (root)
-                    DrawField(ref sharedBaseThicknessTip, sharedIncrementSmall, GetStep2(sharedBaseThicknessLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000028"), uiColorSliderBase, 6, 0, ref sharedBaseThicknessTInt);
-                    //DrawLimited(ref sharedBaseThicknessTip, sharedIncrementSmall, GetStep2(sharedBaseThicknessLimits), sharedBaseThicknessLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000021"), uiColorSliderBase, 6, 0);        // #autoLOC_B9_Aerospace_WingStuff_1000021 = Thickness (tip)                                                                                                                                                                                                        
-                        //Debug.Log("B9PW: base complete");
+                    if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().clampDimensions)
+                    {
+                        DrawLimited(ref sharedBaseThicknessRoot, sharedIncrementSmall, GetStep2(sharedBaseThicknessLimits), sharedBaseThicknessLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000020"), uiColorSliderBase, 5, 0);       // #autoLOC_B9_Aerospace_WingStuff_1000020 = Thickness (root)
+                        DrawLimited(ref sharedBaseThicknessTip, sharedIncrementSmall, GetStep2(sharedBaseThicknessLimits), sharedBaseThicknessLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000021"), uiColorSliderBase, 6, 0);        // #autoLOC_B9_Aerospace_WingStuff_1000021 = Thickness (tip)                                                                                                                                                                                                        
+                    }
+                    else
+                    {
+                        DrawField(ref sharedBaseThicknessRoot, sharedIncrementSmall, GetStep2(sharedBaseThicknessLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000027"), uiColorSliderBase, 5, 0, ref sharedBaseThicknessRInt);
+                        DrawField(ref sharedBaseThicknessTip, sharedIncrementSmall, GetStep2(sharedBaseThicknessLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000028"), uiColorSliderBase, 6, 0, ref sharedBaseThicknessTInt);
+                    }
+                    //Debug.Log("B9PW: base complete");
                 }
                 else if (sharedFieldGroupBaseStatic & isCtrlSrf)
                 {
                     DrawField(ref sharedBaseLength, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetStep(sharedBaseLengthLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000022"), uiColorSliderBase, 0, 0, ref sharedBaseLengthInt);       // #autoLOC_B9_Aerospace_WingStuff_1000022 = Length
-                    DrawLimited(ref sharedBaseWidthRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetStep(sharedBaseWidthRootLimits), GetLimitsFromType(sharedBaseWidthRootLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000023"), uiColorSliderBase, 1, 0);      // #autoLOC_B9_Aerospace_WingStuff_1000023 = Width (root)
+                    //DrawLimited(ref sharedBaseWidthRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetStep(sharedBaseWidthRootLimits), GetLimitsFromType(sharedBaseWidthRootLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000023"), uiColorSliderBase, 1, 0);      // #autoLOC_B9_Aerospace_WingStuff_1000023 = Width (root)
+                    DrawField(ref sharedBaseWidthRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetStep(sharedBaseWidthRootLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000015"), uiColorSliderBase, 1, 0, ref sharedBaseWidthRInt, true);		// #autoLOC_B9_Aerospace_WingStuff_1000015 = Width (root)
                     DrawField(ref sharedBaseWidthTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetStep(sharedBaseWidthTipLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000024"), uiColorSliderBase, 2, 0, ref sharedBaseWidthTInt);		// #autoLOC_B9_Aerospace_WingStuff_1000024 = Width (tip)
                     DrawOffset(ref sharedBaseOffsetRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetStep(sharedBaseOffsetLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000025"), uiColorSliderBase, 3, 0, ref sharedBaseOffsetRInt);		// #autoLOC_B9_Aerospace_WingStuff_1000025 = Offset (root)
                     DrawOffset(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetStep(sharedBaseOffsetLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000026"), uiColorSliderBase, 4, 0, ref sharedBaseOffsetTInt);      // #autoLOC_B9_Aerospace_WingStuff_1000026 = Offset (tip)
@@ -3367,7 +3419,6 @@ namespace WingProcedural
                         DrawField(ref sharedEdgeWidthLeadingRoot, sharedIncrementSmall, GetStep(sharedEdgeWidthLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000031"), uiColorSliderEdgeL, 8, 0, ref sharedEdgeWidthLRInt);		// #autoLOC_B9_Aerospace_WingStuff_1000031 = Width (root)
                         DrawField(ref sharedEdgeWidthLeadingTip, sharedIncrementSmall, GetStep(sharedEdgeWidthLimits), Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000032"), uiColorSliderEdgeL, 9, 0, ref sharedEdgeWidthLTInt);		// #autoLOC_B9_Aerospace_WingStuff_1000032 = Width (tip)
                     }
-
                 }
 
                 DrawFieldGroupHeader(ref sharedFieldGroupEdgeTrailingStatic, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000033"));		// #autoLOC_B9_Aerospace_WingStuff_1000033 = Edge (trailing)
@@ -3386,7 +3437,7 @@ namespace WingProcedural
                     {
                         DrawInt(ref sharedMaterialST, sharedIncrementInt, 0, 4, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000038"), uiColorSliderColorsST, 13, 1);		// #autoLOC_B9_Aerospace_WingStuff_1000038 = Material
                         DrawLimited(ref sharedColorSTOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000039"), uiColorSliderColorsST, 14, 0, true);		// #autoLOC_B9_Aerospace_WingStuff_1000039 = Opacity
-                        DrawLimited(ref sharedColorSTHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000040"), uiColorSliderColorsST, 15, 0, true);		// #autoLOC_B9_Aerospace_WingStuff_1000040 = Hue
+                        DrawLimited(ref sharedColorSTHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000040"), uiColorSliderColorsST, 15, 0, true, true);		// #autoLOC_B9_Aerospace_WingStuff_1000040 = Hue
                         DrawLimited(ref sharedColorSTSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000041"), uiColorSliderColorsST, 16, 0, true);		// #autoLOC_B9_Aerospace_WingStuff_1000041 = Saturation
                         DrawLimited(ref sharedColorSTBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000042"), uiColorSliderColorsST, 17, 0, true);		// #autoLOC_B9_Aerospace_WingStuff_1000042 = Brightness
                     }
@@ -3397,7 +3448,7 @@ namespace WingProcedural
                         {
                             DrawInt(ref sharedMaterialSB, sharedIncrementInt, 0, 4, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000044"), uiColorSliderColorsSB, 13, 1);     // #autoLOC_B9_Aerospace_WingStuff_1000044 = Material
                             DrawLimited(ref sharedColorSBOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000045"), uiColorSliderColorsSB, 14, 0, true);     // #autoLOC_B9_Aerospace_WingStuff_1000045 = Opacity
-                            DrawLimited(ref sharedColorSBHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000046"), uiColorSliderColorsSB, 15, 0, true);     // #autoLOC_B9_Aerospace_WingStuff_1000046 = Hue
+                            DrawLimited(ref sharedColorSBHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000046"), uiColorSliderColorsSB, 15, 0, true, true);     // #autoLOC_B9_Aerospace_WingStuff_1000046 = Hue
                             DrawLimited(ref sharedColorSBSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000047"), uiColorSliderColorsSB, 16, 0, true);      // #autoLOC_B9_Aerospace_WingStuff_1000047 = Saturation
                             DrawLimited(ref sharedColorSBBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000048"), uiColorSliderColorsSB, 17, 0, true);      // #autoLOC_B9_Aerospace_WingStuff_1000048 = Brightness
                         }
@@ -3407,7 +3458,7 @@ namespace WingProcedural
                         {
                             DrawInt(ref sharedMaterialET, sharedIncrementInt, 0, 4, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000050"), uiColorSliderColorsET, 13, 1);     // #autoLOC_B9_Aerospace_WingStuff_1000050 = Material
                             DrawLimited(ref sharedColorETOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000051"), uiColorSliderColorsET, 14, 0, true);     // #autoLOC_B9_Aerospace_WingStuff_1000051 = Opacity
-                            DrawLimited(ref sharedColorETHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000052"), uiColorSliderColorsET, 15, 0, true);     // #autoLOC_B9_Aerospace_WingStuff_1000052 = Hue
+                            DrawLimited(ref sharedColorETHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000052"), uiColorSliderColorsET, 15, 0, true, true);     // #autoLOC_B9_Aerospace_WingStuff_1000052 = Hue
                             DrawLimited(ref sharedColorETSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000053"), uiColorSliderColorsET, 16, 0, true);      // #autoLOC_B9_Aerospace_WingStuff_1000053 = Saturation
                             DrawLimited(ref sharedColorETBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000054"), uiColorSliderColorsET, 17, 0, true);      // #autoLOC_B9_Aerospace_WingStuff_1000054 = Brightness
                         }
@@ -3418,7 +3469,7 @@ namespace WingProcedural
                             {
                                 DrawInt(ref sharedMaterialEL, sharedIncrementInt, 0, 4, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000056"), uiColorSliderColorsEL, 13, 1);     // #autoLOC_B9_Aerospace_WingStuff_1000056 = Material
                                 DrawLimited(ref sharedColorELOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000057"), uiColorSliderColorsEL, 14, 0, true);     // #autoLOC_B9_Aerospace_WingStuff_1000057 = Opacity
-                                DrawLimited(ref sharedColorELHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000058"), uiColorSliderColorsEL, 15, 0, true);     // #autoLOC_B9_Aerospace_WingStuff_1000058 = Hue
+                                DrawLimited(ref sharedColorELHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000058"), uiColorSliderColorsEL, 15, 0, true, true);     // #autoLOC_B9_Aerospace_WingStuff_1000058 = Hue
                                 DrawLimited(ref sharedColorELSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000059"), uiColorSliderColorsEL, 16, 0, true);      // #autoLOC_B9_Aerospace_WingStuff_1000059 = Saturation
                                 DrawLimited(ref sharedColorELBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, Localizer.Format("#autoLOC_B9_Aerospace_WingStuff_1000060"), uiColorSliderColorsEL, 17, 0, true);      // #autoLOC_B9_Aerospace_WingStuff_1000060 = Brightness
                             }
@@ -3625,10 +3676,10 @@ namespace WingProcedural
             }
         }
 
-        private void DrawLimited(ref float field, float increment, float incrementLarge, Vector2 limits, string name, Vector4 hsbColor, int fieldID, int fieldType, bool allowFine = true)
+        private void DrawLimited(ref float field, float increment, float incrementLarge, Vector2 limits, string name, Vector4 hsbColor, int fieldID, int fieldType, bool allowFine = true, bool HueField = false)
         {
             float cached = field;
-            field = UIUtility.LimitedSlider(field, increment, incrementLarge, limits, name, out bool changed, ColorHSBToRGB(hsbColor), fieldType, allowFine);
+            field = UIUtility.LimitedSlider(field, increment, incrementLarge, limits, name, out bool changed, ColorHSBToRGB(hsbColor), fieldType, allowFine, HueField);
 
             if (changed)
             {
@@ -4243,7 +4294,7 @@ namespace WingProcedural
                         case "handleTrailingTip": sharedEdgeWidthTrailingTip += draggingHandle.axisY * MouseSensitivity; break;
 
                         case "handleWidthRootFront":
-                            if (isWingAsCtrlSrf)
+                            if (isWingAsCtrlSrf || isSwingWing || !HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().syncRootWidth)
                             {
                                 sharedBaseWidthRoot -= draggingHandle.axisY * MouseSensitivity;
                                 sharedBaseOffsetRoot -= draggingHandle.axisY * MouseSensitivity * .5f;
@@ -4252,7 +4303,7 @@ namespace WingProcedural
                                 sharedBaseWidthRoot = backupsharedBaseWidthRoot - draggingHandle.LockDeltaAxisY; 
                             break;
                         case "handleWidthRootBack":
-                            if (isWingAsCtrlSrf)
+                            if (isWingAsCtrlSrf || isSwingWing || !HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().syncRootWidth)
                             {
                                 sharedBaseWidthRoot += draggingHandle.axisY * MouseSensitivity;
                                 sharedBaseOffsetRoot -= draggingHandle.axisY * MouseSensitivity * .5f;
@@ -4483,6 +4534,7 @@ namespace WingProcedural
                 for (int i = 0; i < part.Resources.Count; ++i)
                 {
                     PartResource res = part.Resources[i];
+					if (fuelSelectedTankSetup < 0 || fuelSelectedTankSetup >= StaticWingGlobals.wingTankConfigurations.Count) fuelSelectedTankSetup = 0;
                     if (StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources.TryGetValue(res.resourceName, out WingTankResource wres))
                     {
                         double fillPct = res.maxAmount > 0 ? res.amount / res.maxAmount : 1.0;
@@ -4620,7 +4672,7 @@ namespace WingProcedural
                 {
                     part.Resources.Remove(part.Resources[i]);
                 }
-
+				if (fuelSelectedTankSetup < 0 || fuelSelectedTankSetup >= StaticWingGlobals.wingTankConfigurations.Count) fuelSelectedTankSetup = 0;
                 foreach (KeyValuePair<string, WingTankResource> kvp in StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources)
                 {
                     ConfigNode newResourceNode = new ConfigNode("RESOURCE");
@@ -4655,7 +4707,7 @@ namespace WingProcedural
         /// </summary>
         private string FuelGUIGetConfigDesc()
         {
-            if (fuelSelectedTankSetup == -1 || StaticWingGlobals.wingTankConfigurations.Count == 0)
+            if (fuelSelectedTankSetup == -1 || StaticWingGlobals.wingTankConfigurations.Count == 0 || fuelSelectedTankSetup > StaticWingGlobals.wingTankConfigurations.Count)
             {
                 return "Invalid";
             }
