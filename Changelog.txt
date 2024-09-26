@@ -98,11 +98,15 @@ ChangeLog
 	-Added Simple Paint preference option to color top/bottom/edges simultaneously from a single set of sliders.
 	-Added 'Color All' button to have every pwing on a craft inherit the selected wing's color settings.
 0.46.1
-	-Have leading/trailing wingroot width syncronized with the other to fix CoL offset exploit
+	-Have leading/trailing wingroot width syncronized with the other to fix CoL offset exploit.
 0.46.2
-	-Update sharedEdgeTypeLimit for control surfaces
+	-Update sharedEdgeTypeLimit for control surfaces.
 0.46.3
-	-Change color slider to use Hue 0-255 instead of 0-1
+	-Change color slider to use Hue 0-255 instead of 0-1.
 0.46.4
-	-Add clampDimensions and SyncRootWidth toggles to the B9PWing Difficulty Setting game options.
-	-Wing CoL now takes edge width into account
+	-Add clampDimensions and SyncRootWidth toggles (default false) to the B9PWing Difficulty Setting game options.
+	-Wing CoL/CoM/CoD now properly takes edge width/offset into account.
+	-Adds code to stiffen swingwing attachnode joints.
+	-Fix ControlSurface CoL offset being inverted.
+0.46.5
+	-Fix asymmetric CoL when using control surfaces with root/tip widths that aren't identical
