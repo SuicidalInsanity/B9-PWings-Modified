@@ -2982,13 +2982,13 @@ namespace WingProcedural
                                 DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR | Method info present");
                             }
 
-                            aeroFARFieldInfoSemispan.SetValue(aeroFARModuleReference, aeroStatSemispan);
-                            aeroFARFieldInfoSemispan_Actual.SetValue(aeroFARModuleReference, aeroStatSemispan);
-                            aeroFARFieldInfoMAC.SetValue(aeroFARModuleReference, aeroStatMeanAerodynamicChord);
-                            aeroFARFieldInfoMAC_Actual.SetValue(aeroFARModuleReference, aeroStatMeanAerodynamicChord);
+                            aeroFARFieldInfoSemispan.SetValue(aeroFARModuleReference, !isPanel? aeroStatSemispan: 0);
+                            aeroFARFieldInfoSemispan_Actual.SetValue(aeroFARModuleReference, !isPanel ? aeroStatSemispan: 0);
+                            aeroFARFieldInfoMAC.SetValue(aeroFARModuleReference, !isPanel ? aeroStatMeanAerodynamicChord: 0);
+                            aeroFARFieldInfoMAC_Actual.SetValue(aeroFARModuleReference, !isPanel ? aeroStatMeanAerodynamicChord : 0);
                             //aeroFARFieldInfoSurfaceArea.SetValue (aeroFARModuleReference, aeroStatSurfaceArea);
-                            aeroFARFieldInfoMidChordSweep.SetValue(aeroFARModuleReference, aeroStatMidChordSweep);
-                            aeroFARFieldInfoTaperRatio.SetValue(aeroFARModuleReference, aeroStatTaperRatio);
+                            aeroFARFieldInfoMidChordSweep.SetValue(aeroFARModuleReference, !isPanel ? aeroStatMidChordSweep : 0);
+                            aeroFARFieldInfoTaperRatio.SetValue(aeroFARModuleReference, !isPanel ? aeroStatTaperRatio: 0);
 
                             if (isCtrlSrf)
                             {
@@ -3251,12 +3251,12 @@ namespace WingProcedural
                 {
                     UIUtility.ConfigureStyles();
                 }
-
+                if (GameSettings.UI_SCALE != 1) GUIUtility.ScaleAroundPivot(GameSettings.UI_SCALE * Vector2.one, UIUtility.uiRectWindowEditor.position);
                 UIUtility.uiRectWindowEditor = GUILayout.Window(GetInstanceID(), UIUtility.uiRectWindowEditor, OnWindow, GetWindowTitle(), UIUtility.uiStyleWindow, GUILayout.Height(uiAdjustWindow ? 0 : UIUtility.uiRectWindowEditor.height));
                 uiAdjustWindow = false;
                 // Thanks to ferram4
                 // Following section lock the editor, preventing window clickthrough
-                if (UIUtility.uiRectWindowEditor.Contains(UIUtility.GetMousePos()))
+                if (UIUtility.MouseIsInRect(UIUtility.uiRectWindowEditor, UIUtility.GetMousePos()))
                 {
                     EditorLogic.fetch.Lock(false, false, false, "WingProceduralWindow");
                     //if (EditorTooltip.Instance != null)
@@ -4103,7 +4103,7 @@ namespace WingProcedural
                 }
                 else
                 {
-                    bool cursorInGUI = UIUtility.uiRectWindowEditor.Contains(UIUtility.GetMousePos());
+                    bool cursorInGUI = UIUtility.MouseIsInRect(UIUtility.uiRectWindowEditor, UIUtility.GetMousePos());
                     if (!cursorInGUI && Input.GetKeyDown(KeyCode.Mouse0))
                     {
                         StaticWingGlobals.CheckHandleLayers();

@@ -609,12 +609,18 @@ namespace WingProcedural
             return mousePos;
         }
 
-        public static Vector3 GetMouseWindowPos(Rect windowRect)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool MouseIsInRect(Rect rect)
         {
-            Vector3 mousepos = GetMousePos();
-            mousepos.x -= windowRect.x;
-            mousepos.y -= windowRect.y;
-            return mousepos;
+            Vector2 inverseMousePos = new(Input.mousePosition.x, Screen.height - Input.mousePosition.y);
+            return MouseIsInRect(rect, inverseMousePos);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool MouseIsInRect(Rect rect, Vector2 inverseMousePos)
+        {
+            Rect scaledRect = new(rect.position, GameSettings.UI_SCALE * rect.size);
+            return scaledRect.Contains(inverseMousePos);
         }
 
         public static string GetValueTranslation(float value, int type)
