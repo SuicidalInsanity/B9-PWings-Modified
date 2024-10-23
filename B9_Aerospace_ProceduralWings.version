@@ -4,9 +4,9 @@
   "DOWNLOAD": "https://github.com/B9-Procedural-Wings/B9-PWings-Modified/releases",
   "VERSION": {
     "MAJOR": 0,
-    "MINOR": 46,
-    "PATCH": 6,
-    "BUILD": 2
+    "MINOR": 47,
+    "PATCH": 0,
+    "BUILD": 0
   },
   "KSP_VERSION": {
     "MAJOR": 1,

@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using KSP.Localization;
+using System.Runtime.CompilerServices;
 
 namespace WingProcedural
 {

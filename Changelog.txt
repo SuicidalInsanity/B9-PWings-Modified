@@ -112,3 +112,8 @@ ChangeLog
 	-Fix asymmetric CoL when using control surfaces with root/tip widths that aren't identical
 0.46.6
 	-PWings GUI now scales with KSP's UI_SCALE
+0.46.7
+	-Fix FAR incompatibility with structural panels.
+0.47.0
+	-Add support for deferred rendering
+	-Compile a combined assetBundle for all platforms

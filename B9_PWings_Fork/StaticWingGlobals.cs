@@ -20,33 +20,16 @@ namespace WingProcedural
                                  ctrlHandleTrailingRoot, ctrlHandleTrailingTip;
 
         private static string _bundlePath;
-        public string BundlePath
-        {
-            get
-            {
-                switch (Application.platform)
-                {
-                    case RuntimePlatform.OSXPlayer:
-                        return _bundlePath + Path.DirectorySeparatorChar + "pwings_macosx.bundle";
-                    case RuntimePlatform.WindowsPlayer:
-                        return _bundlePath + Path.DirectorySeparatorChar + "pwings_windows.bundle";
-                    case RuntimePlatform.LinuxPlayer:
-                        return _bundlePath + Path.DirectorySeparatorChar + "pwings_linux.bundle";
-                    default:
-                        return _bundlePath + Path.DirectorySeparatorChar + "pwings_windows.bundle";
-                }
-            }
-        }
-
+       
         public static bool loadingAssets = false;
         public static StaticWingGlobals Instance;
 
         private void Awake()
         {
-            _bundlePath = KSPUtil.ApplicationRootPath + "GameData" +
-                                                    Path.DirectorySeparatorChar +
-                                                    "B9_Aerospace_ProceduralWings" + Path.DirectorySeparatorChar + "AssetBundles";
-
+            _bundlePath = KSPUtil.ApplicationRootPath + "GameData"
+    + Path.DirectorySeparatorChar + "B9_Aerospace_ProceduralWings"
+    + Path.DirectorySeparatorChar + "AssetBundles"
+    + Path.DirectorySeparatorChar + "pwings_allplatforms.bundle";
             if (Instance != null) Destroy(Instance);
             Instance = this;
         }
@@ -69,7 +52,7 @@ namespace WingProcedural
         public IEnumerator LoadBundleAssets()
         {
             Debug.Log("[B9PW] Aquiring bundle data");
-            AssetBundle shaderBundle = AssetBundle.LoadFromFile(BundlePath);
+            AssetBundle shaderBundle = AssetBundle.LoadFromFile(_bundlePath);
 
             if (shaderBundle != null)
             {
