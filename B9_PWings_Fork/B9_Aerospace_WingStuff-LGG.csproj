@@ -104,6 +104,7 @@
     <Compile Include="StaticWingGlobals.cs" />
     <Compile Include="UIUtility.cs" />
     <Compile Include="UtilityTexture.cs" />
+    <Compile Include="WingDefaults.cs" />
     <Compile Include="WingProcedural.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="WingTankConfiguration.cs" />

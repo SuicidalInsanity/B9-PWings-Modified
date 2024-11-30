@@ -201,7 +201,6 @@ namespace WingProcedural
         public int sharedBaseThicknessRInt = 0;
         public float sharedBaseThicknessRootCached = 0.24f;
         public static Vector4 sharedBaseThicknessRootDefaults = new Vector4(0.24f, 0.24f, 0.24f, 0.24f);
-
         [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Thickness (tip)", guiFormat = "F3")]
         public float sharedBaseThicknessTip = 0.24f;
         public int sharedBaseThicknessTInt = 0;
