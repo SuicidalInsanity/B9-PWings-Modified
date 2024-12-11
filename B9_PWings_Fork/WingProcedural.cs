@@ -145,7 +145,7 @@ namespace WingProcedural
         private static Vector4 sharedBaseWidthRootLimits = new Vector4(0.01f, 40f, 0.01f, 2f);
         private static Vector4 sharedBaseWidthTipLimits = new Vector4(0.0f, 40f, 0.0f, 2f);
         private static Vector4 sharedBaseOffsetLimits = new Vector4(-10f, 10f, -1.5f, 1.5f);
-        private static Vector4 sharedEdgeTypeLimits = new Vector4(1f, 15f, 1f, 7f);
+        private static Vector4 sharedEdgeTypeLimits = new Vector4(1f, 15f, 1f, 7f); //remember to update this any time new edges are added
         private static Vector4 sharedEdgeWidthLimits = new Vector4(0f, 6f, 0f, 6f);
         private static Vector2 sharedMaterialLimits = new Vector2(0f, 4f);
         private static Vector2 sharedColorLimits = new Vector2(0f, 1f);
@@ -852,6 +852,7 @@ namespace WingProcedural
         #region Unity stuff and Callbacks/events
 
         public bool isStarted = false;
+        bool registerProcWingShader = false;
         /// <summary>
         /// run when part is created in editor, and when part is created in flight. Why is OnStart and Start both being used other than to sparate flight and editor startup?
         /// </summary>
@@ -864,7 +865,31 @@ namespace WingProcedural
 
             base.OnStart(state);
             CheckAssemblies();
-
+            /*
+            var r = part.GetComponentsInChildren<Renderer>();
+            {
+                if (!registerProcWingShader) //procwing defaultshader left null on start so current shader setup can be grabbed at visualizer runtime
+                {
+                    for (int i = 0; i < r.Length; i++)
+                    {
+                        if (r[i].GetComponentInParent<Part>() != part) continue; // Don't recurse to child parts.
+                        if (r[i].material.shader = Shader.Find("KSP/Emissive/Diffuse")) //workaround hack to support updated models, as all attempts to re-export pWing meshes through Unity with the correct layeredSpecular shader result in the KSPLoader failing to compile the part
+                                                                                       //workaround is to export w/ EmmisiveDiffuse to get the right texMaps, then switch shader at runtime. inelegant, but at least this way it loads.
+                        {
+                            if (r[i].material.HasProperty("_Emissive"))
+                            {
+                                var mainTex = r[i].material.GetTexture("_MainTex");
+                                var colorMap = r[i].material.GetTexture("_Emissive");
+                                r[i].material.shader = Shader.Find("KSP/Specular Layered");
+                                r[i].material.SetTexture("_MainTex", mainTex);
+                                r[i].material.SetTexture("_Emissive", colorMap);
+                            }
+                        }
+                    }
+                    registerProcWingShader = true;
+                }
+            }
+            */
             if (!HighLogic.LoadedSceneIsFlight)
             {
                 return;
@@ -1640,7 +1665,7 @@ namespace WingProcedural
 
                         if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
                         {
-                            DebugLogWithID("UpdateGeometry", "Wing edge trailing | Passed array setup");
+                            DebugLogWithID("UpdateGeometry", $"Wing edge trailing type {j}| Passed array setup");
                         }
 
                         for (int i = 0; i < vp.Length; ++i)
@@ -1698,9 +1723,8 @@ namespace WingProcedural
 
                         if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
                         {
-                            DebugLogWithID("UpdateGeometry", "Wing edge leading | Passed array setup");
+                            DebugLogWithID("UpdateGeometry", $"Wing edge leading type {j} | Passed array setup");
                         }
-
                         for (int i = 0; i < vp.Length; ++i)
                         {
                             if (vp[i].x < -0.1f)
@@ -1722,7 +1746,6 @@ namespace WingProcedural
                                 uv2[i] = GetVertexUV2(sharedMaterialEL);
                             }
                         }
-
                         meshFiltersWingEdgeLeading[j].mesh.vertices = vp;
                         meshFiltersWingEdgeLeading[j].mesh.uv = uv;
                         meshFiltersWingEdgeLeading[j].mesh.uv2 = uv2;
@@ -1731,14 +1754,7 @@ namespace WingProcedural
                         if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
                         {
                             DebugLogWithID("UpdateGeometry", "Wing edge leading | Finished");
-
                         }
-
-                    }
-
-                    if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
-                    {
-                        DebugLogWithID("UpdateGeometry", "Wing edge leading | Finished");
                     }
                 }
             }
@@ -1920,7 +1936,7 @@ namespace WingProcedural
 
                         if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
                         {
-                            DebugLogWithID("UpdateGeometry", "Control surface edge | Passed array setup");
+                            DebugLogWithID("UpdateGeometry", $"Control surface edge type {j} | Passed array setup");
                         }
 
                         for (int i = 0; i < vp.Length; ++i)
