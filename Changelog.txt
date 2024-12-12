@@ -117,3 +117,5 @@ ChangeLog
 0.47.0
 	-Add support for deferred rendering
 	-Compile a combined assetBundle for all platforms
+0.47.1
+	-Add per-part defaults for default shape/size.
