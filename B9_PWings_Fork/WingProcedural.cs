@@ -915,7 +915,7 @@ namespace WingProcedural
             {
                 if (HighLogic.LoadedSceneIsFlight)
                 {
-                    if (isPanel) //ensure panel dragCube resized from starting default size to actual size of the wingpanel
+                    if (isPanel && part.dragModel == Part.DragModel.DEFAULT) //ensure panel dragCube resized from starting default size to actual size of the wingpanel
                     {
                         DragCube DragCube = DragCubeSystem.Instance.RenderProceduralDragCube(part);
                         part.DragCubes.ClearCubes();
