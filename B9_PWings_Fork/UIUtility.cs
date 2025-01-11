@@ -133,7 +133,7 @@ namespace WingProcedural
             uiStyleButton.border = new RectOffset(0, 0, 0, 0);
         }
 
-        public static float FieldSlider(float value, float increment, float range, string name, out bool changed, Color backgroundColor, int valueType, ref int delta, bool allowFine = true)
+        public static float FieldSlider(float value, float increment, float range, string name, out bool changed, Color backgroundColor, int valueType, ref int delta, bool allowFine = true, float minLimit = 0)
         {
             if (!UIUtility.uiStyleConfigured)
             {
@@ -224,7 +224,7 @@ namespace WingProcedural
             GUI.Label(rectSlider, $"  {name}", UIUtility.uiStyleLabelHint); // slider name
             if (!numericInput)
             {
-                value = (float)((value01 + delta) * range);
+                value = Mathf.Clamp((float)((value01 + delta) * range), minLimit, float.PositiveInfinity); //don't allow 0-thickness wings
                 GUI.Label(rectLabelValue, GetValueTranslation(value, valueType), UIUtility.uiStyleLabelHint); // slider value
                 value = Mathf.Clamp(value, 0.0f, float.PositiveInfinity);
             }
@@ -240,7 +240,7 @@ namespace WingProcedural
                     else
                         value = (float)((value01 + delta) * range);
                 }
-                value = Mathf.Clamp(value, 0.0f, float.PositiveInfinity);
+                value = Mathf.Clamp(value, minLimit, float.PositiveInfinity); //don't allow 0-thickness wings
             }
             changed = valueOld != value01;
             GUILayout.EndHorizontal();

@@ -119,3 +119,8 @@ ChangeLog
 	-Compile a combined assetBundle for all platforms
 0.47.1
 	-Add per-part defaults for default shape/size.
+0.47.2
+	-Fix Structural Panel drag.
+0.47.3
+	-Fix ability to make 0-thickness/width/length pwings when using unclamped maximums.
+	-Fix Control Surface dimensions being clamped when 'Clamp Wing Max Dimensions' is disabled, and vice-versa.
