@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -20,16 +21,39 @@ namespace WingProcedural
                                  ctrlHandleTrailingRoot, ctrlHandleTrailingTip;
 
         private static string _bundlePath;
-       
+        public string BundlePath
+        {
+            get
+            {
+                if (hasDeferred)
+                {
+                    Debug.Log("[B9PW] Deferred detected in install. loading Deferred-supported pWing Shaders");
+                    return KSPUtil.ApplicationRootPath + "GameData"
+    + Path.DirectorySeparatorChar + "B9_Aerospace_ProceduralWings"
+    + Path.DirectorySeparatorChar + "AssetBundles"
+    + Path.DirectorySeparatorChar + "pwings_allplatforms.bundle";
+                }
+                else
+                {
+                    switch (Application.platform)
+                    {
+                        case RuntimePlatform.OSXPlayer:
+                            return _bundlePath + Path.DirectorySeparatorChar + "pwings_macosx.bundle";
+                        case RuntimePlatform.WindowsPlayer:
+                            return _bundlePath + Path.DirectorySeparatorChar + "pwings_windows.bundle";
+                        case RuntimePlatform.LinuxPlayer:
+                            return _bundlePath + Path.DirectorySeparatorChar + "pwings_linux.bundle";
+                        default:
+                            return _bundlePath + Path.DirectorySeparatorChar + "pwings_windows.bundle";
+                    }
+                }
+            }
+        }
         public static bool loadingAssets = false;
         public static StaticWingGlobals Instance;
 
         private void Awake()
         {
-            _bundlePath = KSPUtil.ApplicationRootPath + "GameData"
-    + Path.DirectorySeparatorChar + "B9_Aerospace_ProceduralWings"
-    + Path.DirectorySeparatorChar + "AssetBundles"
-    + Path.DirectorySeparatorChar + "pwings_allplatforms.bundle";
             if (Instance != null) Destroy(Instance);
             Instance = this;
         }
@@ -53,11 +77,22 @@ namespace WingProcedural
 
             StartCoroutine(LoadBundleAssets());
         }
-
+        bool hasDeferred = false;
         public IEnumerator LoadBundleAssets()
         {
             Debug.Log("[B9PW] Aquiring bundle data");
-            AssetBundle shaderBundle = AssetBundle.LoadFromFile(_bundlePath);
+            _bundlePath = KSPUtil.ApplicationRootPath + "GameData" +
+            Path.DirectorySeparatorChar +
+            "B9_Aerospace_ProceduralWings" + Path.DirectorySeparatorChar + "AssetBundles";
+
+            foreach (AssemblyLoader.LoadedAssembly test in AssemblyLoader.loadedAssemblies)
+            {
+                if (test.assembly.GetName().Name.Equals("Deferred", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    hasDeferred = true;
+                }
+            }
+            AssetBundle shaderBundle = AssetBundle.LoadFromFile(BundlePath);
 
             if (shaderBundle != null)
             {
