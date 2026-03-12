@@ -915,15 +915,6 @@ namespace WingProcedural
             {
                 if (HighLogic.LoadedSceneIsFlight)
                 {
-                    if (isPanel && part.dragModel == Part.DragModel.DEFAULT) //ensure panel dragCube resized from starting default size to actual size of the wingpanel
-                    {
-                        DragCube DragCube = DragCubeSystem.Instance.RenderProceduralDragCube(part);
-                        part.DragCubes.ClearCubes();
-                        part.DragCubes.Cubes.Add(DragCube);
-                        part.DragCubes.ResetCubeWeights();
-                        part.DragCubes.ForceUpdate(true, true, false);
-                        part.DragCubes.SetDragWeights();
-                    }
                     if (isWingAsCtrlSrf)
                     {
                         FindConnectedCtrlSrfWings();
@@ -3083,10 +3074,20 @@ namespace WingProcedural
             }
             else
             {
-                DragCube DragCube = DragCubeSystem.Instance.RenderProceduralDragCube(part);
-                part.DragCubes.ClearCubes();
-                part.DragCubes.Cubes.Add(DragCube);
-                part.DragCubes.ResetCubeWeights();
+                //if (isPanel && part.dragModel == Part.DragModel.DEFAULT) //ensure panel dragCube resized from starting default size to actual size of the wingpanel
+                if (isPanel && part.dragModel != Part.DragModel.NONE)
+                {
+                    //DragCubes are 8 triplet values. The first 6 are the Area, DragCoeff, and depth of the widest point from the frontmost point, for the X+/X-/Y+/Y-/Z+/Z- sides of the cube
+                    //the final 2 triplets are bounds center, then bounds extents.
+
+                    DragCube DragCube = DragCubeSystem.Instance.RenderProceduralDragCube(part);
+                    part.DragCubes.Procedural = true;
+                    part.DragCubes.ClearCubes();
+                    part.DragCubes.Cubes.Add(DragCube);
+                    part.DragCubes.ResetCubeWeights();
+                    part.DragCubes.ForceUpdate(true, true, false);
+                    part.DragCubes.SetDragWeights();
+                }
             }
 
             if (HighLogic.LoadedSceneIsEditor)

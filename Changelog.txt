@@ -125,3 +125,5 @@ ChangeLog
 	-Fix ability to make 0-thickness/width/length pwings when using unclamped maximums.
 	-Fix Control Surface dimensions being clamped when 'Clamp Wing Max Dimensions' is disabled, and vice-versa.
 	-Deferred-compliant shaders are now only loaded if Deferred is installed, to fix some outstanding lighting issues with non-Deferred installs.
+0.47.4
+	-Fix Structural PWings resetting to default dragcubes on launch, causing far more drag than they should have
